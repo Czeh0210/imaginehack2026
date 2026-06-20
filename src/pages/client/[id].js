@@ -322,7 +322,7 @@ The meeting focused on establishing the succession protocol and tax-efficient as
       },
       {
         id: "amcord-raw",
-        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        name: "meeting/raw audio/15-minutes-of-silence.mp3",
         type: "mp3",
         size: 936272,
         description: "Raw meeting recording (silence)",
@@ -365,7 +365,7 @@ Secure folder containing legal structures for the Globex Irrevocable Wealth Trus
 - \`client-info/\`: Trust deeds, settlor profiles, and milestone requirements.
 - \`conversation history/\`: Consultations on reporting and regulatory compliance.
 - \`meeting/summary/\`: Minutes on asset distributions.
-- \`meeting/raw record/\`: Raw meeting audio recordings.
+- \`meeting/raw audio/\`: Raw meeting audio recordings.
 - \`proposals/\`: Trust amendment resolutions.
 - \`resources/\`: Portfolio yields, targets, and allocations spreadsheet.
 
@@ -423,7 +423,7 @@ Reviewed offshore compliance requirements and tax implications of global asset h
       },
       {
         id: "globex-raw",
-        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        name: "meeting/raw audio/15-minutes-of-silence.mp3",
         type: "mp3",
         size: 936272,
         description: "Raw meeting recording (silence)",
@@ -461,7 +461,7 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
 - \`client-info/\`: Family certificates and registration profiles.
 - \`conversation history/\`: Consultation conversations about executor choices.
 - \`meeting/summary/\`: Family alignment meeting minutes.
-- \`meeting/raw record/\`: Raw meeting audio recordings.
+- \`meeting/raw audio/\`: Raw meeting audio recordings.
 - \`proposals/\`: Testamentary trust proposals.
 - \`resources/\`: Asset and bank account inventories.
 
@@ -531,7 +531,7 @@ Reviewed the asset allocation parameters. The primary residence will go to the s
       },
       {
         id: "smith-raw",
-        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        name: "meeting/raw audio/15-minutes-of-silence.mp3",
         type: "mp3",
         size: 936272,
         description: "Raw meeting recording (silence)",
@@ -559,7 +559,7 @@ Confidential governance planning and key man security documents.
 - \`client-info/\`: Corporate board resolutions and identity records.
 - \`conversation history/\`: Leadership pathways consultations.
 - \`meeting/summary/\`: Board governance alignment minutes.
-- \`meeting/raw record/\`: Raw meeting audio recordings.
+- \`meeting/raw audio/\`: Raw meeting audio recordings.
 - \`proposals/\`: Buyout agreements and contingency bylaws.
 - \`resources/\`: Key man insurance coverage and cost analysis.
 
@@ -618,7 +618,7 @@ Determining successor pathways and corporate control in the event of emergency l
       },
       {
         id: "wayne-raw",
-        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        name: "meeting/raw audio/15-minutes-of-silence.mp3",
         type: "mp3",
         size: 936272,
         description: "Raw meeting recording (silence)",
@@ -655,7 +655,7 @@ Advisory folder. Organised as follows:
 - \`client-info/\`: Profiling documents.
 - \`conversation history/\`: Transcripts.
 - \`meeting/summary/\`: Meeting minutes.
-- \`meeting/raw record/\`: Raw meeting audio recordings.
+- \`meeting/raw audio/\`: Raw meeting audio recordings.
 - \`proposals/\`: Draft contracts.
 - \`resources/\`: Allocation spreadsheets.`
     },
@@ -698,7 +698,7 @@ Established relationship parameters, client risk tolerance, and advisory objecti
     },
     {
       id: "def-raw",
-      name: "meeting/raw record/15-minutes-of-silence.mp3",
+      name: "meeting/raw audio/15-minutes-of-silence.mp3",
       type: "mp3",
       size: 936272,
       description: "Raw meeting recording (silence)",
@@ -1050,7 +1050,7 @@ export default function ClientRepo() {
       setRecordingUploadProgress(100);
 
       const fileExt = recordingFile.name.split('.').pop().toLowerCase();
-      const destName = `meeting/raw record/${recordingFile.name}`;
+      const destName = `meeting/raw audio/${recordingFile.name}`;
       const newFile = {
         id: Date.now().toString(),
         name: destName,

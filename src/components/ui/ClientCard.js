@@ -51,7 +51,9 @@ export default function ClientCard({ clientId, clientData, score, tab = "info", 
   const slug = CLIENT_ID_TO_SLUG[client.id] || `${client.id}`;
   const href = `/client/${slug}${tab !== "info" ? `?tab=${tab}` : ""}`;
   const riskColor = RISK_COLORS[client.riskProfile] || RISK_COLORS["Moderate"];
-  const initials = client.name.split("/")[1]?.[0] || "C";
+  const part0 = client.name.split("/")[0] || "";
+  const part1 = client.name.split("/")[1] || "";
+  const initials = (/^\d+$/.test(part0) ? part1[0] : part0[0]) || "C";
   const displayName = client.name; // e.g. "005511/LimWeiMing"
 
   if (compact) {

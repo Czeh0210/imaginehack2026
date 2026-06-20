@@ -5,14 +5,6 @@ import { Paperclip, Clock, Maximize2 } from "lucide-react";
 import { CLIENTS } from "@/lib/mockData";
 import { ClientCardSection } from "@/components/ui/ClientCard";
 
-const clientIdToRepoId = {
-  "005511": "005511_LimWeiMing",
-  "005512": "005512_SarahTan",
-  "005513": "005513_AhmadRazif",
-  "005514": "005514_JenniferKoh",
-  "005515": "005515_DavidNg",
-  "005516": "005516_RosnahYusof"
-};
 
 // Simple markdown-like renderer (scoped inside widget)
 function renderMarkdown(text) {
@@ -153,19 +145,9 @@ export default function GlobalChatWidget() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    const repoToClientId = {
-      "005511_LimWeiMing": "005511",
-      "005512_SarahTan": "005512",
-      "005513_AhmadRazif": "005513",
-      "005514_JenniferKoh": "005514",
-      "005515_DavidNg": "005515",
-      "005516_RosnahYusof": "005516"
-    };
-
     const isClientPage = router.pathname.startsWith("/client/");
     const clientRepoId = isClientPage ? router.query.id : null;
-    const activePageClientId = clientRepoId ? repoToClientId[clientRepoId] : null;
-    const client = activePageClientId ? CLIENTS.find(c => c.id === activePageClientId) : null;
+    const client = clientRepoId ? CLIENTS.find(c => c.id === clientRepoId) : null;
 
     setActivePageClient(client);
 
@@ -188,6 +170,14 @@ export default function GlobalChatWidget() {
   useEffect(() => {
     if (isOpen) fetchSessions();
   }, [isOpen]);
+
+  // Auto-set context to the current page client when opening the widget
+  useEffect(() => {
+    if (isOpen && activePageClient) {
+      setSelectedClientId(activePageClient.id);
+      setSearchScope("client");
+    }
+  }, [isOpen, activePageClient]);
 
   // Auto-open and restore session when navigating back from /chatbot
   useEffect(() => {
@@ -601,7 +591,7 @@ export default function GlobalChatWidget() {
                                   </summary>
                                   <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
                                     {msg.sources.map((s, sIdx) => {
-                                      const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
+                                      const repoSlug = s.clientId;
                                       const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
                                       const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
                                       return (
@@ -693,14 +683,11 @@ export default function GlobalChatWidget() {
                       <button
                         className="scope-pill"
                         onClick={() => setShowContextList(!showContextList)}
+                        title={activeClient ? activeClient.name : "Global Search"}
                       >
                         <span className="scope-pill-icon">{activeClient ? "👤" : "🌐"}</span>
                         <span className="scope-pill-text">
-                          {activeClient
-                            ? activeClient.name.length > 12
-                              ? activeClient.name.slice(0, 12) + "…"
-                              : activeClient.name
-                            : "Global"}
+                          {activeClient ? activeClient.name : "Global"}
                         </span>
                         <span className="scope-pill-chevron">▾</span>
                       </button>
