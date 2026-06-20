@@ -60,8 +60,10 @@ export default function GlobalChatWidget() {
   const [contextSearchQuery, setContextSearchQuery] = useState("");
 
   // Size states (anchored bottom-right, resizable top-left)
-  const [width, setWidth] = useState(700);
-  const [height, setHeight] = useState(600);
+  const COMPACT_W = 400;
+  const COMPACT_H = 520;
+  const [width, setWidth] = useState(COMPACT_W);
+  const [height, setHeight] = useState(COMPACT_H);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeMode, setResizeMode] = useState(null); // 'left', 'top', 'both'
 
@@ -424,7 +426,7 @@ export default function GlobalChatWidget() {
           <div className="resize-handle handle-corner" onMouseDown={(e) => startResize("both", e)} />
 
           {/* Header */}
-          <header className="widget-header" onDoubleClick={() => { setWidth(380); setHeight(500); }}>
+          <header className="widget-header" onDoubleClick={() => { setWidth(COMPACT_W); setHeight(COMPACT_H); }}>
             <div className="widget-header-title">
               <span className="header-icon">✦</span>
               <span className="header-title">
@@ -435,6 +437,16 @@ export default function GlobalChatWidget() {
             </div>
 
             <div className="widget-header-actions">
+              {/* Collapse to default size — only visible when resized larger */}
+              {(width > COMPACT_W || height > COMPACT_H) && (
+                <button
+                  className="collapse-size-btn"
+                  onClick={() => { setWidth(COMPACT_W); setHeight(COMPACT_H); }}
+                  title="Collapse to default size"
+                >
+                  ⊡
+                </button>
+              )}
               {/* Expand to full workspace */}
               <Link
                 href={`/chatbot?clientId=${selectedClientId || ""}${sessionId ? `&sessionId=${sessionId}` : ""}`}
@@ -793,9 +805,9 @@ export default function GlobalChatWidget() {
           position: fixed;
           bottom: 84px;
           right: 24px;
-          background: var(--color-neutral);
+          background: #ffffff;
           border: var(--border-thin) solid var(--color-border);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
           border-radius: var(--radius-lg);
           display: flex;
           flex-direction: column;
@@ -884,6 +896,23 @@ export default function GlobalChatWidget() {
 
         .expand-page-link:hover {
           color: var(--color-tertiary);
+        }
+
+        .collapse-size-btn {
+          background: none;
+          border: none;
+          color: var(--color-muted);
+          font-size: 16px;
+          cursor: pointer;
+          line-height: 1;
+          padding: 2px 4px;
+          transition: color 0.15s;
+          border-radius: 4px;
+        }
+
+        .collapse-size-btn:hover {
+          color: var(--color-primary);
+          background: rgba(0, 0, 0, 0.05);
         }
 
         .minimize-btn {
