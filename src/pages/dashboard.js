@@ -59,10 +59,36 @@ export default function Dashboard() {
 
   // Mock data for calendar meetings
   const meetings = [
-    { id: 1, time: "10:00 AM", client: "Bruce Wayne", title: "Succession Review", type: "Zoom" },
-    { id: 2, time: "01:30 PM", client: "John Smith", title: "Will Signing", type: "In-person" },
-    { id: 3, time: "04:00 PM", client: "Acme Corp Board", title: "Quarterly Estate Update", type: "Teams" },
+    { id: 1, time: "10:00 AM", client: "Bruce Wayne",     title: "Succession Review",       type: "Zoom",       durationMins: 60 },
+    { id: 2, time: "01:30 PM", client: "John Smith",      title: "Will Signing",            type: "In-person",  durationMins: 60 },
+    { id: 3, time: "04:00 PM", client: "Acme Corp Board", title: "Quarterly Estate Update", type: "Teams",      durationMins: 90 },
   ];
+
+  // Build a Google Calendar "add event" URL (no API key needed)
+  const buildGCalUrl = (meeting) => {
+    const today = new Date();
+    const [time, ampm] = meeting.time.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (ampm === "PM" && hours !== 12) hours += 12;
+    if (ampm === "AM" && hours === 12) hours = 0;
+
+    const pad = (n) => String(n).padStart(2, "0");
+    const ymd = `${today.getFullYear()}${pad(today.getMonth() + 1)}${pad(today.getDate())}`;
+    const startTime = `${pad(hours)}${pad(minutes)}00`;
+
+    // Calculate end time
+    const totalMins = hours * 60 + minutes + (meeting.durationMins || 60);
+    const endH = Math.floor(totalMins / 60) % 24;
+    const endM = totalMins % 60;
+    const endTime = `${pad(endH)}${pad(endM)}00`;
+
+    const start = `${ymd}T${startTime}`;
+    const end   = `${ymd}T${endTime}`;
+    const text  = encodeURIComponent(`${meeting.title} — ${meeting.client}`);
+    const details = encodeURIComponent(`Client: ${meeting.client}\nMeeting type: ${meeting.type}`);
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}`;
+  };
 
   // ── GOOGLE MAPS ──
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -313,14 +339,27 @@ export default function Dashboard() {
                     <p className="meeting-client">👤 {m.client}</p>
                     <div className="meeting-footer">
                       <span className="meeting-type">{m.type}</span>
-                      <button
-                        className="route-btn"
-                        id={`route-btn-${m.id}`}
-                        onClick={handleOpenMap}
-                        title="View best route"
-                      >
-                        📍 View Route
-                      </button>
+                      <div className="meeting-actions">
+                        <a
+                          href={buildGCalUrl(m)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="cal-btn"
+                          id={`cal-btn-${m.id}`}
+                          title="Add to Google Calendar"
+                        >
+                          <svg height="11" viewBox="0 0 24 24" width="11" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                          + Calendar
+                        </a>
+                        <button
+                          className="route-btn"
+                          id={`route-btn-${m.id}`}
+                          onClick={handleOpenMap}
+                          title="View best route"
+                        >
+                          📍 Route
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -887,6 +926,66 @@ export default function Dashboard() {
           background: #ddf4ff;
           color: #0969da;
           text-transform: uppercase;
+        }
+
+        /* meeting footer row */
+        .meeting-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 4px;
+          margin-top: 6px;
+          flex-wrap: wrap;
+        }
+        .meeting-actions {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          flex-shrink: 0;
+        }
+
+        /* + Calendar button */
+        .cal-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #1f883d;
+          color: #fff;
+          border: none;
+          border-radius: 10px;
+          padding: 3px 8px;
+          font-size: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 0.14s, transform 0.12s;
+          line-height: 1.4;
+        }
+        .cal-btn:hover {
+          background: #1a7f37;
+          transform: scale(1.04);
+        }
+
+        /* Route button (compact) */
+        .route-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          background: linear-gradient(135deg, #0969da, #1f883d);
+          color: #fff;
+          border: none;
+          border-radius: 10px;
+          padding: 3px 8px;
+          font-size: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: opacity 0.14s, transform 0.12s;
+        }
+        .route-btn:hover {
+          opacity: 0.88;
+          transform: scale(1.04);
         }
 
         .view-calendar-btn {

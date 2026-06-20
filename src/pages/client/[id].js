@@ -102,6 +102,78 @@ export default function ClientRepo() {
     handleShowRoute();
   };
 
+  // ── RECEIPT / PHOTO UPLOAD (local browser state — no database) ──
+  const [receipts, setReceipts] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleUploadFile = (file) => {
+    if (!file) return;
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf"];
+    if (!allowed.includes(file.type)) {
+      setUploadError("Only images (JPG, PNG, WebP, GIF) and PDF are allowed.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File must be under 10 MB.");
+      return;
+    }
+    setUploading(true);
+    setUploadError("");
+    setUploadProgress(30);
+
+    // Use FileReader to get a local preview URL (no server/database needed)
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setUploadProgress(90);
+      const newReceipt = {
+        id: Date.now().toString(),
+        file_name: file.name,
+        file_url: e.target.result,   // base64 data URL for preview
+        file_type: file.type,
+        file_size: file.size,
+        created_at: new Date().toISOString(),
+      };
+      setReceipts((prev) => [newReceipt, ...prev]);
+      setUploadProgress(100);
+      setUploading(false);
+      setTimeout(() => setUploadProgress(0), 600);
+    };
+    reader.onerror = () => {
+      setUploadError("Failed to read file. Please try again.");
+      setUploading(false);
+      setUploadProgress(0);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleUploadFile(file);
+    e.target.value = "";
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleUploadFile(file);
+  };
+
+  const handleDeleteReceipt = (receipt) => {
+    if (!confirm(`Delete "${receipt.file_name}"?`)) return;
+    setReceipts((prev) => prev.filter((r) => r.id !== receipt.id));
+  };
+
+  const formatSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   // Mock data for partners
   const [partners, setPartners] = useState([
     { id: 1, name: "TaxCorp Advisory", role: "Tax Consultant" },
@@ -276,29 +348,107 @@ export default function ClientRepo() {
             </div>
           )}
 
-          {/* TAB 3: PHOTO */}
+          {/* TAB 3: PHOTO / RECEIPTS */}
           {activeTab === "photo" && (
             <div className="tab-pane photo-tab">
-              <div className="box upload-box">
-                <div className="upload-icon">
-                  <svg aria-hidden="true" height="32" viewBox="0 0 16 16" version="1.1" width="32" fill="#656d76">
-                    <path d="M2.75 2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25H2.75Zm-1.75.25C1 1.784 1.784 1 2.75 1h10.5C14.216 1 15 1.784 15 2.75v10.5A1.75 1.75 0 0 1 13.25 15H2.75A1.75 1.75 0 0 1 1 13.25V2.75ZM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path>
-                    <path d="M7 2.5h2v3H7v-3Z"></path>
-                  </svg>
-                </div>
-                <h3>Attach receipt or physical document</h3>
-                <p>Drag and drop an image, or click to upload</p>
-                <label className="btn-secondary file-upload-btn">
-                  Choose File
-                  <input type="file" accept="image/*" style={{display: 'none'}} />
-                </label>
+
+              {/* Upload drop zone */}
+              <div
+                className={`upload-dropzone ${dragOver ? "dz--over" : ""} ${uploading ? "dz--uploading" : ""}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => !uploading && fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,application/pdf"
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+                {uploading ? (
+                  <div className="dz-uploading-state">
+                    <div className="dz-spinner"></div>
+                    <p className="dz-label">Uploading…</p>
+                    <div className="dz-progress-bar">
+                      <div className="dz-progress-fill" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="dz-icon">
+                      <svg height="40" viewBox="0 0 24 24" width="40" fill="currentColor">
+                        <path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                      </svg>
+                    </div>
+                    <p className="dz-label">Drop receipt here, or <span className="dz-link">browse</span></p>
+                    <p className="dz-hint">JPG, PNG, WebP, PDF · max 10 MB</p>
+                  </>
+                )}
               </div>
 
-              <div className="recent-photos">
-                <h4>Recent Uploads</h4>
-                <div className="blank-slate-small" style={{marginTop: 8}}>
-                  No photos uploaded yet.
+              {/* Error */}
+              {uploadError && (
+                <div className="upload-error">
+                  ⚠️ {uploadError}
+                  <button className="upload-error-dismiss" onClick={() => setUploadError("")}>Dismiss</button>
                 </div>
+              )}
+
+              {/* Recent Uploads */}
+              <div className="receipts-section">
+                <div className="receipts-header">
+                  <h4 className="receipts-title">Recent Uploads</h4>
+                  <span className="receipts-count">{receipts.length} file{receipts.length !== 1 ? "s" : ""}</span>
+                </div>
+
+                {receipts.length === 0 ? (
+                  <div className="receipts-empty">
+                    <svg height="32" viewBox="0 0 24 24" width="32" fill="#d0d7de">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                    </svg>
+                    <p>No files uploaded yet. Upload a receipt to get started.</p>
+                  </div>
+                ) : (
+                  <div className="receipts-grid">
+                    {receipts.map((r) => (
+                      <div key={r.id} className="receipt-card">
+                        {/* Preview */}
+                        <div className="receipt-preview">
+                          {r.file_type?.startsWith("image/") ? (
+                            <img src={r.file_url} alt={r.file_name} className="receipt-img" />
+                          ) : (
+                            <div className="receipt-pdf-icon">
+                              <svg height="32" viewBox="0 0 24 24" width="32" fill="#d1242f">
+                                <path d="M20 2H8L2 8v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm-9 13H9v-2h2v2zm0-4H9V9h2v2zm4 4h-2v-2h2v2zm0-4h-2V9h2v2zm4 4h-2v-2h2v2zm0-4h-2V9h2v2z"/>
+                              </svg>
+                              <span>PDF</span>
+                            </div>
+                          )}
+                        </div>
+                        {/* Info */}
+                        <div className="receipt-info">
+                          <p className="receipt-name" title={r.file_name}>{r.file_name}</p>
+                          <p className="receipt-meta">
+                            {formatSize(r.file_size)} · {new Date(r.created_at).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        </div>
+                        {/* Actions */}
+                        <div className="receipt-actions">
+                          <a href={r.file_url} target="_blank" rel="noreferrer" className="receipt-view-btn" title="View">
+                            <svg height="13" viewBox="0 0 16 16" width="13" fill="currentColor"><path d="M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2zm0 1.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM8 7a1 1 0 1 1 0 2A1 1 0 0 1 8 7z"/></svg>
+                            View
+                          </a>
+                          <button className="receipt-del-btn" title="Delete" onClick={() => handleDeleteReceipt(r)}>
+                            <svg height="13" viewBox="0 0 16 16" width="13" fill="currentColor"><path d="M11 1.75V3h2.25a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75ZM4.496 6.675l.66 6.6a.25.25 0 0 0 .249.225h5.19a.25.25 0 0 0 .249-.225l.66-6.6a.75.75 0 0 1 1.492.149l-.66 6.6A1.748 1.748 0 0 1 10.595 15h-5.19a1.75 1.75 0 0 1-1.741-1.575l-.66-6.6a.75.75 0 1 1 1.492-.15Z"/></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -739,36 +889,240 @@ export default function ClientRepo() {
           color: #656d76;
         }
 
-        /* PHOTO TAB */
-        .upload-box {
+        /* ── PHOTO / RECEIPT TAB ── */
+        .photo-tab {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        /* Drop zone */
+        .upload-dropzone {
+          border: 2px dashed #d0d7de;
+          border-radius: 10px;
+          background: #fafbfc;
+          padding: 40px 24px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 48px 16px;
-          border: 2px dashed #d0d7de;
+          gap: 8px;
+          cursor: pointer;
+          transition: border-color 0.18s, background 0.18s;
+          text-align: center;
+        }
+        .upload-dropzone:hover, .dz--over {
+          border-color: #0969da;
+          background: #f0f6ff;
+        }
+        .dz--uploading {
+          cursor: default;
+          border-color: #1f883d;
+          background: #f0fff4;
+        }
+        .dz-icon {
+          color: #656d76;
+          margin-bottom: 4px;
+          transition: color 0.18s;
+        }
+        .upload-dropzone:hover .dz-icon, .dz--over .dz-icon {
+          color: #0969da;
+        }
+        .dz-label {
+          font-size: 15px;
+          font-weight: 600;
+          color: #1f2328;
+          margin: 0;
+        }
+        .dz-link {
+          color: #0969da;
+          text-decoration: underline;
+        }
+        .dz-hint {
+          font-size: 12px;
+          color: #656d76;
+          margin: 0;
+        }
+        .dz-uploading-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          max-width: 280px;
+        }
+        .dz-spinner {
+          width: 32px; height: 32px;
+          border: 3px solid #d0d7de;
+          border-top-color: #1f883d;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .dz-progress-bar {
+          width: 100%;
+          height: 6px;
+          background: #eaeef2;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .dz-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #0969da, #1f883d);
+          border-radius: 6px;
+          transition: width 0.3s ease;
+        }
+
+        /* Error */
+        .upload-error {
+          background: #fff0f0;
+          border: 1px solid #ffa8a8;
+          border-radius: 6px;
+          padding: 10px 14px;
+          font-size: 13px;
+          color: #d1242f;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .upload-error-dismiss {
+          background: none;
+          border: none;
+          color: #d1242f;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          text-decoration: underline;
+          flex-shrink: 0;
+        }
+
+        /* Receipts section */
+        .receipts-section {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .receipts-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .receipts-title {
+          font-size: 15px;
+          font-weight: 700;
+          margin: 0;
+          color: #1f2328;
+        }
+        .receipts-count {
+          font-size: 12px;
+          color: #656d76;
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          border-radius: 12px;
+          padding: 2px 8px;
+        }
+        .receipts-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          padding: 36px 16px;
+          color: #656d76;
+          font-size: 13px;
+          border: 1px solid #eaeef2;
+          border-radius: 8px;
           background: #fafbfc;
           text-align: center;
         }
-        .upload-box:hover {
-          border-color: #0969da;
-          background: #f3f8ff;
+        .receipts-empty p { margin: 0; }
+
+        /* Grid of receipt cards */
+        .receipts-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: 14px;
         }
-        .upload-icon {
-          margin-bottom: 16px;
+        .receipt-card {
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          transition: box-shadow 0.15s;
         }
-        .upload-box h3 {
-          margin: 0 0 8px;
-          font-size: 16px;
+        .receipt-card:hover {
+          box-shadow: 0 4px 16px rgba(0,0,0,0.09);
         }
-        .upload-box p {
+        .receipt-preview {
+          height: 120px;
+          background: #f6f8fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .receipt-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .receipt-pdf-icon {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          color: #d1242f;
+          font-size: 11px;
+          font-weight: 700;
+        }
+        .receipt-info {
+          padding: 8px 10px 4px;
+          flex: 1;
+        }
+        .receipt-name {
+          font-size: 12px;
+          font-weight: 600;
+          color: #1f2328;
+          margin: 0 0 3px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .receipt-meta {
+          font-size: 11px;
           color: #656d76;
-          font-size: 14px;
-          margin: 0 0 24px;
+          margin: 0;
         }
-        .file-upload-btn {
-          display: inline-block;
+        .receipt-actions {
+          display: flex;
+          border-top: 1px solid #eaeef2;
         }
+        .receipt-view-btn, .receipt-del-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 7px 4px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          border: none;
+          background: transparent;
+          text-decoration: none;
+          transition: background 0.12s;
+        }
+        .receipt-view-btn {
+          color: #0969da;
+          border-right: 1px solid #eaeef2;
+        }
+        .receipt-view-btn:hover { background: #f0f6ff; }
+        .receipt-del-btn {
+          color: #d1242f;
+        }
+        .receipt-del-btn:hover { background: #fff0f0; }
 
         /* ── LOCATION TAB ── */
         .location-tab {
