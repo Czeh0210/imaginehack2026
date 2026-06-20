@@ -180,12 +180,35 @@ export default function Chatbot() {
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Sync URL query clientId
+  // Sync URL query parameters (clientId and sessionId)
   useEffect(() => {
-    if (router.isReady && clientId) {
+    if (!router.isReady) return;
+
+    if (clientId) {
       setSelectedClientId(clientId);
     }
-  }, [router.isReady, clientId]);
+
+    const querySessionId = router.query.sessionId;
+    if (querySessionId) {
+      setSessionId(querySessionId);
+      setIsLoading(true);
+      fetch(`/api/chat/session?sessionId=${querySessionId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.session && data.session.messages) {
+            const mapped = data.session.messages.map((m, idx) => ({
+              id: idx,
+              role: m.role,
+              content: m.content,
+              sources: m.sources,
+            }));
+            setMessages(mapped);
+          }
+        })
+        .catch((err) => console.error("Failed to load session history:", err))
+        .finally(() => setIsLoading(false));
+    }
+  }, [router.isReady, clientId, router.query.sessionId]);
 
   useEffect(() => {
     const hour = new Date().getHours();
