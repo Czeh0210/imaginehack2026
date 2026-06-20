@@ -1,15 +1,8 @@
 import "@/styles/globals.css";
-import GlobalChatWidget from "@/components/GlobalChatWidget";
-
-export default function App({ Component, pageProps }) {
-  return (
-    <>
-      <Component {...pageProps} />
-      <GlobalChatWidget />
-    </>
 import { useState } from "react";
 import Script from "next/script";
 import { MapsLoadedContext } from "@/lib/mapsLoader";
+import GlobalChatWidget from "@/components/GlobalChatWidget";
 
 const MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
@@ -26,6 +19,7 @@ export default function App({ Component, pageProps }) {
         />
       )}
       <Component {...pageProps} />
+      <GlobalChatWidget />
     </MapsLoadedContext.Provider>
   );
 }
