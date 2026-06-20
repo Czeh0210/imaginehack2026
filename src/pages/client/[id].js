@@ -2,7 +2,8 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker } from "@react-google-maps/api";
+import { GoogleMap, DirectionsRenderer, Marker } from "@react-google-maps/api";
+import { useMapsLoaded } from "@/lib/mapsLoader";
 
 const getItemsInPath = (files, basePath) => {
   const items = [];
@@ -61,91 +62,257 @@ const getItemsInPath = (files, basePath) => {
 
 const getDefaultAdvisoryFiles = (displayId) => {
   const cleanId = displayId ? displayId.toLowerCase() : "";
-  if (cleanId.includes("acme")) {
+  if (cleanId.includes("acme") || cleanId.includes("amcord")) {
     return [
       {
-        id: "acme-readme",
+        id: "amcord-readme",
         name: "README.md",
         type: "md",
-        size: 750,
-        description: "AcmeCorp Estate Planning & Shareholder Succession Plan",
-        uploadedBy: "advisor-bot",
+        size: 4305,
+        description: "AMCORD — Client Advisory Summary",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
-        content: `# AcmeCorp Estate Planning & Shareholder Succession Plan
+        content: `# AMCORD — Client Advisory Summary
 
-Welcome to the AcmeCorp secure wealth management repository. This repository contains strategic documents regarding founder succession, tax projections, and trust agreements.
-
-## Document Structure
-- \`client-info/\`: Corporate registration, shareholder listings, and intake notes.
-- \`conversation history/\`: Advisory chat logs and email transcriptions.
-- \`meeting/\`: Agendas and alignment meeting minutes.
-- \`proposals/\`: Buy-sell agreement drafts and generation-skipping trust terms.
-- \`resources/\`: Capital gains calculation models and yield sheets.
+> [!IMPORTANT]
+> **Advisor Reminder:** AMCORD is a warm estate planning prospect who wants a simple explanation of how estate planning protects both family and business continuity; send a short summary and follow up gently through WhatsApp.
 
 ---
-*Confidential wealth advisory records. Managed by Bruce Wayne, Wealth Planner.*`
+
+## 📊 Client Overview
+
+| Attribute | Details |
+| :--- | :--- |
+| **Client Name** | AMCORD Sdn. Bhd. |
+| **Client Type** | Corporate / SME Client |
+| **Main Advisory Topic** | Estate Planning |
+| **Relationship Stage** | 🟡 Warm Prospect |
+| **Assigned Advisor** | Advisor A |
+| **Preferred Contact** | WhatsApp for updates, phone call for detailed explanation |
+| **Last Contact** | 18 June 2026 |
+| **Next Follow-Up** | 25 June 2026 |
+| **Relationship Health**| 📈 **74 / 100** (Warm, requires timely follow-up) |
+
+---
+
+## 📝 Current Client Summary
+
+AMCORD is currently exploring estate planning solutions for business owners and company directors. The discussion is mainly focused on how the company’s key decision-makers can protect family interests, business continuity, share ownership, and wealth transfer planning in the event of death, disability, or unexpected succession issues.
+
+The client has shown interest but requires a simple explanation because estate planning can feel complex and sensitive. Their main concern is understanding the practical purpose of estate planning, the cost involved, and how it can protect both the family and the business.
+
+---
+
+## 🎯 Main Needs & Concerns
+
+### 🔍 Main Needs
+* Estate planning for company directors
+* Will and trust planning
+* Business succession planning
+* Shareholder protection
+* Wealth transfer arrangement
+* Protection for family beneficiaries
+* Continuity plan if key decision-maker is absent
+* Clear documentation of wishes and asset distribution
+
+### ⚠️ Key Concerns
+* Client wants to understand why estate planning is necessary
+* Concerned about cost and complexity
+* Needs a simple explanation before making decisions
+* May need to involve other directors or family members
+* Sensitive topic, so follow-up should be respectful and not pushy
+* Wants to avoid future disputes among family or shareholders
+
+---
+
+## 📞 Communication Preference
+
+* Prefers short WhatsApp updates first
+* Detailed discussion should be done through phone call or meeting
+* Avoid overly technical legal terms
+* Use simple examples to explain estate planning
+* Tone should be professional, respectful, and trust-building
+* Do not make the message sound too sales-focused
+
+---
+
+## 💬 Latest Interaction
+
+### 🗓️ 18 June 2026 — WhatsApp Follow-Up
+
+* **Summary:** Advisor followed up after the first estate planning discussion. AMCORD replied that they are interested but need a simpler explanation before arranging a deeper discussion.
+* **Extracted Memory:**
+  * Client is interested in estate planning
+  * Client needs simple explanation before next meeting
+  * Client may involve family members or other directors later
+  * Main concern is practical value and cost
+  * Follow-up should focus on clarity, protection, and business continuity
+
+> [!NOTE]
+> **Client's Message:**
+> “Can you send me a simple summary first? I want to understand how estate planning helps the company and family.”
+
+---
+
+## 🚀 Next Steps
+
+### Next Best Action
+Send a simple estate planning summary explaining:
+1. What estate planning is
+2. Why it matters for business owners
+3. How it protects family and company continuity
+4. What documents or structures may be needed
+5. What the next discussion should cover
+
+> [!NOTE]
+> **Suggested WhatsApp Follow-Up:**
+> "Hi, thanks for your reply. I’ll prepare a simple estate planning summary for you, focusing on how it can help protect both the family and the company’s continuity. I’ll keep it short and practical so it is easier for you to review before we arrange a deeper discussion."
+
+---
+
+## 📋 Pending Tasks
+
+- [ ] Prepare simple estate planning summary
+- [ ] Explain will, trust, and business succession in simple terms
+- [ ] Highlight why estate planning matters for company directors
+- [ ] Send WhatsApp follow-up by 25 June 2026
+- [ ] Ask whether family members or other directors should join the next discussion
+- [ ] Schedule estate planning consultation if client responds positively
+
+---
+
+## 🗓️ Important Dates & Milestones
+
+| Milestone | Date |
+| :--- | :--- |
+| **First Discussion** | 12 June 2026 |
+| **Last WhatsApp Reply** | 18 June 2026 |
+| **Suggested Follow-Up** | 25 June 2026 |
+
+* *If no reply, follow up again after 7 days.*
+* *If still no response, move to soft nurture and reconnect after 60 days.*
+
+---
+
+## 🔄 Relationship Continuity Plan
+
+### 🟢 If Client Responds Positively
+* Schedule estate planning discussion
+* Confirm whether the discussion is personal, family, or company-related
+* Ask whether other directors or family members should be included
+* Prepare simple estate planning checklist
+* Move stage to **"Active Estate Planning Discussion"**
+
+### 🟡 If Client Needs More Time
+* Send educational content about estate planning basics
+* Avoid pressure
+* Set follow-up reminder after 30 days
+* Revisit with a practical example or case scenario
+
+### 🔴 If No Reply
+* Follow up once after 7 days
+* If still no reply, move to **"Nurture"**
+* Reconnect after 60 days with a soft message about protecting family and business continuity
+
+---
+
+## 💡 Potential Opportunities
+
+| Opportunity | Reason |
+| :--- | :--- |
+| **Will Writing** | Client may need clear asset distribution instructions |
+| **Trust Planning** | Useful for family protection and controlled wealth transfer |
+| **Business Succession** | Relevant if company depends on key directors |
+| **Shareholder Protection** | Important if ownership transfer may affect business stability |
+| **Family Protection Planning** | Estate planning can connect to family financial security |
+| **Key Person Planning** | Company may need protection if key person is absent |
+| **Cross-Border Estate Planning** | Possible if client has overseas assets or family members abroad |
+
+---
+
+## ⚖️ Risk and Compliance Notes
+
+* Do not provide legal advice unless supported by qualified legal partners
+* Explain that estate planning should involve proper legal documentation
+* Avoid making assumptions about family structure or asset ownership
+* Confirm whether the planning is personal, corporate, or both
+* Record client consent before storing sensitive family or asset information
+* Refer to legal or trust partners when necessary
+* Keep communication respectful because estate planning involves sensitive topics
+
+---
+
+## 🏷️ AI Memory Tags
+
+\`estate-planning\` · \`warm-prospect\` · \`business-owner\` · \`company-director\` · \`succession-planning\` · \`will-planning\` · \`trust-planning\` · \`family-protection\` · \`shareholder-protection\` · \`cost-concern\` · \`simple-explanation-needed\` · \`whatsapp-preferred\` · \`follow-up-needed\`
+
+---
+
+## One-Line Advisor Reminder
+
+AMCORD is a warm estate planning prospect who wants a simple explanation of how estate planning protects both family and business continuity; send a short summary and follow up gently through WhatsApp.`
       },
       {
-        id: "acme-1",
-        name: "client-info/AcmeCorp_Corporate_Profile.pdf",
+        id: "amcord-1",
+        name: "client-info/AMCORD_Corporate_Profile.pdf",
         type: "pdf",
         size: 1258291,
         description: "Corporate profile and founder asset division overview",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-        content: "SIMULATED_PDF_ACME",
+        content: "SIMULATED_PDF_AMCORD",
       },
       {
-        id: "acme-5",
+        id: "amcord-5",
         name: "client-info/Intake_Advisory_Notes.md",
         type: "md",
         size: 320,
-        description: "Client advisory intake notes: moderate risk tolerance",
-        uploadedBy: "advisor-bot",
+        description: "Client advisory intake notes: shareholder protection",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 4).toISOString(),
         content: `# Client Advisory Intake Notes
-- **Client**: Acme Corp Founders
+- **Client**: AMCORD Sdn. Bhd.
 - **Risk Tolerance**: Moderate-Conservative
 - **Key Objective**: Wealth preservation and asset transition
-- **Transition Target**: 45% corporate shares transfer to family trust deed`
+- **Transition Target**: Shareholder protection and corporate continuity`
       },
       {
-        id: "acme-2",
+        id: "amcord-2",
         name: "proposals/Shareholder_Agreement_Clause_Draft.docx",
         type: "docx",
         size: 460800,
         description: "Draft clause on buyout rights upon member decease",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
-        content: "SIMULATED_DOCX_ACME",
+        content: "SIMULATED_DOCX_AMCORD",
       },
       {
-        id: "acme-3",
+        id: "amcord-3",
         name: "resources/2025_Tax_Projections_Calculations.xlsx",
         type: "xlsx",
         size: 184320,
         description: "Tax bracket projections & corporate capital gains assessment",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-        content: "SIMULATED_XLSX_ACME",
+        content: "SIMULATED_XLSX_AMCORD",
       },
       {
-        id: "acme-4",
-        name: "meeting/Meeting_Minutes_2026-06-18.md",
+        id: "amcord-4",
+        name: "meeting/summary/Meeting_Minutes_2026-06-18.md",
         type: "md",
         size: 1536,
         description: "Alignment minutes: Estate structure discussion",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-        content: `# Meeting Minutes: AcmeCorp Estate Alignment
+        content: `# Meeting Minutes: AMCORD Estate Alignment
 **Date:** June 18, 2026
-**Participants:** Bruce Wayne (Advisor), Acme Corp Board, Legal Counsel
+**Participants:** Bruce Wayne (Advisor), AMCORD Board, Legal Counsel
 
 ## Executive Summary
 The meeting focused on establishing the succession protocol and tax-efficient asset transfer of corporate holdings.
 
 ## Key Decisions
-- **Revocable Trust**: 45% of voting shares will be transferred to a revocable family trust by Q3.
+- **Revocable Trust**: Shareholder agreement structure transfer by Q3.
 - **Tax Optimization**: Tax counsel proposed a structure to defer capital gains tax during transition.
 
 ## Action Items
@@ -154,18 +321,29 @@ The meeting focused on establishing the succession protocol and tax-efficient as
 3. **Board**: Approve the transition roadmap at the next quarterly meeting.`,
       },
       {
-        id: "acme-chat",
+        id: "amcord-raw",
+        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        type: "mp3",
+        size: 936272,
+        description: "Raw meeting recording (silence)",
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        fileUrl: "/15-minutes-of-silence.mp3",
+        content: "",
+      },
+      {
+        id: "amcord-chat",
         name: "conversation history/Initial_Consultation_Chat_Transcript.md",
         type: "md",
         size: 980,
         description: "Initial consultation transcript regarding trust deeds",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 6).toISOString(),
         content: `# Initial consultation chat transcript
 **Date**: June 10, 2026
 
-- **Bruce (Advisor)**: Hello, let's discuss setting up the Generation-Skipping Trust for AcmeCorp holdings.
-- **Acme Founder**: We want to make sure the transition has minimal capital gains exposure.
+- **Bruce (Advisor)**: Hello, let's discuss setting up the share protection trust for AMCORD holdings.
+- **AMCORD Board**: We want to make sure the transition has minimal capital gains exposure.
 - **Bruce (Advisor)**: Understood. I will prepare tax projections and draft the transition roadmap in the proposals folder.`
       }
     ];
@@ -175,9 +353,9 @@ The meeting focused on establishing the succession protocol and tax-efficient as
         id: "globex-readme",
         name: "README.md",
         type: "md",
-        size: 780,
+        size: 810,
         description: "Globex Holdings Asset Protection Trust Structure",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 12).toISOString(),
         content: `# Globex Holdings Asset Protection Trust Structure
 
@@ -186,7 +364,8 @@ Secure folder containing legal structures for the Globex Irrevocable Wealth Trus
 ## Folders
 - \`client-info/\`: Trust deeds, settlor profiles, and milestone requirements.
 - \`conversation history/\`: Consultations on reporting and regulatory compliance.
-- \`meeting/\`: Minutes on asset distributions.
+- \`meeting/summary/\`: Minutes on asset distributions.
+- \`meeting/raw record/\`: Raw meeting audio recordings.
 - \`proposals/\`: Trust amendment resolutions.
 - \`resources/\`: Portfolio yields, targets, and allocations spreadsheet.
 
@@ -199,7 +378,7 @@ Secure folder containing legal structures for the Globex Irrevocable Wealth Trus
         type: "pdf",
         size: 2202009,
         description: "Irrevocable trust agreement for asset protection",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
         content: "SIMULATED_PDF_GLOBEX",
       },
@@ -209,7 +388,7 @@ Secure folder containing legal structures for the Globex Irrevocable Wealth Trus
         type: "pdf",
         size: 450000,
         description: "Overview of foreign holding disclosure requirements",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 4).toISOString(),
         content: "SIMULATED_PDF_GLOBEX_COMPLIANCE",
       },
@@ -219,17 +398,17 @@ Secure folder containing legal structures for the Globex Irrevocable Wealth Trus
         type: "xlsx",
         size: 97280,
         description: "Asset breakdown, yields, and growth projections",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
         content: "SIMULATED_XLSX_GLOBEX",
       },
       {
         id: "globex-3",
-        name: "meeting/Meeting_Transcript_2026-06-12.md",
+        name: "meeting/summary/Meeting_Transcript_2026-06-12.md",
         type: "md",
         size: 1200,
         description: "Offshore structures discussion notes",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
         content: `# Meeting Notes: Globex Trust Structure
 **Date:** June 12, 2026
@@ -243,12 +422,23 @@ Reviewed offshore compliance requirements and tax implications of global asset h
 - Verify asset valuation of international holdings by Q4.`,
       },
       {
+        id: "globex-raw",
+        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        type: "mp3",
+        size: 936272,
+        description: "Raw meeting recording (silence)",
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+        fileUrl: "/15-minutes-of-silence.mp3",
+        content: "",
+      },
+      {
         id: "globex-proposal",
         name: "proposals/Milestone_Distribution_Amendment.docx",
         type: "docx",
         size: 210000,
         description: "Resolution proposing milestone payouts",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
         content: "SIMULATED_DOCX_GLOBEX_PROP",
       }
@@ -259,9 +449,9 @@ Reviewed offshore compliance requirements and tax implications of global asset h
         id: "smith-readme",
         name: "README.md",
         type: "md",
-        size: 730,
+        size: 760,
         description: "Smith Family Last Will & Testament Records",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 8).toISOString(),
         content: `# Smith Family Last Will & Testament Records
 
@@ -270,7 +460,8 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
 ## Folder Index
 - \`client-info/\`: Family certificates and registration profiles.
 - \`conversation history/\`: Consultation conversations about executor choices.
-- \`meeting/\`: Family alignment meeting minutes.
+- \`meeting/summary/\`: Family alignment meeting minutes.
+- \`meeting/raw record/\`: Raw meeting audio recordings.
 - \`proposals/\`: Testamentary trust proposals.
 - \`resources/\`: Asset and bank account inventories.
 
@@ -283,7 +474,7 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
         type: "pdf",
         size: 1003520,
         description: "Last Will draft with guardian designations",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 4).toISOString(),
         content: "SIMULATED_PDF_SMITH",
       },
@@ -293,7 +484,7 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
         type: "md",
         size: 850,
         description: "Chat logs regarding choice of primary and alternate executors",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 6).toISOString(),
         content: `# Executor Choice Discussions
 - **Bruce (Advisor)**: John, we need to designate an alternate executor in case your spouse is unable to serve.
@@ -306,7 +497,7 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
         type: "pdf",
         size: 563200,
         description: "Guide for the designated family executor",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
         content: "SIMULATED_PDF_SMITH_EXEC",
       },
@@ -316,17 +507,17 @@ Advisory repository for the Smith family estate planning. Holds current Will dra
         type: "xlsx",
         size: 122880,
         description: "Family assets inventory and account numbers",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 8).toISOString(),
         content: "SIMULATED_XLSX_SMITH",
       },
       {
         id: "smith-4",
-        name: "meeting/Meeting_Transcript_2026-06-19.md",
+        name: "meeting/summary/Meeting_Transcript_2026-06-19.md",
         type: "md",
         size: 980,
         description: "Smith Will final review alignment notes",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
         content: `# Smith Will Review Meeting
 **Date:** June 19, 2026
@@ -337,6 +528,17 @@ Reviewed the asset allocation parameters. The primary residence will go to the s
 ## Actions
 - Update Will draft with correct spelling of guardians' names.
 - Schedule notary appointment.`,
+      },
+      {
+        id: "smith-raw",
+        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        type: "mp3",
+        size: 936272,
+        description: "Raw meeting recording (silence)",
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+        fileUrl: "/15-minutes-of-silence.mp3",
+        content: "",
       }
     ];
   } else if (cleanId.includes("wayne")) {
@@ -345,9 +547,9 @@ Reviewed the asset allocation parameters. The primary residence will go to the s
         id: "wayne-readme",
         name: "README.md",
         type: "md",
-        size: 710,
+        size: 740,
         description: "Wayne Enterprises Executive Succession Plan",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 14).toISOString(),
         content: `# Wayne Enterprises Executive Succession & Contingency Plan
 
@@ -356,7 +558,8 @@ Confidential governance planning and key man security documents.
 ## Structure
 - \`client-info/\`: Corporate board resolutions and identity records.
 - \`conversation history/\`: Leadership pathways consultations.
-- \`meeting/\`: Board governance alignment minutes.
+- \`meeting/summary/\`: Board governance alignment minutes.
+- \`meeting/raw record/\`: Raw meeting audio recordings.
 - \`proposals/\`: Buyout agreements and contingency bylaws.
 - \`resources/\`: Key man insurance coverage and cost analysis.
 
@@ -369,7 +572,7 @@ Confidential governance planning and key man security documents.
         type: "pdf",
         size: 3565158,
         description: "Executive leadership succession planning roadmap",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 10).toISOString(),
         content: "SIMULATED_PDF_WAYNE",
       },
@@ -379,7 +582,7 @@ Confidential governance planning and key man security documents.
         type: "md",
         size: 1100,
         description: "Q&A regarding operational control transition",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 7).toISOString(),
         content: `# Transition Pathways Q&A
 **Q**: Who takes immediate control if Bruce Wayne is unavailable?
@@ -391,17 +594,17 @@ Confidential governance planning and key man security documents.
         type: "xlsx",
         size: 153600,
         description: "Key man policy coverage analysis and cost-benefit",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
         content: "SIMULATED_XLSX_WAYNE",
       },
       {
         id: "wayne-3",
-        name: "meeting/Meeting_Transcript_2026-06-15.md",
+        name: "meeting/summary/Meeting_Transcript_2026-06-15.md",
         type: "md",
         size: 1650,
         description: "Succession alignment meeting notes",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
         content: `# Wayne Enterprises Succession Planning Meeting
 **Date:** June 15, 2026
@@ -414,12 +617,23 @@ Determining successor pathways and corporate control in the event of emergency l
 2. Obtain board approval for succession protocol.`,
       },
       {
+        id: "wayne-raw",
+        name: "meeting/raw record/15-minutes-of-silence.mp3",
+        type: "mp3",
+        size: 936272,
+        description: "Raw meeting recording (silence)",
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+        fileUrl: "/15-minutes-of-silence.mp3",
+        content: "",
+      },
+      {
         id: "wayne-buyout",
         name: "proposals/Emergency_Buyout_Agreement_Draft.docx",
         type: "docx",
         size: 380000,
         description: "Contingency buyout provisions draft",
-        uploadedBy: "advisor-bot",
+        uploadedBy: "Lim Fang Yee",
         uploadedAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
         content: "SIMULATED_DOCX_WAYNE_BUYOUT",
       }
@@ -433,14 +647,15 @@ Determining successor pathways and corporate control in the event of emergency l
       type: "md",
       size: 500,
       description: "General Advisory Plan Overview",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
       content: `# General Advisory Plan Overview
 
 Advisory folder. Organised as follows:
 - \`client-info/\`: Profiling documents.
 - \`conversation history/\`: Transcripts.
-- \`meeting/\`: Meeting minutes.
+- \`meeting/summary/\`: Meeting minutes.
+- \`meeting/raw record/\`: Raw meeting audio recordings.
 - \`proposals/\`: Draft contracts.
 - \`resources/\`: Allocation spreadsheets.`
     },
@@ -450,7 +665,7 @@ Advisory folder. Organised as follows:
       type: "pdf",
       size: 512000,
       description: "General client profile and intake records",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
       content: "SIMULATED_PDF_GEN",
     },
@@ -460,17 +675,17 @@ Advisory folder. Organised as follows:
       type: "xlsx",
       size: 78500,
       description: "Asset distribution assessment spreadsheet",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
       content: "SIMULATED_XLSX_GEN",
     },
     {
       id: "def-3",
-      name: "meeting/Kickoff_Meeting_Minutes.md",
+      name: "meeting/summary/Kickoff_Meeting_Minutes.md",
       type: "md",
       size: 950,
       description: "Initial consultation kickoff notes",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
       content: `# Kickoff Meeting Minutes
 **Date:** June 10, 2026
@@ -482,12 +697,23 @@ Established relationship parameters, client risk tolerance, and advisory objecti
 - Set up regular monthly planning check-ins.`,
     },
     {
+      id: "def-raw",
+      name: "meeting/raw record/15-minutes-of-silence.mp3",
+      type: "mp3",
+      size: 936272,
+      description: "Raw meeting recording (silence)",
+      uploadedBy: "Lim Fang Yee",
+      uploadedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      fileUrl: "/15-minutes-of-silence.mp3",
+      content: "",
+    },
+    {
       id: "def-chat",
       name: "conversation history/Initial_Consultation_Chat_Transcript.md",
       type: "md",
       size: 820,
       description: "Initial client chat transcript",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
       content: `# Consultation Chat Transcript
 - **Bruce (Advisor)**: Welcome to your wealth advisory workspace.
@@ -500,11 +726,117 @@ Established relationship parameters, client risk tolerance, and advisory objecti
       type: "docx",
       size: 256000,
       description: "Standard advisory services agreement draft",
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
       content: "SIMULATED_DOCX_GEN",
     }
   ];
+};
+
+const toHash = (str) => {
+  let h = 0;
+  for (let i = 0; i < (str || "").length; i++) {
+    h = Math.imul(31, h) + (str || "").charCodeAt(i) | 0;
+  }
+  return Math.abs(h).toString(16).padStart(7, "0").substring(0, 7);
+};
+
+const getClientMilestones = (displayId) => {
+  const cleanId = displayId ? displayId.toLowerCase() : "";
+  if (cleanId.includes("acme") || cleanId.includes("amcord")) {
+    return [
+      { id: 1, date: "2026-05-28", label: "Client Onboarded", type: "start", color: "#0969da", description: "Advisory relationship established. Risk profile assessed: Moderate-Conservative. Focus area: Estate Planning & Business Succession." },
+      { id: 2, date: "2026-06-10", label: "Initial Consultation", type: "meeting", color: "#1f883d", description: "First meeting with AMCORD board. Estate planning and shareholder protection needs clearly identified." },
+      { id: 3, date: "2026-06-14", label: "Document Review", type: "document", color: "#9a3412", description: "Corporate profile and intake notes reviewed. Shareholder protection identified as primary advisory focus." },
+      { id: 4, date: "2026-06-18", label: "Advisory Session", type: "meeting", color: "#8250df", description: "Second meeting with legal counsel. Key decisions made on revocable trust structure and capital gains tax strategy." },
+      { id: 5, date: "2026-06-18", label: "Follow-Up Sent", type: "comms", color: "#cf7c00", description: "WhatsApp follow-up after estate planning discussion. Client requested a simplified summary before the next session." },
+      { id: 6, date: "2026-06-21", label: "Proposal Prep", type: "proposal", color: "#0969da", description: "Preparing simplified estate planning proposal — covering will structure, trust setup, and business succession in plain language." },
+      { id: 7, date: "2026-06-21", label: "TaxCorp Advisory Joined", type: "partner", color: "#0d9488", description: "TaxCorp Advisory onboarded as tax consultant partner for the AMCORD estate planning engagement. They will advise on tax-efficient trust structures and capital gains planning." },
+      { id: 8, date: "2026-06-25", label: "Follow-Up Scheduled", type: "upcoming", color: "#656d76", description: "Planned: Send WhatsApp summary and gauge readiness for a deeper estate planning discussion session." },
+    ];
+  } else if (cleanId.includes("globex")) {
+    return [
+      { id: 1, date: "2026-05-10", label: "Client Onboarded", type: "start", color: "#0969da", description: "Globex Holdings onboarded. Complex offshore asset protection trust identified as the primary advisory structure." },
+      { id: 2, date: "2026-05-18", label: "Trust Deed Review", type: "document", color: "#9a3412", description: "Irrevocable Asset Protection Trust deed analyzed. Foreign holding disclosure requirements flagged for compliance." },
+      { id: 3, date: "2026-06-01", label: "Compliance Brief", type: "document", color: "#cf7c00", description: "Regulatory compliance brief prepared covering global tax treaty obligations and international disclosure requirements." },
+      { id: 4, date: "2026-06-12", label: "Offshore Meeting", type: "meeting", color: "#1f883d", description: "Offshore structures discussion. Reviewed compliance and tax implications of global asset holdings under the family trust." },
+      { id: 5, date: "2026-06-20", label: "Portfolio Review", type: "proposal", color: "#8250df", description: "Q2 asset allocation spreadsheet finalized. Milestone distribution amendment drafted and prepared for board review." },
+      { id: 6, date: "2026-06-30", label: "Board Approval", type: "upcoming", color: "#656d76", description: "Planned: Board approval of succession protocol and final asset distribution amendment resolution." },
+    ];
+  } else if (cleanId.includes("smith")) {
+    return [
+      { id: 1, date: "2026-05-05", label: "Client Onboarded", type: "start", color: "#0969da", description: "Smith family estate planning engagement commenced. Will writing and executor designation identified as priorities." },
+      { id: 2, date: "2026-06-10", label: "Executor Consultation", type: "meeting", color: "#1f883d", description: "Initial consultation on will structure and executor designation. Alternate executor nominated by client." },
+      { id: 3, date: "2026-06-15", label: "Asset Inventory", type: "document", color: "#9a3412", description: "Family asset inventory reviewed. Primary residence, liquid savings, and account details documented securely." },
+      { id: 4, date: "2026-06-19", label: "Will Review", type: "meeting", color: "#8250df", description: "Final will review meeting. Asset allocation confirmed. Guardian spelling correction noted before signing." },
+      { id: 5, date: "2026-06-25", label: "Notary Appointment", type: "upcoming", color: "#656d76", description: "Planned: Schedule notary appointment for official will signing and legal execution." },
+    ];
+  } else if (cleanId.includes("wayne")) {
+    return [
+      { id: 1, date: "2026-04-20", label: "Engagement Start", type: "start", color: "#0969da", description: "Wayne Enterprises succession planning engagement initiated. Security clearance Level 4 required for all documents." },
+      { id: 2, date: "2026-05-05", label: "Leadership Assessment", type: "document", color: "#9a3412", description: "Key man insurance requirements assessed. Leadership transition pathways documented and reviewed by advisor." },
+      { id: 3, date: "2026-05-20", label: "Board Consultation", type: "meeting", color: "#1f883d", description: "Board governance alignment session. Critical succession gaps identified and prioritized for resolution." },
+      { id: 4, date: "2026-06-15", label: "Succession Meeting", type: "meeting", color: "#8250df", description: "Formal succession planning meeting. Action plan finalized: key-man insurance evaluation to be completed by Q3 2026." },
+      { id: 5, date: "2026-06-18", label: "Buyout Draft", type: "proposal", color: "#cf7c00", description: "Emergency buyout agreement draft completed. Contingency bylaws reviewed with legal counsel and board." },
+      { id: 6, date: "2026-06-30", label: "Board Approval", type: "upcoming", color: "#656d76", description: "Planned: Board approval for succession protocol and finalization of key-man insurance policy." },
+    ];
+  }
+  return [
+    { id: 1, date: "2026-05-15", label: "Client Onboarded", type: "start", color: "#0969da", description: "Advisory relationship established. Initial profiling and risk assessment completed." },
+    { id: 2, date: "2026-06-01", label: "Kickoff Meeting", type: "meeting", color: "#1f883d", description: "Initial consultation. Advisory objectives, risk tolerance, and planning scope established." },
+    { id: 3, date: "2026-06-10", label: "Document Upload", type: "document", color: "#9a3412", description: "Client profile and initial assessment documents uploaded and reviewed." },
+    { id: 4, date: "2026-06-20", label: "Proposal Ready", type: "proposal", color: "#8250df", description: "First advisory proposal drafted and prepared for client review." },
+    { id: 5, date: "2026-06-30", label: "Review Scheduled", type: "upcoming", color: "#656d76", description: "Planned: Client review of advisory proposal and next steps planning." },
+  ];
+};
+
+const getContactData = (displayId) => {
+  const cleanId = displayId ? displayId.toLowerCase() : "";
+  if (cleanId.includes("acme") || cleanId.includes("amcord")) {
+    return {
+      clientName: "AMCORD Sdn. Bhd.",
+      contactPerson: "Ahmad (Director)",
+      phone: "60123456789",
+      tag: "Estate Planning",
+      aiDraft: `Hi Ahmad, following our estate planning discussion on 18 June, I've prepared a brief summary on how estate planning can safeguard both your family and AMCORD's business continuity.\n\nThe summary covers:\n• What estate planning is and why it matters for company directors\n• How it protects your family and the company if a key person is absent\n• Simple steps to get started — will, trust, and succession planning\n\nWould you prefer I send it over WhatsApp, or would you like to schedule a short call to walk through it together?\n\nLooking forward to hearing from you.`,
+      aiReasoning: "Ahmad confirmed interest in estate planning but asked for a simpler explanation before committing to the next session. This message is intentionally brief and non-pushy — it previews the summary topics so he knows what to expect, and offers two comfortable paths forward (WhatsApp or call) to reduce friction for the next interaction.",
+    };
+  } else if (cleanId.includes("globex")) {
+    return {
+      clientName: "Globex Holdings",
+      contactPerson: "Board Representative",
+      phone: "60112345678",
+      tag: "Trust Structure",
+      aiDraft: `Hi, I wanted to follow up on the offshore trust structure we reviewed on 12 June.\n\nI have confirmed the reporting requirements under the relevant global tax treaties, and the asset valuation of your international holdings is on track for Q4.\n\nI'd like to schedule a short alignment call before the board approval to make sure everything is in order. Would next week work for you?\n\nPlease let me know a convenient time.`,
+      aiReasoning: "The last session confirmed compliance requirements and set Q4 as the asset valuation deadline. This follow-up references those specifics to show continuity, proposes a pre-board call to create a clear next milestone, and closes with a low-friction ask (just pick a time).",
+    };
+  } else if (cleanId.includes("smith")) {
+    return {
+      clientName: "Smith Family",
+      contactPerson: "John Smith",
+      phone: "60198765432",
+      tag: "Will & Estate",
+      aiDraft: `Hi John, just a quick follow-up on the will review we completed on 19 June.\n\nThe final document is ready — we just need to schedule the notary appointment to make it official. The process takes about 30 minutes.\n\nPlease let me know when you and your spouse are available and I will arrange everything from there.\n\nThank you for your trust throughout this process.`,
+      aiReasoning: "The will review is complete and the only remaining action is the notary appointment. This message is warm, short, and action-oriented — it minimises what the client needs to do (just confirm a time) and the advisor handles the rest, removing all barriers to closure.",
+    };
+  } else if (cleanId.includes("wayne")) {
+    return {
+      clientName: "Wayne Enterprises",
+      contactPerson: "Lucius Fox",
+      phone: "60187654321",
+      tag: "Succession Planning",
+      aiDraft: `Hi Lucius, I wanted to touch base ahead of the board approval session at end of June.\n\nThe emergency buyout agreement draft and succession protocol are both ready for board review. The key-man insurance evaluation summary has also been uploaded to the repository.\n\nPlease confirm the board meeting date so I can prepare the final presentation materials.\n\nLooking forward to bringing this to closure.`,
+      aiReasoning: "All deliverables are done — the only gate is board approval. This message proactively hands over completed items and asks for a single piece of information (meeting date), positioning the advisor as fully prepared and efficient ahead of the final sign-off.",
+    };
+  }
+  return {
+    clientName: displayId,
+    contactPerson: "Client Contact",
+    phone: "60100000000",
+    tag: "Advisory",
+    aiDraft: `Hi, I wanted to follow up on our recent advisory discussion.\n\nI have prepared materials for your review and would love to walk you through our next steps together.\n\nPlease let me know your availability and I will arrange accordingly.\n\nThank you for your continued trust.`,
+    aiReasoning: "A general follow-up to maintain advisory momentum. It invites a next step without over-specifying details, keeping the conversation open at any engagement stage.",
+  };
 };
 
 export default function ClientRepo() {
@@ -512,6 +844,9 @@ export default function ClientRepo() {
   const { id } = router.query;
   const displayId = id ? id.replace(/_/g, "/") : "Loading...";
   const [activeTab, setActiveTab] = useState("info");
+  const [hoveredMilestone, setHoveredMilestone] = useState(null);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactMsgCopied, setContactMsgCopied] = useState(false);
   const [currentPath, setCurrentPath] = useState("");
 
   // ── REPO FILE BROWSER STATE ──
@@ -541,6 +876,181 @@ export default function ClientRepo() {
   const [saveCommitTitle, setSaveCommitTitle] = useState("");
   const [saveCommitDesc, setSaveCommitDesc] = useState("");
 
+  // ── CUSTOM REPO INTERACTION STATES ──
+  const [isAddDropdownOpen, setIsAddDropdownOpen] = useState(false);
+  const [isUploadRecordingOpen, setIsUploadRecordingOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [notiOpen, setNotiOpen] = useState(false);
+
+  // Recording Modal States
+  const [recordingFile, setRecordingFile] = useState(null);
+  const [recordingDesc, setRecordingDesc] = useState("");
+  const [recordingUploadProgress, setRecordingUploadProgress] = useState(0);
+  const [recordingUploading, setRecordingUploading] = useState(false);
+  const [recordingError, setRecordingError] = useState("");
+
+  // Expense Modal States
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expenseReceiptFile, setExpenseReceiptFile] = useState(null);
+  const [expenseReceiptDataUrl, setExpenseReceiptDataUrl] = useState("");
+  const [expenseDesc, setExpenseDesc] = useState("");
+  const [expenseSaving, setExpenseSaving] = useState(false);
+  const [expenseError, setExpenseError] = useState("");
+
+  // Meeting Room Preview States
+  const [meetingMicOn, setMeetingMicOn] = useState(true);
+  const [meetingCamOn, setMeetingCamOn] = useState(true);
+  const [meetingJoined, setMeetingJoined] = useState(false);
+  const [selectedMicDevice, setSelectedMicDevice] = useState("MacBook Audio (Internal Mic)");
+  const [selectedSpeakerDevice, setSelectedSpeakerDevice] = useState("MacBook Audio (Internal Speaker)");
+  const [selectedCamDevice, setSelectedCamDevice] = useState("MacBook Audio (FaceTime HD Camera)");
+  const [meetingStream, setMeetingStream] = useState(null);
+
+  const meetingVideoRef = useRef(null);
+
+  // Webcam stream hook
+  useEffect(() => {
+    let activeStream = null;
+    async function startCamera() {
+      if (activeTab === "meeting-room" && meetingCamOn && !meetingJoined) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: meetingMicOn
+          });
+          activeStream = stream;
+          setMeetingStream(stream);
+          if (meetingVideoRef.current) {
+            meetingVideoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.warn("Could not access camera/mic stream, using fallback:", err);
+          setMeetingStream(null);
+        }
+      } else {
+        if (meetingStream) {
+          meetingStream.getTracks().forEach(track => track.stop());
+          setMeetingStream(null);
+        }
+      }
+    }
+    startCamera();
+
+    return () => {
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [activeTab, meetingCamOn, meetingJoined]);
+
+  useEffect(() => {
+    if (meetingStream) {
+      const audioTracks = meetingStream.getAudioTracks();
+      audioTracks.forEach(track => {
+        track.enabled = meetingMicOn;
+      });
+    }
+  }, [meetingMicOn, meetingStream]);
+
+  const handleUploadRecordingSubmit = (e) => {
+    e.preventDefault();
+    if (!recordingFile) {
+      setRecordingError("Please choose a file.");
+      return;
+    }
+    setRecordingUploading(true);
+    setRecordingUploadProgress(30);
+
+    const interval = setInterval(() => {
+      setRecordingUploadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        return prev + 20;
+      });
+    }, 150);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      clearInterval(interval);
+      setRecordingUploadProgress(100);
+
+      const fileExt = recordingFile.name.split('.').pop().toLowerCase();
+      const destName = `meeting/raw record/${recordingFile.name}`;
+      const newFile = {
+        id: Date.now().toString(),
+        name: destName,
+        type: fileExt,
+        size: recordingFile.size,
+        description: recordingDesc.trim() || `Raw recording: ${recordingFile.name}`,
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date().toISOString(),
+        content: "",
+        fileUrl: evt.target.result,
+      };
+
+      const updated = [newFile, ...advisoryFiles];
+      saveFiles(updated);
+
+      setRecordingUploading(false);
+      setRecordingFile(null);
+      setRecordingDesc("");
+      setIsUploadRecordingOpen(false);
+      setRecordingUploadProgress(0);
+    };
+    reader.readAsDataURL(recordingFile);
+  };
+
+  const handleAddExpenseSubmit = (e) => {
+    e.preventDefault();
+    if (!expenseAmount.trim()) {
+      setExpenseError("Please enter an amount.");
+      return;
+    }
+
+    setExpenseSaving(true);
+    setExpenseError("");
+
+    const processSave = (receiptDataUrl = "", receiptFileName = "") => {
+      const amountNum = parseFloat(expenseAmount).toFixed(2);
+      const destName = receiptFileName ? `expenses/Receipt_${receiptFileName}` : `expenses/Expense_RM${amountNum}_${Date.now()}.txt`;
+      const fileExt = receiptFileName ? receiptFileName.split('.').pop().toLowerCase() : "txt";
+      
+      const newFile = {
+        id: Date.now().toString(),
+        name: destName,
+        type: fileExt,
+        size: expenseReceiptFile ? expenseReceiptFile.size : 100,
+        description: `RM ${amountNum} - ${expenseDesc.trim() || "Expense receipt"}`,
+        uploadedBy: "Lim Fang Yee",
+        uploadedAt: new Date().toISOString(),
+        content: `Expense Amount: RM ${amountNum}\nDescription: ${expenseDesc.trim()}\nReceipt: ${receiptFileName || "None"}`,
+        fileUrl: receiptDataUrl || "",
+      };
+
+      const updated = [newFile, ...advisoryFiles];
+      saveFiles(updated);
+
+      setExpenseSaving(false);
+      setExpenseAmount("");
+      setExpenseReceiptFile(null);
+      setExpenseReceiptDataUrl("");
+      setExpenseDesc("");
+      setIsAddExpenseOpen(false);
+    };
+
+    if (expenseReceiptFile) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        processSave(evt.target.result, expenseReceiptFile.name);
+      };
+      reader.readAsDataURL(expenseReceiptFile);
+    } else {
+      processSave("", "");
+    }
+  };
+
   useEffect(() => {
     if (!displayId || displayId === "Loading...") return;
     const localKey = `advisory_files_${displayId}`;
@@ -554,7 +1064,7 @@ export default function ClientRepo() {
       }
     }
     
-    const hasNewFormat = parsed && parsed.some(f => f.name.includes("/") || f.name.toLowerCase() === "readme.md");
+    const hasNewFormat = parsed && parsed.some(f => f.name.includes("meeting/summary/") || f.name.includes("meeting/raw record/"));
     
     if (hasNewFormat) {
       setAdvisoryFiles(parsed);
@@ -563,6 +1073,11 @@ export default function ClientRepo() {
       localStorage.setItem(localKey, JSON.stringify(def));
       setAdvisoryFiles(def);
     }
+  }, [displayId]);
+
+  useEffect(() => {
+    if (!displayId || displayId === "Loading...") return;
+    setContactMessage(getContactData(displayId).aiDraft);
   }, [displayId]);
 
   const saveFiles = (newFiles) => {
@@ -801,7 +1316,23 @@ export default function ClientRepo() {
           listItems = [];
         }
         const content = line.replace(/^[-*•]\s*/, "");
-        listItems.push(<li key={`li-${i}`}>{parseInline(content)}</li>);
+        if (content.startsWith("[ ] ")) {
+          listItems.push(
+            <li key={`li-${i}`} style={{ listStyleType: "none", display: "flex", alignItems: "center", gap: 8, margin: "4px 0" }}>
+              <input type="checkbox" disabled style={{ cursor: "default", margin: 0 }} />
+              <span>{parseInline(content.substring(4))}</span>
+            </li>
+          );
+        } else if (content.startsWith("[x] ")) {
+          listItems.push(
+            <li key={`li-${i}`} style={{ listStyleType: "none", display: "flex", alignItems: "center", gap: 8, margin: "4px 0" }}>
+              <input type="checkbox" checked disabled style={{ cursor: "default", margin: 0 }} />
+              <span style={{ textDecoration: "line-through", color: "#57606a" }}>{parseInline(content.substring(4))}</span>
+            </li>
+          );
+        } else {
+          listItems.push(<li key={`li-${i}`}>{parseInline(content)}</li>);
+        }
         continue;
       }
 
@@ -834,7 +1365,73 @@ export default function ClientRepo() {
       }
       
       if (line.startsWith("> ")) {
-        elements.push(<blockquote key={`bq-${i}`} className="preview-blockquote">{parseInline(line.substring(2))}</blockquote>);
+        let quoteLines = [];
+        let j = i;
+        while (j < lines.length && lines[j].startsWith("> ")) {
+          quoteLines.push(lines[j].substring(2).trim());
+          j++;
+        }
+        i = j - 1; // Advance outer loop counter
+
+        const firstLine = quoteLines[0] || "";
+        let isAlert = false;
+        let alertType = "";
+        let alertTitle = "";
+        let alertBg = "";
+        let alertBorder = "";
+        let alertColor = "";
+
+        if (firstLine.startsWith("[!NOTE]")) {
+          isAlert = true;
+          alertType = "note";
+          alertTitle = "💡 Note";
+          alertBg = "#ddf4ff";
+          alertBorder = "#0969da";
+          alertColor = "#0550ae";
+          quoteLines[0] = firstLine.substring(7).trim();
+        } else if (firstLine.startsWith("[!IMPORTANT]")) {
+          isAlert = true;
+          alertType = "important";
+          alertTitle = "💜 Important";
+          alertBg = "#fbe8ff";
+          alertBorder = "#8250df";
+          alertColor = "#6e3ba7";
+          quoteLines[0] = firstLine.substring(12).trim();
+        } else if (firstLine.startsWith("[!WARNING]")) {
+          isAlert = true;
+          alertType = "warning";
+          alertTitle = "⚠️ Warning";
+          alertBg = "#fff8c5";
+          alertBorder = "#9a6700";
+          alertColor = "#765a00";
+          quoteLines[0] = firstLine.substring(10).trim();
+        }
+
+        if (isAlert) {
+          elements.push(
+            <div key={`alert-${i}`} className={`markdown-alert alert-${alertType}`} style={{
+              padding: "12px 16px",
+              background: alertBg,
+              borderLeft: `4px solid ${alertBorder}`,
+              borderRadius: "6px",
+              marginBottom: "16px",
+              color: alertColor,
+              fontSize: "14px",
+              lineHeight: 1.6
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{alertTitle}</div>
+              {quoteLines.filter(l => l !== "").map((l, idx) => (
+                <div key={idx}>{parseInline(l)}</div>
+              ))}
+            </div>
+          );
+        } else {
+          elements.push(
+            <blockquote key={`bq-${i}`} className="preview-blockquote">
+              {quoteLines.map((l, idx) => <p key={idx} className="preview-p" style={{ margin: "4px 0" }}>{parseInline(l)}</p>)}
+            </blockquote>
+          );
+        }
         continue;
       }
       
@@ -895,6 +1492,115 @@ export default function ClientRepo() {
       } else {
         return <div className="preview-rendered-md">{renderMarkdown(file.content)}</div>;
       }
+    }
+
+    if (fileType === "mp3" || fileType === "wav" || fileType === "m4a" || fileType === "ogg") {
+      return (
+        <div className="audio-preview-container" style={{
+          padding: "48px 24px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          background: "#f6f8fa",
+        }}>
+          <div className="audio-preview-card" style={{
+            width: "100%",
+            maxWidth: "520px",
+            background: "#ffffff",
+            border: `1px solid #d0d7de`,
+            borderRadius: "12px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+            overflow: "hidden"
+          }}>
+            <div className="card-top-gradient" style={{
+              height: "10px",
+              background: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)"
+            }} />
+            <div className="card-body" style={{
+              padding: "32px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "20px"
+            }}>
+              <div className="card-icon-wrapper" style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "40px",
+                boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)"
+              }}>
+                🎵
+              </div>
+              
+              <div className="card-details">
+                <h3 style={{ margin: "0 0 6px 0", fontSize: "18px", fontWeight: "600", color: "#24292f", wordBreak: "break-all" }}>
+                  {file.displayName || file.name.split("/").pop()}
+                </h3>
+                <div style={{ display: "inline-flex", gap: "8px", justifyContent: "center", alignItems: "center" }}>
+                  <span className="file-badge" style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#57606a",
+                    background: "#eaeef2",
+                    padding: "2px 8px",
+                    borderRadius: "12px"
+                  }}>
+                    Audio Recording
+                  </span>
+                  <span className="file-size-dot" style={{ color: "#d0d7de" }}>•</span>
+                  <span style={{ fontSize: "13px", color: "#57606a" }}>
+                    {formatSize(file.size)}
+                  </span>
+                </div>
+                <p style={{ margin: "12px 0 0 0", fontSize: "13px", color: "#57606a", lineHeight: "1.5" }}>
+                  {file.description || "No description provided."}
+                </p>
+              </div>
+
+              <div className="audio-player-wrapper" style={{ width: "100%", marginTop: "8px" }}>
+                <audio 
+                  src={file.fileUrl || "/15-minutes-of-silence.mp3"} 
+                  controls 
+                  style={{ width: "100%", borderRadius: "8px" }}
+                />
+              </div>
+
+              <div className="card-divider" style={{ width: "100%", height: "1px", background: "#d0d7de", margin: "4px 0" }} />
+
+              <div className="card-actions" style={{
+                display: "flex",
+                gap: "12px",
+                width: "100%",
+                justifyContent: "center"
+              }}>
+                <button className="btn-primary" style={{
+                  flex: "1",
+                  padding: "10px 16px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  boxShadow: "0 1px 0 rgba(27,31,36,0.1)"
+                }} onClick={() => triggerDownload(file)}>
+                  <svg height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor">
+                    <path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5c.138 0 .25-.112.25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"></path>
+                    <path d="M7.25 1.25v8.536L4.97 7.507a.749.749 0 0 0-1.275.326.749.749 0 0 0 .215.734l3.52 3.52a.749.749 0 0 0 1.06 0l3.52-3.52a.749.749 0 0 0-.513-1.28.749.749 0 0 0-.547.22L8.75 9.786V1.25a.75.75 0 0 0-1.5 0Z"></path>
+                  </svg>
+                  Download File
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     let icon = "📄";
@@ -1038,12 +1744,7 @@ export default function ClientRepo() {
   };
 
   // ── GOOGLE MAPS STATE ──
-  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-  const { isLoaded: mapsLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
-  });
+  const mapsLoaded = useMapsLoaded();
 
   // Selangor stops — real addresses in Selangor, Malaysia
   const stops = [
@@ -1365,9 +2066,9 @@ export default function ClientRepo() {
 
   const handleSelectUploadFile = async (file) => {
     if (!file) return;
-    const allowedExtensions = /\.(pdf|docx?|pptx?|xlsx?|txt|md|markdown|html?)$/i;
+    const allowedExtensions = /\.(pdf|docx?|pptx?|xlsx?|txt|md|markdown|html?|mp3|wav|m4a|ogg)$/i;
     if (!allowedExtensions.test(file.name)) {
-      setRepoUploadError("Unsupported file type. Supported: PDF, DOCX, PPTX, XLSX, TXT, MD, HTML");
+      setRepoUploadError("Unsupported file type. Supported: PDF, DOCX, PPTX, XLSX, TXT, MD, HTML, MP3, WAV, M4A, OGG");
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
@@ -1413,6 +2114,8 @@ export default function ClientRepo() {
             setStagedFileContent("SIMULATED_XLSX_GEN");
           } else if (/\.docx?$/i.test(file.name)) {
             setStagedFileContent("SIMULATED_DOCX_GEN");
+          } else if (/\.(mp3|wav|m4a|ogg)$/i.test(file.name)) {
+            setStagedFileContent("AUDIO_RECORD_FILE");
           } else {
             setStagedFileContent("SIMULATED_PDF_GEN");
           }
@@ -1455,7 +2158,7 @@ export default function ClientRepo() {
       type: fileExt,
       size: stagedFile.size,
       description: commitDesc.trim() || `Uploaded ${stagedFile.name}`,
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date().toISOString(),
       content: stagedFileContent,
       fileUrl: stagedFileUrl,
@@ -1494,7 +2197,7 @@ export default function ClientRepo() {
       type: fileExt,
       size: new Blob([newFileContent]).size,
       description: commitDesc.trim() || `Created ${cleanName} via editor`,
-      uploadedBy: "advisor-bot",
+      uploadedBy: "Lim Fang Yee",
       uploadedAt: new Date().toISOString(),
       content: newFileContent,
       fileUrl: fileUrl,
@@ -1548,7 +2251,7 @@ export default function ClientRepo() {
         </div>
 
         {/* ── TABS ── */}
-        <nav className="repo-tabs">
+        <nav className="repo-tabs" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
           <ul className="tab-list">
             <li>
               <button 
@@ -1560,7 +2263,7 @@ export default function ClientRepo() {
               </button>
             </li>
             <li>
-              <button 
+              <button
                 className={`tab-item ${activeTab === "partners" ? "active" : ""}`}
                 onClick={() => setActiveTab("partners")}
               >
@@ -1569,33 +2272,145 @@ export default function ClientRepo() {
               </button>
             </li>
             <li>
-              <button 
-                className={`tab-item ${activeTab === "photo" ? "active" : ""}`}
-                onClick={() => setActiveTab("photo")}
+              <button
+                className={`tab-item ${activeTab === "history" ? "active" : ""}`}
+                onClick={() => setActiveTab("history")}
               >
-                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.75 2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h.94a.76.76 0 0 1 .03-.028 10.098 10.098 0 0 1 5.28-1.472 10.098 10.098 0 0 1 5.28 1.472.748.748 0 0 1 .03.028h.94a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25H1.75Zm12.5 11c-.538-.724-1.282-1.341-2.204-1.785a8.598 8.598 0 0 0-4.046-.965 8.598 8.598 0 0 0-4.046.965c-.922.444-1.666 1.061-2.204 1.785H1.75A1.75 1.75 0 0 1 0 13.25V2.75C0 1.784.784 1 1.75 1h12.5C15.216 1 16 1.784 16 2.75v10.5A1.75 1.75 0 0 1 13.25 15h-.002a2.228 2.228 0 0 0-.05-.043 11.59 11.59 0 0 0-6.198-1.707A11.59 11.59 0 0 0 1.802 14.96a2.25 2.25 0 0 0-.05.042H1.75v-1.5h12.5v1.5ZM5.75 7.5a1.75 1.75 0 1 1 0-3.5 1.75 1.75 0 0 1 0 3.5ZM7 5.75a1.25 1.25 0 1 0-2.5 0 1.25 1.25 0 0 0 2.5 0Z"></path></svg>
-                Photo
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`tab-item ${activeTab === "location" ? "active" : ""}`}
-                onClick={() => setActiveTab("location")}
-              >
-                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.16 4.69 9.38 5.06 9.87a.55.55 0 0 0 .88 0C8.81 14.88 13.5 8.66 13.5 5.5A5.53 5.53 0 0 0 8 0Zm0 8a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"></path></svg>
-                Location
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.643 3.143.427 1.927A.25.25 0 0 0 0 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 0 0 .177-.427L2.715 4.215a6.5 6.5 0 1 1-1.18 4.458.75.75 0 1 0-1.493.154 8.001 8.001 0 1 0 1.6-5.684ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>
+                History
               </button>
             </li>
             <li>
               <button
-                className={`tab-item ${activeTab === "documents" ? "active" : ""}`}
-                onClick={() => setActiveTab("documents")}
+                className={`tab-item ${activeTab === "insights" ? "active" : ""}`}
+                onClick={() => setActiveTab("insights")}
               >
-                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path></svg>
-                Documents
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.5 1.75V13.5h13.75a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1-.75-.75V1.75a.75.75 0 0 1 1.5 0Zm14.28 2.53-5.25 5.25a.75.75 0 0 1-1.06 0L7 7.06 4.28 9.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.25-3.25a.75.75 0 0 1 1.06 0L9 7.94l4.72-4.72a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path></svg>
+                Insights
+              </button>
+            </li>
+            <li>
+              <button
+                className={`tab-item ${activeTab === "contact" ? "active" : ""}`}
+                onClick={() => setActiveTab("contact")}
+              >
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 14.25 13H8.061l-2.574 2.573A1.457 1.457 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+                Contact
               </button>
             </li>
           </ul>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+            {/* ── NOTIFICATION BELL ── */}
+            {(() => {
+              const audioNotis = advisoryFiles
+                .filter(f => ["mp3", "wav", "m4a", "ogg"].includes((f.type || "").toLowerCase()))
+.map(f => ({
+                  id: f.id,
+                  icon: "🎵",
+                  title: "Meeting recording added",
+                  question: "Run AI transcription?",
+                  fileName: (f.name || "").split("/").pop(),
+                  time: f.uploadedAt,
+                }));
+              const unread = audioNotis.length;
+              return (
+                <div className="noti-wrapper">
+                  <button
+                    className="tab-add-btn"
+                    onClick={() => setNotiOpen(o => !o)}
+                    title="Notifications"
+                    style={{ position: "relative" }}
+                  >
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor">
+                      <path d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Zm5-3.5A3.5 3.5 0 0 0 4.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.017.017 0 0 0-.003.01l.001.006c0 .002.002.004.004.006l.006.004.007.001h10.964l.007-.001.006-.004.004-.006.001-.007a.017.017 0 0 0-.003-.01l-1.703-2.554a1.745 1.745 0 0 1-.294-.97V5A3.5 3.5 0 0 0 8 1.5Z"></path>
+                    </svg>
+                    {unread > 0 && (
+                      <span className="noti-badge">{unread > 9 ? "9+" : unread}</span>
+                    )}
+                  </button>
+
+                  {notiOpen && (
+                    <>
+                      <div className="dropdown-overlay" onClick={() => setNotiOpen(false)} />
+                      <div className="noti-dropdown">
+                        <div className="noti-panel-header">
+                          <span>Notifications</span>
+                          {unread > 0 && <span className="noti-new-badge">{unread} new</span>}
+                        </div>
+                        {audioNotis.length === 0 ? (
+                          <div className="noti-empty">
+                            <svg height="24" viewBox="0 0 16 16" width="24" fill="#d0d7de" style={{marginBottom: 8}}><path d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Z"/></svg>
+                            No new notifications
+                          </div>
+                        ) : (
+                          audioNotis.map(noti => (
+                            <div key={noti.id} className="noti-item">
+                              <div className="noti-item-icon">{noti.icon}</div>
+                              <div className="noti-item-body">
+                                <div className="noti-item-title">{noti.title}</div>
+                                <div className="noti-item-question">{noti.question}</div>
+                                <div className="noti-item-file">{noti.fileName}</div>
+                                <div className="noti-item-time">{formatAge(noti.time)}</div>
+                                <div className="noti-item-actions">
+                                  <button
+                                    className="noti-run-btn"
+                                    onClick={() => { setActiveTab("documents"); setNotiOpen(false); }}
+                                  >
+                                    Run AI →
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ── ADD DROPDOWN ── */}
+            <div className="add-action-wrapper" style={{ position: "relative" }}>
+            <button
+              className="tab-add-btn"
+              onClick={() => setIsAddDropdownOpen(!isAddDropdownOpen)}
+              title="Add options"
+            >
+              <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor">
+                <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"></path>
+              </svg>
+            </button>
+
+            {isAddDropdownOpen && (
+              <>
+                <div className="dropdown-overlay" onClick={() => setIsAddDropdownOpen(false)} />
+                <ul className="add-dropdown-menu">
+                  <li>
+                    <button onClick={() => { setActiveTab("meeting-room"); setIsAddDropdownOpen(false); }}>
+                      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.75 1h12.5c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 14.25 13H1.75A1.75 1.75 0 0 1 0 11.25v-8.5C0 1.784.784 1 1.75 1ZM1.5 2.75v8.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25v-8.5a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25ZM6.5 5.5v3a.5.5 0 0 0 .75.433l2.5-1.5a.5.5 0 0 0 0-.866l-2.5-1.5a.5.5 0 0 0-.75.433Z"></path></svg>
+                      Create Meeting
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => { setIsUploadRecordingOpen(true); setIsAddDropdownOpen(false); }}>
+                      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M11.75 6.5a.75.75 0 0 1 .75.75v1.25a4.5 4.5 0 0 1-4 4.475v1.275h2a.75.75 0 0 1 0 1.5h-5a.75.75 0 0 1 0-1.5h2v-1.275a4.5 4.5 0 0 1-4-4.475V7.25a.75.75 0 0 1 1.5 0v1.25a3 3 0 0 0 6 0V7.25a.75.75 0 0 1 .75-.75ZM8 1.5a2.5 2.5 0 0 0-2.5 2.5v3.5a2.5 2.5 0 0 0 5 0V4a2.5 2.5 0 0 0-2.5-2.5Z"></path></svg>
+                      Upload Recording
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => { setIsAddExpenseOpen(true); setIsAddDropdownOpen(false); }}>
+                      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.75 1.5h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 14.25 15.5H1.75A1.75 1.75 0 0 1 0 13.75V3.25C0 2.284.784 1.5 1.75 1.5ZM1.5 3.25v2.25h13V3.25a.25.25 0 0 0-.25-.25H1.75a.25.25 0 0 0-.25.25ZM1.5 7v6.75c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V7Zm7.25 1.5h4a.75.75 0 0 1 0 1.5h-4a.75.75 0 0 1 0-1.5Zm0 3h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1 0-1.5ZM3.25 8h2.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1-.75-.75v-3.5A.75.75 0 0 1 3.25 8Z"></path></svg>
+                      Add Expense
+                    </button>
+                  </li>
+                </ul>
+              </>
+            )}
+            </div>
+          </div>
         </nav>
       </header>
 
@@ -1610,7 +2425,7 @@ export default function ClientRepo() {
               <input
                 ref={repoFileInputRef}
                 type="file"
-                accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.txt,.md,.markdown,.html,.htm"
+                accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.txt,.md,.markdown,.html,.htm,.mp3,.wav,.m4a,.ogg"
                 style={{ display: "none" }}
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSelectUploadFile(f); e.target.value = ""; }}
               />
@@ -2009,6 +2824,10 @@ export default function ClientRepo() {
                                   icon = (
                                     <svg className="file-icon md-icon" height="16" viewBox="0 0 16 16" width="16" fill="#0969da"><path d="M1.75 1.5A1.75 1.75 0 0 0 0 3.25v9.5c0 .966.784 1.75 1.75 1.75h12.5A1.75 1.75 0 0 0 16 12.75v-9.5A1.75 1.75 0 0 0 14.25 1.5H1.75ZM1.5 3.25a.25.25 0 0 1 .25-.25h12.5a.25.25 0 0 1 .25.25v9.5a.25.25 0 0 1-.25.25H1.75a.25.25 0 0 1-.25-.25v-9.5Z"/><path d="M3.25 5h1.5a.75.75 0 0 1 .75.75v2.583L7 6.136a.75.75 0 0 1 .99 0l1.5 1.2.75-.6a.75.75 0 0 1 .25-.564V7.5a.75.75 0 0 1-1.5 0v-.673l-.6.48a.75.75 0 0 1-.99 0l-1.5-1.2-1.41 1.13A.75.75 0 0 1 4 7.5v-1.75a.75.75 0 0 1 .75-.75Z"/></svg>
                                   );
+                                } else if (item.type === "mp3" || item.type === "wav" || item.type === "m4a" || item.type === "ogg") {
+                                  icon = (
+                                    <svg className="file-icon audio-icon" height="16" viewBox="0 0 16 16" width="16" fill="#8f34ab"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14Zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16Z"/><path d="M10.25 4.5a.75.75 0 0 0-.75.75v3.663a2.25 2.25 0 1 0 1.5 1.96V6h1.25a.75.75 0 0 0 0-1.5h-2Z"/></svg>
+                                  );
                                 }
 
                                 return (
@@ -2166,6 +2985,225 @@ export default function ClientRepo() {
                   </ul>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 6: MEETING ROOM */}
+          {activeTab === "meeting-room" && (
+            <div className="tab-pane meeting-tab">
+              {meetingJoined ? (
+                /* Joined call screen */
+                <div className="joined-meeting-container">
+                  <div className="meeting-grid">
+                    <div className="meeting-card self-card">
+                      {meetingCamOn && meetingStream ? (
+                        <video 
+                          ref={meetingVideoRef}
+                          autoPlay 
+                          playsInline 
+                          muted 
+                          className="meeting-video"
+                          style={{ transform: "scaleX(-1)" }}
+                        />
+                      ) : (
+                        <div className="meeting-avatar-fallback">
+                          <span className="fallback-initials">L FY</span>
+                        </div>
+                      )}
+                      <div className="meeting-card-name">Advisor (You) {(!meetingMicOn) && "🎤 Off"}</div>
+                    </div>
+                    
+                    <div className="meeting-card participant-card">
+                      <div className="meeting-avatar-fallback client-avatar">
+                        <span className="fallback-initials">{displayId.substring(0, 2).toUpperCase()}</span>
+                      </div>
+                      <div className="meeting-card-name">{displayId} Board Representative</div>
+                      <div className="audio-wave">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Joined bottom bar */}
+                  <div className="meeting-controls-bar">
+                    <button 
+                      className={`control-btn ${!meetingMicOn ? "disabled" : ""}`}
+                      onClick={() => setMeetingMicOn(!meetingMicOn)}
+                      title={meetingMicOn ? "Mute Microphone" : "Unmute Microphone"}
+                    >
+                      {meetingMicOn ? "🎤" : "🎙️"}
+                    </button>
+                    
+                    <button 
+                      className={`control-btn ${!meetingCamOn ? "disabled" : ""}`}
+                      onClick={() => setMeetingCamOn(!meetingCamOn)}
+                      title={meetingCamOn ? "Turn Camera Off" : "Turn Camera On"}
+                    >
+                      {meetingCamOn ? "📷" : "📹"}
+                    </button>
+
+                    <button 
+                      className="control-btn end-call-btn"
+                      onClick={() => {
+                        setMeetingJoined(false);
+                        setActiveTab("info");
+                      }}
+                      title="Leave Meeting"
+                    >
+                      Leave Call
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Google Meet Joining Preview Screen */
+                <div className="meet-joining-container">
+                  <div className="meet-joining-layout">
+                    {/* Left Column: Camera Preview Box */}
+                    <div className="preview-column">
+                      <div className="video-box-container">
+                        <div className="video-box">
+                          {meetingCamOn && meetingStream ? (
+                            <video 
+                              ref={meetingVideoRef}
+                              autoPlay 
+                              playsInline 
+                              muted 
+                              className="meeting-video"
+                              style={{ transform: "scaleX(-1)" }}
+                            />
+                          ) : (
+                            <div className="video-avatar-fallback">
+                              <span className="avatar-text">L FY</span>
+                            </div>
+                          )}
+                          
+                          {/* Top left overlay */}
+                          <div className="video-overlay-left">
+                            L FY
+                          </div>
+                          
+                          {/* Top right overlay */}
+                          <div className="video-overlay-right">
+                            <button className="icon-overlay-btn" title="More options" type="button">⋮</button>
+                          </div>
+                          
+                          {/* Bottom controls overlay */}
+                          <div className="video-controls-overlay">
+                            <button 
+                              className={`circle-btn ${!meetingMicOn ? "btn-off" : ""}`}
+                              onClick={() => setMeetingMicOn(!meetingMicOn)}
+                              title={meetingMicOn ? "Mute microphone" : "Unmute microphone"}
+                              type="button"
+                            >
+                              {meetingMicOn ? (
+                                <svg height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                </svg>
+                              ) : (
+                                <svg height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                                  <path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c.57-.08 1.12-.24 1.64-.46l5.1 5.1L21 21.27 4.27 3z"/>
+                                </svg>
+                              )}
+                            </button>
+                            <button 
+                              className={`circle-btn ${!meetingCamOn ? "btn-off" : ""}`}
+                              onClick={() => setMeetingCamOn(!meetingCamOn)}
+                              title={meetingCamOn ? "Turn camera off" : "Turn camera on"}
+                              type="button"
+                            >
+                              {meetingCamOn ? (
+                                <svg height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                                  <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM15 16H5V8h10v8z"/>
+                                </svg>
+                              ) : (
+                                <svg height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                                  <path d="M18 10.48V6c0-1.1-.9-2-2-2H6.83l2 2H16v7.17l2 2v-1.18l4 4v-11l-4 4zM2.81 3.19L1.39 4.61 4 7.22V18c0 1.1.9 2 2 2h12.78l2.61 2.61 1.41-1.41L2.81 3.19zM6 18V9.22L14.78 18H6z"/>
+                                </svg>
+                              )}
+                            </button>
+                            <button className="circle-btn" title="Visual effects" type="button">
+                              <svg height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Device dropdown selectors list */}
+                      <div className="device-selectors">
+                        <div className="selector-group">
+                          <svg className="device-icon" height="16" viewBox="0 0 24 24" width="16" fill="currentColor">
+                            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                          </svg>
+                          <select 
+                            className="device-select"
+                            value={selectedMicDevice}
+                            onChange={(e) => setSelectedMicDevice(e.target.value)}
+                          >
+                            <option>{selectedMicDevice}</option>
+                            <option>Default System Microphone</option>
+                            <option>External Mic (USB Audio)</option>
+                          </select>
+                        </div>
+                        
+                        <div className="selector-group">
+                          <svg className="device-icon" height="16" viewBox="0 0 24 24" width="16" fill="currentColor">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                          </svg>
+                          <select 
+                            className="device-select"
+                            value={selectedSpeakerDevice}
+                            onChange={(e) => setSelectedSpeakerDevice(e.target.value)}
+                          >
+                            <option>{selectedSpeakerDevice}</option>
+                            <option>Default System Speakers</option>
+                            <option>Headphones (USB Audio)</option>
+                          </select>
+                        </div>
+
+                        <div className="selector-group">
+                          <svg className="device-icon" height="16" viewBox="0 0 24 24" width="16" fill="currentColor">
+                            <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+                          </svg>
+                          <select 
+                            className="device-select"
+                            value={selectedCamDevice}
+                            onChange={(e) => setSelectedCamDevice(e.target.value)}
+                          >
+                            <option>{selectedCamDevice}</option>
+                            <option>FaceTime HD Camera (Built-in)</option>
+                            <option>USB Webcam</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right Column: Join Action Block */}
+                    <div className="join-column">
+                      <h2 className="join-title">Ready to join?</h2>
+                      <div className="join-actions-container">
+                        <button 
+                          className="meet-btn-primary" 
+                          onClick={() => setMeetingJoined(true)}
+                          type="button"
+                        >
+                          Ask to join
+                        </button>
+                        
+                        <div className="other-ways-container">
+                          <button className="meet-btn-secondary" type="button">
+                            Other ways to join
+                            <span className="chevron-down">▼</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -2577,7 +3615,7 @@ export default function ClientRepo() {
                                 type: "md",
                                 size: new Blob([docResult.markdown]).size,
                                 description: saveCommitDesc.trim() || `Saved ${saveFileName.trim()}`,
-                                uploadedBy: "advisor-bot",
+                                uploadedBy: "Lim Fang Yee",
                                 uploadedAt: new Date().toISOString(),
                                 content: docResult.markdown,
                                 fileUrl: fileUrl,
@@ -2809,7 +3847,7 @@ export default function ClientRepo() {
                                 type: "md",
                                 size: new Blob([audioResult.transcript]).size,
                                 description: saveCommitDesc.trim() || `Saved ${saveFileName.trim()}`,
-                                uploadedBy: "advisor-bot",
+                                uploadedBy: "Lim Fang Yee",
                                 uploadedAt: new Date().toISOString(),
                                 content: audioResult.transcript,
                                 fileUrl: fileUrl,
@@ -2883,10 +3921,700 @@ export default function ClientRepo() {
             </div>
           )}
 
+          {/* TAB: CONTACT */}
+          {activeTab === "contact" && (() => {
+            const cd = getContactData(displayId);
+            return (
+              <div className="contact-tab">
+                {/* Left: client card + AI reasoning */}
+                <div className="contact-left">
+                  <div className="contact-client-card">
+                    <div className="contact-client-avatar">{cd.clientName[0]}</div>
+                    <div>
+                      <div className="contact-client-name">{cd.clientName}</div>
+                      <div className="contact-client-person">{cd.contactPerson}</div>
+                      <div className="contact-client-phone">+{cd.phone}</div>
+                    </div>
+                    <span className="contact-tag">{cd.tag}</span>
+                  </div>
+
+                  <div className="contact-reasoning-card">
+                    <div className="contact-reasoning-header">
+                      <svg height="14" viewBox="0 0 16 16" width="14" fill="currentColor" style={{flexShrink: 0, color: "#8250df"}}>
+                        <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+                      </svg>
+                      <span>Why AI drafted this</span>
+                    </div>
+                    <p className="contact-reasoning-body">{cd.aiReasoning}</p>
+                  </div>
+                </div>
+
+                {/* Right: compose + send */}
+                <div className="contact-right">
+                  <div className="contact-compose-header">
+                    <div className="contact-compose-to-label">To</div>
+                    <div className="contact-compose-to-value">
+                      <strong>{cd.contactPerson}</strong>
+                      <span style={{color: "#656d76", fontSize: 13}}> · +{cd.phone}</span>
+                    </div>
+                  </div>
+
+                  <div className="contact-compose-body">
+                    <div className="contact-compose-label">Message</div>
+                    <textarea
+                      className="contact-textarea"
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      rows={12}
+                      placeholder="AI-suggested follow-up message..."
+                    />
+                  </div>
+
+                  <div className="contact-actions">
+                    <button
+                      className="contact-btn-whatsapp"
+                      disabled={!contactMessage.trim()}
+                      onClick={() => {
+                        const url = `https://wa.me/${cd.phone}?text=${encodeURIComponent(contactMessage)}`;
+                        window.open(url, "_blank");
+                      }}
+                    >
+                      <svg height="16" viewBox="0 0 24 24" width="16" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                      </svg>
+                      Open in WhatsApp
+                    </button>
+                    <button
+                      className="contact-btn-copy"
+                      disabled={!contactMessage.trim()}
+                      onClick={() => {
+                        navigator.clipboard?.writeText(contactMessage);
+                        setContactMsgCopied(true);
+                        setTimeout(() => setContactMsgCopied(false), 2000);
+                      }}
+                    >
+                      {contactMsgCopied ? "✓ Copied" : "Copy"}
+                    </button>
+                    <button
+                      className="contact-btn-reset"
+                      onClick={() => setContactMessage(cd.aiDraft)}
+                    >
+                      Reset to AI Draft
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* TAB: HISTORY */}
+          {activeTab === "history" && (
+            <div className="history-tab">
+              {(() => {
+                const commits = [...advisoryFiles].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+                const grouped = {};
+                commits.forEach(file => {
+                  const d = new Date(file.uploadedAt);
+                  const key = d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+                  if (!grouped[key]) grouped[key] = [];
+                  grouped[key].push(file);
+                });
+                if (commits.length === 0) {
+                  return (
+                    <div className="blank-slate">
+                      <svg height="48" viewBox="0 0 16 16" width="48" fill="#d0d7de"><path d="M1.643 3.143.427 1.927A.25.25 0 0 0 0 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 0 0 .177-.427L2.715 4.215a6.5 6.5 0 1 1-1.18 4.458.75.75 0 1 0-1.493.154 8.001 8.001 0 1 0 1.6-5.684ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>
+                      <h4>No history yet</h4>
+                      <p>Files added to this repository will appear here as commits.</p>
+                    </div>
+                  );
+                }
+                return Object.entries(grouped).map(([dateKey, files]) => (
+                  <div key={dateKey} className="commit-group">
+                    <div className="commit-group-header">
+                      <svg height="14" viewBox="0 0 16 16" width="14" fill="currentColor" style={{marginRight: 8, flexShrink: 0}}><path d="M1.643 3.143.427 1.927A.25.25 0 0 0 0 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 0 0 .177-.427L2.715 4.215a6.5 6.5 0 1 1-1.18 4.458.75.75 0 1 0-1.493.154 8.001 8.001 0 1 0 1.6-5.684ZM7.75 4a.75.75 0 0 1 .75.75v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5A.75.75 0 0 1 7.75 4Z"></path></svg>
+                      Commits on {dateKey}
+                    </div>
+                    <div className="commit-list-box">
+                      {files.map(file => {
+                        const hash = toHash(file.id || file.name);
+                        const typeEmoji = file.type === "pdf" ? "📕" : file.type === "xlsx" ? "📊" : file.type === "docx" ? "📘" : file.type === "mp3" ? "🎵" : file.type === "md" ? "📝" : "📄";
+                        const authorInitial = (file.uploadedBy || "A")[0].toUpperCase();
+                        return (
+                          <div key={file.id} className="commit-row">
+                            <div className="commit-left">
+                              <span className="commit-type-icon">{typeEmoji}</span>
+                              <div className="commit-info">
+                                <span className="commit-title">{file.description || file.name}</span>
+                                <div className="commit-meta-row">
+                                  <div className="commit-avatar-mini" title={file.uploadedBy || "advisor-bot"}>{authorInitial}</div>
+                                  <span className="commit-author-name">{file.uploadedBy || "advisor-bot"}</span>
+                                  <span className="commit-verb">committed</span>
+                                  <span className="commit-time-ago">{formatAge(file.uploadedAt)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="commit-right">
+                              <code className="commit-hash-tag">{hash}</code>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
+
+          {/* TAB: INSIGHTS */}
+          {activeTab === "insights" && (() => {
+            const milestones = getClientMilestones(displayId);
+            const n = milestones.length;
+            return (
+              <div className="insights-tab">
+                <div style={{marginBottom: 32}}>
+                  <h3 style={{fontSize: 16, fontWeight: 600, margin: "0 0 4px 0", color: "#1f2328"}}>Client Journey</h3>
+                  <p style={{fontSize: 13, color: "#656d76", margin: 0}}>Key milestones in the advisory relationship — hover a point to see details</p>
+                </div>
+
+                {/* Timeline */}
+                <div style={{position: "relative", height: 340, margin: "0 0 48px", padding: "0 60px"}}>
+                  {/* Line — top:162 matches dot center (section height 154 + dot radius 8) */}
+                  <div style={{
+                    position: "absolute", top: 162, left: 60, right: 60, height: 2,
+                    background: "linear-gradient(90deg, transparent, #d0d7de 4%, #d0d7de 95%, transparent)"
+                  }} />
+                  {/* Arrow */}
+                  <div style={{
+                    position: "absolute", top: 155, right: 52,
+                    width: 0, height: 0,
+                    borderTop: "7px solid transparent", borderBottom: "7px solid transparent", borderLeft: "11px solid #d0d7de"
+                  }} />
+
+                  {milestones.map((m, i) => {
+                    const isAbove = i % 2 === 0;
+                    const leftPct = n === 1 ? 50 : (i / (n - 1)) * 100;
+                    const isHovered = hoveredMilestone === m.id;
+                    const isUpcoming = m.type === "upcoming";
+                    // dot center = 154px (section) + 8px (half dot) = 162px, matching the line
+                    // left formula: leftPct=0→60px, leftPct=100→calc(100%-60px)
+                    const leftStyle = `calc(${leftPct}% + ${(60 - leftPct * 1.2).toFixed(1)}px)`;
+                    return (
+                      <div key={m.id} style={{
+                        position: "absolute",
+                        left: leftStyle,
+                        top: 0, bottom: 0,
+                        transform: "translateX(-50%)",
+                        width: 130,
+                        display: "flex", flexDirection: "column", alignItems: "center",
+                      }}>
+                        {/* Above section */}
+                        <div style={{height: 154, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center", paddingBottom: 16, position: "relative"}}>
+                          {isAbove && !isHovered && (
+                            <>
+                              <div style={{fontSize: 12, fontWeight: 700, color: m.color, textAlign: "center", lineHeight: 1.3, maxWidth: 110}}>{m.label}</div>
+                              <div style={{fontSize: 11, color: "#656d76", marginTop: 4, textAlign: "center"}}>
+                                {new Date(m.date).toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric"})}
+                              </div>
+                            </>
+                          )}
+                          {isAbove && isHovered && (
+                            <div style={{
+                              background: "#1f2328", color: "#fff", borderRadius: 8,
+                              padding: "10px 12px", fontSize: 12, lineHeight: 1.5,
+                              width: 210, textAlign: "left",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                              position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
+                              zIndex: 10, pointerEvents: "none",
+                            }}>
+                              <div style={{fontWeight: 700, marginBottom: 4, color: m.color}}>{m.label}</div>
+                              <div style={{opacity: 0.85, fontSize: 11}}>{m.description}</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Dot */}
+                        <div
+                          onMouseEnter={() => setHoveredMilestone(m.id)}
+                          onMouseLeave={() => setHoveredMilestone(null)}
+                          style={{
+                            width: 16, height: 16, borderRadius: "50%",
+                            background: isUpcoming ? "#f6f8fa" : m.color,
+                            border: isUpcoming ? `2.5px dashed ${m.color}` : "3px solid #fff",
+                            boxShadow: isUpcoming ? "none" : `0 0 0 2.5px ${m.color}`,
+                            cursor: "pointer", flexShrink: 0, zIndex: 2,
+                            transform: isHovered ? "scale(1.6)" : "scale(1)",
+                            transition: "transform 0.15s ease",
+                          }}
+                        />
+
+                        {/* Below section */}
+                        <div style={{height: 154, display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center", paddingTop: 16, position: "relative"}}>
+                          {!isAbove && !isHovered && (
+                            <>
+                              <div style={{fontSize: 12, fontWeight: 700, color: m.color, textAlign: "center", lineHeight: 1.3, maxWidth: 110}}>{m.label}</div>
+                              <div style={{fontSize: 11, color: "#656d76", marginTop: 4, textAlign: "center"}}>
+                                {new Date(m.date).toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric"})}
+                              </div>
+                            </>
+                          )}
+                          {!isAbove && isHovered && (
+                            <div style={{
+                              background: "#1f2328", color: "#fff", borderRadius: 8,
+                              padding: "10px 12px", fontSize: 12, lineHeight: 1.5,
+                              width: 210, textAlign: "left",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                              position: "absolute", top: 20, left: "50%", transform: "translateX(-50%)",
+                              zIndex: 10, pointerEvents: "none",
+                            }}>
+                              <div style={{fontWeight: 700, marginBottom: 4, color: m.color}}>{m.label}</div>
+                              <div style={{opacity: 0.85, fontSize: 11}}>{m.description}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Stats cards */}
+                <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginTop: 8}}>
+                  {[
+                    { label: "Milestones Reached", value: milestones.filter(m => m.type !== "upcoming").length, color: "#0969da", icon: "🏁" },
+                    { label: "Meetings Held", value: milestones.filter(m => m.type === "meeting").length, color: "#1f883d", icon: "🤝" },
+                    { label: "Documents Filed", value: advisoryFiles.length, color: "#9a3412", icon: "📂" },
+                    { label: "Days Active", value: Math.max(1, Math.round((Date.now() - new Date(milestones[0]?.date).getTime()) / 86400000)), color: "#8250df", icon: "📅" },
+                  ].map((stat, idx) => (
+                    <div key={idx} style={{
+                      background: "#fff", border: "1px solid #d0d7de",
+                      borderRadius: 8, padding: "20px 20px 16px",
+                      borderTop: `3px solid ${stat.color}`,
+                    }}>
+                      <div style={{fontSize: 24, marginBottom: 8}}>{stat.icon}</div>
+                      <div style={{fontSize: 28, fontWeight: 700, color: stat.color, lineHeight: 1}}>{stat.value}</div>
+                      <div style={{fontSize: 12, color: "#656d76", marginTop: 6}}>{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
         </div>
       </main>
 
       <style jsx>{`
+        /* ── NOTIFICATION ── */
+        .noti-wrapper { position: relative; }
+        .noti-badge {
+          position: absolute;
+          top: -5px; right: -5px;
+          background: #d1242f;
+          color: #fff;
+          font-size: 9px;
+          font-weight: 700;
+          min-width: 16px;
+          height: 16px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 3px;
+          border: 2px solid #f6f8fa;
+          line-height: 1;
+          pointer-events: none;
+        }
+        .noti-dropdown {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 8px);
+          width: 320px;
+          background: #fff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(140,149,159,0.2);
+          z-index: 100;
+          overflow: hidden;
+        }
+        .noti-panel-header {
+          padding: 10px 16px;
+          background: #f6f8fa;
+          border-bottom: 1px solid #d0d7de;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 13px;
+          font-weight: 700;
+          color: #1f2328;
+        }
+        .noti-new-badge {
+          font-size: 11px;
+          font-weight: 600;
+          background: #d1242f;
+          color: #fff;
+          padding: 1px 7px;
+          border-radius: 10px;
+        }
+        .noti-empty {
+          padding: 28px 16px;
+          text-align: center;
+          font-size: 13px;
+          color: #656d76;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+        .noti-item {
+          display: flex;
+          gap: 12px;
+          padding: 12px 16px;
+          border-bottom: 1px solid #eaeef2;
+        }
+        .noti-item:last-child { border-bottom: none; }
+        .noti-item-icon {
+          font-size: 18px;
+          flex-shrink: 0;
+          width: 34px;
+          height: 34px;
+          background: #f0f6ff;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .noti-item-body { flex: 1; min-width: 0; }
+        .noti-item-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: #1f2328;
+        }
+        .noti-item-question {
+          font-size: 13px;
+          color: #57606a;
+          margin: 2px 0 3px;
+        }
+        .noti-item-file {
+          font-size: 11px;
+          color: #656d76;
+          font-family: "SFMono-Regular", Consolas, monospace;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .noti-item-time {
+          font-size: 11px;
+          color: #656d76;
+          margin-top: 3px;
+        }
+        .noti-item-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
+          align-items: center;
+        }
+        .noti-run-btn {
+          font-size: 12px;
+          font-weight: 600;
+          color: #0969da;
+          background: #dff0ff;
+          border: none;
+          border-radius: 4px;
+          padding: 5px 12px;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .noti-run-btn:hover { background: #b6daff; }
+
+/* ── CONTACT TAB ── */
+        .contact-tab {
+          display: grid;
+          grid-template-columns: 320px 1fr;
+          gap: 24px;
+          align-items: start;
+        }
+        @media (max-width: 820px) {
+          .contact-tab { grid-template-columns: 1fr; }
+        }
+        .contact-left {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .contact-client-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          background: #fff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          padding: 16px;
+          position: relative;
+        }
+        .contact-client-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #0969da, #1f883d);
+          color: #fff;
+          font-size: 20px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .contact-client-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1f2328;
+        }
+        .contact-client-person {
+          font-size: 13px;
+          color: #57606a;
+          margin-top: 2px;
+        }
+        .contact-client-phone {
+          font-size: 12px;
+          color: #656d76;
+          margin-top: 2px;
+          font-family: "SFMono-Regular", Consolas, monospace;
+        }
+        .contact-tag {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          background: #dff0ff;
+          color: #0969da;
+          padding: 2px 8px;
+          border-radius: 12px;
+        }
+        .contact-reasoning-card {
+          background: #fbf0ff;
+          border: 1px solid #d8b4fe;
+          border-radius: 8px;
+          padding: 14px 16px;
+        }
+        .contact-reasoning-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #6f3fa8;
+          margin-bottom: 8px;
+        }
+        .contact-reasoning-body {
+          font-size: 13px;
+          color: #44337a;
+          line-height: 1.6;
+          margin: 0;
+        }
+        .contact-right {
+          background: #fff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .contact-compose-header {
+          border-bottom: 1px solid #eaeef2;
+          padding: 14px 16px;
+          display: flex;
+          align-items: baseline;
+          gap: 12px;
+        }
+        .contact-compose-to-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #656d76;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          flex-shrink: 0;
+        }
+        .contact-compose-to-value {
+          font-size: 14px;
+          color: #1f2328;
+        }
+        .contact-compose-body {
+          padding: 14px 16px 0;
+        }
+        .contact-compose-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: #656d76;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: 8px;
+        }
+        .contact-textarea {
+          width: 100%;
+          padding: 12px;
+          font-size: 14px;
+          color: #1f2328;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          resize: vertical;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          line-height: 1.6;
+          box-sizing: border-box;
+        }
+        .contact-textarea:focus {
+          outline: none;
+          border-color: #0969da;
+          box-shadow: 0 0 0 3px rgba(9,105,218,0.12);
+        }
+        .contact-actions {
+          display: flex;
+          gap: 10px;
+          padding: 14px 16px;
+          border-top: 1px solid #eaeef2;
+          flex-wrap: wrap;
+        }
+        .contact-btn-whatsapp {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 8px 18px;
+          background: #25d366;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 600;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .contact-btn-whatsapp:hover { background: #1eb455; }
+        .contact-btn-whatsapp:disabled { background: #d0d7de; cursor: not-allowed; }
+        .contact-btn-copy {
+          padding: 8px 16px;
+          background: #f6f8fa;
+          color: #24292f;
+          font-size: 14px;
+          font-weight: 500;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .contact-btn-copy:hover { background: #eaeef2; }
+        .contact-btn-copy:disabled { opacity: 0.5; cursor: not-allowed; }
+        .contact-btn-reset {
+          padding: 8px 16px;
+          background: transparent;
+          color: #656d76;
+          font-size: 13px;
+          font-weight: 500;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: color 0.15s, border-color 0.15s;
+          margin-left: auto;
+        }
+        .contact-btn-reset:hover { color: #1f2328; border-color: #57606a; }
+
+        /* ── HISTORY TAB ── */
+        .history-tab {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .commit-group {
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .commit-group-header {
+          background: #f6f8fa;
+          border-bottom: 1px solid #d0d7de;
+          padding: 10px 16px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #57606a;
+          display: flex;
+          align-items: center;
+        }
+        .commit-list-box {
+          background: #fff;
+        }
+        .commit-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 16px;
+          border-bottom: 1px solid #eaeef2;
+          transition: background 0.1s;
+        }
+        .commit-row:last-child { border-bottom: none; }
+        .commit-row:hover { background: #f6f8fa; }
+        .commit-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+          min-width: 0;
+        }
+        .commit-type-icon { font-size: 18px; flex-shrink: 0; }
+        .commit-info {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+        .commit-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2328;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .commit-meta-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: #57606a;
+          flex-wrap: wrap;
+        }
+        .commit-avatar-mini {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #0969da;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .commit-author-name { font-weight: 600; color: #1f2328; }
+        .commit-right {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+          margin-left: 16px;
+        }
+        .commit-hash-tag {
+          font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+          font-size: 12px;
+          color: #0969da;
+          background: #dff0ff;
+          padding: 2px 8px;
+          border-radius: 4px;
+          cursor: default;
+          letter-spacing: 0.02em;
+        }
+
+        /* ── INSIGHTS TAB ── */
+        .insights-tab {
+          padding: 8px 0 24px;
+        }
+
         .repo-root {
           min-height: 100vh;
           background-color: #ffffff;
@@ -4826,7 +6554,856 @@ export default function ClientRepo() {
         .editor-content-input:focus {
           outline: none;
         }
+
+        /* ── DROPDOWN, MEETING, AND MODAL CSS ADDITIONS ── */
+        .tab-add-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #57606a;
+          transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .tab-add-btn:hover {
+          background: #ebeef2;
+          border-color: #8c959f;
+          color: #24292f;
+        }
+        .add-action-wrapper {
+          position: relative;
+        }
+        .dropdown-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 99;
+          background: transparent;
+        }
+        .add-dropdown-menu {
+          position: absolute;
+          right: 0;
+          top: 36px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+          list-style: none;
+          padding: 4px 0;
+          margin: 0;
+          min-width: 180px;
+          z-index: 100;
+        }
+        .add-dropdown-menu li {
+          padding: 0;
+          margin: 0;
+        }
+        .add-dropdown-menu button {
+          width: 100%;
+          background: none;
+          border: none;
+          padding: 8px 16px;
+          font-size: 13.5px;
+          color: #24292f;
+          text-align: left;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: background-color 0.15s;
+        }
+        .add-dropdown-menu button:hover {
+          background-color: #f6f8fa;
+          color: #0969da;
+        }
+        .add-dropdown-menu button svg {
+          color: #57606a;
+        }
+        .add-dropdown-menu button:hover svg {
+          color: #0969da;
+        }
+
+        /* Modal custom styling */
+        .custom-modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(27, 31, 36, 0.5);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 999;
+          padding: 16px;
+          animation: modalFadeIn 0.2s ease-out;
+        }
+        @keyframes modalFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .custom-modal-content {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 12px;
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+          width: 100%;
+          max-width: 520px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modalSlideUp {
+          from { transform: translateY(20px); }
+          to { transform: translateY(0); }
+        }
+        .custom-modal-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid #d0d7de;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f6f8fa;
+        }
+        .custom-modal-header h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #24292f;
+        }
+        .custom-modal-close {
+          background: none;
+          border: none;
+          font-size: 16px;
+          cursor: pointer;
+          color: #57606a;
+          padding: 4px;
+          border-radius: 4px;
+        }
+        .custom-modal-close:hover {
+          background-color: rgba(27, 31, 36, 0.08);
+          color: #24292f;
+        }
+        .custom-modal-body {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .custom-modal-error {
+          background: #ffebe9;
+          color: #cf222e;
+          border: 1px solid #ffc1c0;
+          padding: 10px 14px;
+          border-radius: 6px;
+          font-size: 13px;
+        }
+        .custom-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .custom-form-group label {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #24292f;
+        }
+        .custom-form-group input[type="text"],
+        .custom-form-group input[type="number"],
+        .custom-form-group textarea {
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 8px 12px;
+          font-size: 14px;
+          font-family: inherit;
+          width: 100%;
+          background: #ffffff;
+        }
+        .custom-form-group input:focus,
+        .custom-form-group textarea:focus {
+          outline: none;
+          border-color: #0969da;
+          box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
+        }
+        .custom-dragzone {
+          border: 2px dashed #cbd5e1;
+          border-radius: 8px;
+          padding: 24px 16px;
+          text-align: center;
+          cursor: pointer;
+          transition: background-color 0.15s, border-color 0.15s;
+          background: #fafbfe;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        .custom-dragzone:hover {
+          background: #f1f5f9;
+          border-color: #0969da;
+        }
+        .dragzone-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+        .upload-cloud-icon {
+          font-size: 28px;
+        }
+        .dragzone-text {
+          font-size: 13.5px;
+          color: #334155;
+        }
+        .dragzone-hint {
+          font-size: 12px;
+          color: #64748b;
+        }
+        .staged-file-preview {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+        .file-preview-icon {
+          font-size: 32px;
+        }
+        .file-preview-name {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #0969da;
+          max-width: 250px;
+          word-break: break-all;
+        }
+        .file-preview-size {
+          font-size: 12px;
+          color: #64748b;
+        }
+        .modal-progress-bar-container {
+          width: 100%;
+          height: 6px;
+          background: #e2e8f0;
+          border-radius: 3px;
+          overflow: hidden;
+          margin-top: -8px;
+        }
+        .modal-progress-bar {
+          height: 100%;
+          background: #0969da;
+          transition: width 0.1s;
+        }
+        .custom-modal-footer {
+          padding: 16px 20px;
+          border-top: 1px solid #d0d7de;
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          background: #f6f8fa;
+        }
+
+        /* Meeting room styling */
+        .meet-joining-container {
+          background-color: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          padding: 32px;
+          min-height: 480px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .meet-joining-layout {
+          display: flex;
+          gap: 48px;
+          max-width: 960px;
+          width: 100%;
+          align-items: center;
+        }
+        @media (max-width: 800px) {
+          .meet-joining-layout {
+            flex-direction: column;
+            gap: 24px;
+          }
+        }
+        .preview-column {
+          flex: 1.3;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
+        }
+        .video-box-container {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 16/9;
+          background-color: #202124;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .video-box {
+          width: 100%;
+          height: 100%;
+          position: relative;
+        }
+        .meeting-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          background-color: #000;
+        }
+        .video-avatar-fallback {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: #202124;
+        }
+        .avatar-text {
+          font-size: 48px;
+          color: #ffffff;
+          font-weight: 500;
+          background: #3c4043;
+          width: 96px;
+          height: 96px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .video-overlay-left {
+          position: absolute;
+          top: 16px;
+          left: 16px;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 500;
+          text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+        }
+        .video-overlay-right {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+        }
+        .icon-overlay-btn {
+          background: rgba(0,0,0,0.4);
+          border: none;
+          color: white;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .icon-overlay-btn:hover {
+          background: rgba(0,0,0,0.6);
+        }
+        .video-controls-overlay {
+          position: absolute;
+          bottom: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 12px;
+          z-index: 10;
+        }
+        .circle-btn {
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s, transform 0.1s;
+        }
+        .circle-btn:hover {
+          background: rgba(255,255,255,0.3);
+        }
+        .circle-btn:active {
+          transform: scale(0.95);
+        }
+        .circle-btn.btn-off {
+          background: #ea4335;
+          border-color: #ea4335;
+        }
+        .circle-btn.btn-off:hover {
+          background: #d93025;
+        }
+        
+        .device-selectors {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          justify-content: center;
+        }
+        .selector-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #f8f9fa;
+          border: 1px solid #dadce0;
+          border-radius: 20px;
+          padding: 6px 16px;
+          flex: 1;
+          min-width: 180px;
+        }
+        .device-icon {
+          color: #5f6368;
+        }
+        .device-select {
+          border: none;
+          background: transparent;
+          font-size: 12px;
+          font-weight: 500;
+          color: #3c4043;
+          width: 100%;
+          outline: none;
+          cursor: pointer;
+        }
+        
+        .join-column {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          width: 100%;
+        }
+        .join-title {
+          font-size: 28px;
+          font-weight: 400;
+          color: #202124;
+          margin-bottom: 24px;
+        }
+        .join-actions-container {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
+          max-width: 220px;
+        }
+        .meet-btn-primary {
+          background-color: #1a73e8;
+          color: white;
+          border: none;
+          border-radius: 24px;
+          padding: 12px 24px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s, box-shadow 0.2s;
+          box-shadow: 0 1px 2px rgba(60,64,67,0.3);
+        }
+        .meet-btn-primary:hover {
+          background-color: #1557b0;
+          box-shadow: 0 1px 3px rgba(60,64,67,0.3), 0 4px 8px rgba(60,64,67,0.15);
+        }
+        .meet-btn-secondary {
+          background-color: transparent;
+          color: #1a73e8;
+          border: 1px solid #dadce0;
+          border-radius: 24px;
+          padding: 10px 24px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+        }
+        .meet-btn-secondary:hover {
+          background-color: #f8f9fa;
+        }
+        .chevron-down {
+          font-size: 8px;
+        }
+
+        /* Active Joined Meeting */
+        .joined-meeting-container {
+          background-color: #202124;
+          border-radius: 8px;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          min-height: 520px;
+        }
+        .meeting-grid {
+          display: flex;
+          gap: 16px;
+          flex: 1;
+        }
+        @media (max-width: 700px) {
+          .meeting-grid {
+            flex-direction: column;
+          }
+        }
+        .meeting-card {
+          flex: 1;
+          aspect-ratio: 16/10;
+          background-color: #3c4043;
+          border-radius: 8px;
+          overflow: hidden;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .meeting-avatar-fallback {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .fallback-initials {
+          font-size: 40px;
+          color: #ffffff;
+          font-weight: 500;
+          background: #0078d4;
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .client-avatar .fallback-initials {
+          background: #e28743;
+        }
+        .meeting-card-name {
+          position: absolute;
+          bottom: 12px;
+          left: 12px;
+          background-color: rgba(0,0,0,0.5);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+        .audio-wave {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          display: flex;
+          gap: 3px;
+          align-items: flex-end;
+          height: 16px;
+        }
+        .audio-wave span {
+          width: 3px;
+          height: 60%;
+          background: #8ab4f8;
+          animation: wave 1.2s ease-in-out infinite;
+          border-radius: 2px;
+        }
+        .audio-wave span:nth-child(2) {
+          animation-delay: 0.15s;
+          height: 80%;
+        }
+        .audio-wave span:nth-child(3) {
+          animation-delay: 0.3s;
+          height: 40%;
+        }
+        @keyframes wave {
+          0%, 100% { transform: scaleY(0.4); }
+          50% { transform: scaleY(1); }
+        }
+        .meeting-controls-bar {
+          display: flex;
+          justify-content: center;
+          gap: 16px;
+          padding-top: 12px;
+          border-top: 1px solid #3c4043;
+        }
+        .control-btn {
+          background: #3c4043;
+          border: none;
+          color: white;
+          font-size: 18px;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s;
+        }
+        .control-btn:hover {
+          background: #4f5256;
+        }
+        .control-btn.disabled {
+          background: #ea4335;
+        }
+        .control-btn.disabled:hover {
+          background: #d93025;
+        }
+        .end-call-btn {
+          width: auto;
+          border-radius: 24px;
+          padding: 0 20px;
+          font-size: 14px;
+          font-weight: 600;
+          background: #ea4335;
+        }
+        .end-call-btn:hover {
+          background: #d93025;
+        }
       `}</style>
+
+      {/* ── RECORDING UPLOAD MODAL ── */}
+      {isUploadRecordingOpen && (
+        <div className="custom-modal-backdrop">
+          <div className="custom-modal-content">
+            <div className="custom-modal-header">
+              <h3>Upload recording to {displayId}</h3>
+              <button 
+                className="custom-modal-close" 
+                onClick={() => {
+                  setIsUploadRecordingOpen(false);
+                  setRecordingFile(null);
+                  setRecordingDesc("");
+                  setRecordingError("");
+                }}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleUploadRecordingSubmit}>
+              <div className="custom-modal-body">
+                {recordingError && (
+                  <div className="custom-modal-error">
+                    ⚠️ {recordingError}
+                  </div>
+                )}
+                
+                <div 
+                  className="custom-dragzone"
+                  onClick={() => document.getElementById("recording-file-input")?.click()}
+                >
+                  <input 
+                    type="file" 
+                    id="recording-file-input"
+                    accept="audio/*,video/*"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) {
+                        if (!/\.(mp3|mp4|wav|m4a|ogg|aac|flac)$/i.test(f.name)) {
+                          setRecordingError("Please select a valid audio/video file (MP3, MP4, WAV, M4A, etc.)");
+                          return;
+                        }
+                        setRecordingFile(f);
+                        setRecordingError("");
+                      }
+                    }}
+                  />
+                  {recordingFile ? (
+                    <div className="staged-file-preview">
+                      <span className="file-preview-icon">🎵</span>
+                      <span className="file-preview-name">{recordingFile.name}</span>
+                      <span className="file-preview-size">{formatSize(recordingFile.size)}</span>
+                    </div>
+                  ) : (
+                    <div className="dragzone-placeholder">
+                      <span className="upload-cloud-icon">☁️</span>
+                      <span className="dragzone-text">Drag audio/video recording here or <strong>browse</strong></span>
+                      <span className="dragzone-hint">Supports MP3, MP4, WAV, M4A up to 50MB</span>
+                    </div>
+                  )}
+                </div>
+
+                {recordingUploading && (
+                  <div className="modal-progress-bar-container">
+                    <div className="modal-progress-bar" style={{ width: `${recordingUploadProgress}%` }}></div>
+                  </div>
+                )}
+
+                <div className="custom-form-group">
+                  <label htmlFor="recording-description">Description / Advisory Notes</label>
+                  <textarea 
+                    id="recording-description" 
+                    placeholder="e.g. Raw discussion recording of shareholder agreement buyout drafts..."
+                    value={recordingDesc}
+                    onChange={(e) => setRecordingDesc(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="custom-modal-footer">
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  disabled={!recordingFile || recordingUploading}
+                >
+                  {recordingUploading ? "Uploading..." : "Upload Recording"}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => {
+                    setIsUploadRecordingOpen(false);
+                    setRecordingFile(null);
+                    setRecordingDesc("");
+                    setRecordingError("");
+                  }}
+                  disabled={recordingUploading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD EXPENSE MODAL ── */}
+      {isAddExpenseOpen && (
+        <div className="custom-modal-backdrop">
+          <div className="custom-modal-content">
+            <div className="custom-modal-header">
+              <h3>Add Expense to {displayId}</h3>
+              <button 
+                className="custom-modal-close" 
+                onClick={() => {
+                  setIsAddExpenseOpen(false);
+                  setExpenseAmount("");
+                  setExpenseReceiptFile(null);
+                  setExpenseReceiptDataUrl("");
+                  setExpenseDesc("");
+                  setExpenseError("");
+                }}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddExpenseSubmit}>
+              <div className="custom-modal-body">
+                {expenseError && (
+                  <div className="custom-modal-error">
+                    ⚠️ {expenseError}
+                  </div>
+                )}
+                
+                <div className="custom-form-group">
+                  <label htmlFor="expense-amount">Amount (RM)</label>
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    id="expense-amount" 
+                    placeholder="0.00" 
+                    value={expenseAmount} 
+                    onChange={(e) => setExpenseAmount(e.target.value)}
+                    required
+                    style={{ fontSize: "16px", fontWeight: "600", color: "#1f2328" }}
+                  />
+                </div>
+
+                <div className="custom-form-group">
+                  <label>Receipt Upload (Photo / PDF)</label>
+                  <div 
+                    className="custom-dragzone"
+                    onClick={() => document.getElementById("expense-file-input")?.click()}
+                  >
+                    <input 
+                      type="file" 
+                      id="expense-file-input"
+                      accept="image/*,application/pdf"
+                      style={{ display: "none" }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          if (!/\.(jpe?g|png|webp|pdf)$/i.test(f.name)) {
+                            setExpenseError("Receipt must be an image (JPG, PNG, WebP) or PDF");
+                            return;
+                          }
+                          setExpenseReceiptFile(f);
+                          setExpenseError("");
+                        }
+                      }}
+                    />
+                    {expenseReceiptFile ? (
+                      <div className="staged-file-preview">
+                        <span className="file-preview-icon">🧾</span>
+                        <span className="file-preview-name">{expenseReceiptFile.name}</span>
+                        <span className="file-preview-size">{formatSize(expenseReceiptFile.size)}</span>
+                      </div>
+                    ) : (
+                      <div className="dragzone-placeholder">
+                        <span className="upload-cloud-icon">📷</span>
+                        <span className="dragzone-text">Drag receipt image/PDF here or <strong>browse</strong></span>
+                        <span className="dragzone-hint">Supports JPEG, PNG, WebP, PDF</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="custom-form-group">
+                  <label htmlFor="expense-description">Description</label>
+                  <textarea 
+                    id="expense-description" 
+                    placeholder="e.g. Travel claims for client site visit regarding trust deed signing..."
+                    value={expenseDesc}
+                    onChange={(e) => setExpenseDesc(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="custom-modal-footer">
+                <button 
+                  type="submit" 
+                  className="btn-primary" 
+                  disabled={expenseSaving}
+                >
+                  {expenseSaving ? "Saving..." : "Add Expense"}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => {
+                    setIsAddExpenseOpen(false);
+                    setExpenseAmount("");
+                    setExpenseReceiptFile(null);
+                    setExpenseReceiptDataUrl("");
+                    setExpenseDesc("");
+                    setExpenseError("");
+                  }}
+                  disabled={expenseSaving}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

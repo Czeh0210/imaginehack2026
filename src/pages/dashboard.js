@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker } from "@react-google-maps/api";
+import { GoogleMap, DirectionsRenderer, Marker } from "@react-google-maps/api";
+import { useMapsLoaded } from "@/lib/mapsLoader";
 
 export default function Dashboard() {
   // Mock data for repositories/clients
@@ -19,7 +20,7 @@ export default function Dashboard() {
   const handleCreateRepo = (e) => {
     e.preventDefault();
     if (!newRepoName.trim()) return;
-    
+
     setRepos([
       {
         id: Date.now(),
@@ -41,7 +42,7 @@ export default function Dashboard() {
   const feedItems = [
     {
       id: 1,
-      repo: "AcmeCorp/estate-plan",
+      repo: "AMCORD",
       title: "Updated Living Trust Document",
       description: "Added new clauses regarding digital assets and cryptocurrency holdings.",
       time: "2 hours ago",
@@ -59,9 +60,9 @@ export default function Dashboard() {
 
   // Mock data for calendar meetings
   const meetings = [
-    { id: 1, time: "10:00 AM", client: "Bruce Wayne",     title: "Succession Review",       type: "Zoom",       durationMins: 60 },
-    { id: 2, time: "01:30 PM", client: "John Smith",      title: "Will Signing",            type: "In-person",  durationMins: 60 },
-    { id: 3, time: "04:00 PM", client: "Acme Corp Board", title: "Quarterly Estate Update", type: "Teams",      durationMins: 90 },
+    { id: 1, time: "10:00 AM", client: "Bruce Wayne", title: "Succession Review", type: "Zoom", durationMins: 60 },
+    { id: 2, time: "01:30 PM", client: "John Smith", title: "Will Signing", type: "In-person", durationMins: 60 },
+    { id: 3, time: "04:00 PM", client: "AMCORD Board", title: "Quarterly Estate Update", type: "Teams", durationMins: 90 },
   ];
 
   // Build a Google Calendar "add event" URL (no API key needed)
@@ -83,20 +84,15 @@ export default function Dashboard() {
     const endTime = `${pad(endH)}${pad(endM)}00`;
 
     const start = `${ymd}T${startTime}`;
-    const end   = `${ymd}T${endTime}`;
-    const text  = encodeURIComponent(`${meeting.title} — ${meeting.client}`);
+    const end = `${ymd}T${endTime}`;
+    const text = encodeURIComponent(`${meeting.title} — ${meeting.client}`);
     const details = encodeURIComponent(`Client: ${meeting.client}\nMeeting type: ${meeting.type}`);
 
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}`;
   };
 
   // ── GOOGLE MAPS ──
-  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-  const { isLoaded: mapsLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
-  });
+  const mapsLoaded = useMapsLoaded();
 
   // 3 real Selangor addresses the advisor visits
   const stops = [
@@ -271,7 +267,7 @@ export default function Dashboard() {
                 <button className="submit-btn">➤</button>
               </div>
             </div>
-            
+
             <div className="quick-actions">
               <button className="quick-btn">🤖 Agent</button>
               <button className="quick-btn">⊙ Create issue</button>
@@ -291,7 +287,7 @@ export default function Dashboard() {
               <div className="feed-category-title">
                 📈 Recent client activity
               </div>
-              
+
               {feedItems.map((item) => {
                 const urlSafeName = item.repo.replace("/", "_");
                 return (
@@ -348,7 +344,7 @@ export default function Dashboard() {
                           id={`cal-btn-${m.id}`}
                           title="Add to Google Calendar"
                         >
-                          <svg height="11" viewBox="0 0 24 24" width="11" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+                          <svg height="11" viewBox="0 0 24 24" width="11" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg>
                           + Calendar
                         </a>
                         <button
@@ -365,7 +361,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            
+
             <button className="view-calendar-btn">Open full calendar</button>
           </div>
 
@@ -391,19 +387,10 @@ export default function Dashboard() {
             </div>
 
             <div className="map-modal-body">
-              {/* Origin */}
-              <div className="route-origin">
-                <span className="route-origin-icon">🏢</span>
-                <div>
-                  <div className="route-origin-label">Starting Point — Advisor Office</div>
-                  <div className="route-origin-addr">{advisorOrigin.address}</div>
-                </div>
-              </div>
-
               {/* Stop cards */}
               <div className="route-stops">
                 {stops.map((stop) => (
-                  <button
+                  <div
                     key={stop.id}
                     id={`modal-stop-${stop.id}`}
                     className={`route-stop-card ${selectedStop?.id === stop.id ? 'rsc--active' : ''}`}
@@ -415,8 +402,16 @@ export default function Dashboard() {
                       <div className="rsc-name">{stop.name}</div>
                       <div className="rsc-addr">{stop.address}</div>
                     </div>
-                    <span className="rsc-cta">View ↗</span>
-                  </button>
+                    <a
+                      className="rsc-cta"
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(stop.address)}&travelmode=driving`}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Navigate →
+                    </a>
+                  </div>
                 ))}
               </div>
 
@@ -437,7 +432,7 @@ export default function Dashboard() {
                 )}
                 {mapsLoaded && !routeLoading && !directionsResult && !routeError && (
                   <div className="map-placeholder">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#d0d7de"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z"/></svg>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#d0d7de"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z" /></svg>
                     <p>Click a stop to load the route</p>
                   </div>
                 )}
@@ -1202,7 +1197,15 @@ export default function Dashboard() {
         .rsc-body { padding: 8px 10px 4px; flex: 1; }
         .rsc-name { font-size: 12px; font-weight: 700; color: #1f2328; margin-bottom: 3px; }
         .rsc-addr { font-size: 11px; color: #656d76; line-height: 1.5; }
-        .rsc-cta { font-size: 11px; font-weight: 700; color: var(--sc, #0969da); padding: 6px 10px 10px; }
+        .rsc-cta {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--sc, #0969da);
+          padding: 6px 10px 10px;
+          text-decoration: none;
+          display: inline-block;
+        }
+        .rsc-cta:hover { text-decoration: underline; }
 
         /* Map area */
         .map-area {
