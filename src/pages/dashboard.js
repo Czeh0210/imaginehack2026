@@ -787,8 +787,8 @@ function RightSidebar({ schedule, onOpenMap }) {
   );
 }
 
-// ── Home page ────────────────────────────────────────────────────────────
-export default function Home() {
+// ── Dashboard page ────────────────────────────────────────────────────────────
+export default function Dashboard() {
   const [repos, setRepos] = useState(TOP_REPOSITORIES);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreatingNew, setIsCreatingNew] = useState(false);
