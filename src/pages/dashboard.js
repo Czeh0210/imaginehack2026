@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import TopNav from "@/components/TopNav";
+import { ClientCardSection } from "@/components/ui/ClientCard";
 import {
   Plus,
   ChevronDown,
@@ -294,6 +295,7 @@ function Feed({ activity }) {
         role: "assistant",
         content: data.reply || "No response received.",
         sources: data.sources,
+        relevantClients: data.relevantClients,
       }]);
     } catch {
       setMessages([...next, { role: "assistant", content: "Something went wrong. Please try again." }]);
@@ -323,32 +325,25 @@ function Feed({ activity }) {
             className="max-h-[340px] overflow-y-auto p-4 border-b border-gray-100 flex flex-col gap-3"
           >
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                 <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.role === "user"
                     ? "bg-blue-600 text-white rounded-br-sm"
                     : "bg-gray-100 text-gray-800 rounded-bl-sm border border-gray-200"
                 }`}>
                   {msg.content}
-                  {/* Source pills — link to the relevant client repo */}
-                  {msg.sources?.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {msg.sources.slice(0, 3).map((s, si) => {
-                        const slug = (s.clientId || "").replace("/", "_");
-                        const href = slug ? `/client/${slug}` : "#";
-                        return (
-                          <Link
-                            key={si}
-                            href={href}
-                            className="inline-block bg-white/20 text-xs px-1.5 py-0.5 rounded-full border border-white/30 hover:bg-white/30 transition-colors cursor-pointer no-underline"
-                          >
-                            {s.clientName} · {(s.score * 100).toFixed(0)}%
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
+                {/* Client repo cards — shown below assistant bubbles */}
+                {msg.role === "assistant" && (
+                  <div className="w-full mt-1">
+                    <ClientCardSection
+                      text={msg.content}
+                      relevantClients={msg.relevantClients}
+                      sources={msg.sources}
+                      compact={true}
+                    />
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (

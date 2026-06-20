@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { Paperclip, Clock, Maximize2 } from "lucide-react";
 import { CLIENTS } from "@/lib/mockData";
+import { ClientCardSection } from "@/components/ui/ClientCard";
 
 const clientIdToRepoId = {
   "005511": "005511_LimWeiMing",
@@ -595,7 +596,7 @@ export default function GlobalChatWidget() {
                               {msg.sources && msg.sources.length > 0 && (
                                 <details style={{ marginTop: "8px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "6px" }}>
                                   <summary style={{ fontSize: "11px", color: "#c97c3a", cursor: "pointer", fontWeight: "600", outline: "none" }}>
-                                    🔍 {msg.sources.length} matching sources
+                                    🔍 {msg.sources.length} memory sources
                                   </summary>
                                   <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
                                     {msg.sources.map((s, sIdx) => {
@@ -625,34 +626,13 @@ export default function GlobalChatWidget() {
                                 </details>
                               )}
 
-                              {/* Relevance Ranking */}
-                              {msg.relevantClients && msg.relevantClients.length > 0 && (
-                                <div style={{ marginTop: "8px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "6px" }}>
-                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#57606a", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
-                                  {msg.relevantClients.map((rc, rIdx) => {
-                                    const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
-                                    const linkUrl = `/client/${repoSlug}`;
-                                    return (
-                                      <a
-                                        key={rIdx}
-                                        href={linkUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                                      >
-                                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "4px", cursor: "pointer", padding: "4px", borderRadius: "4px" }}>
-                                          <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550, color: "#24292f" }}>{rc.clientName}</span>
-                                          <div style={{ flex: 1, height: "4px", background: "#e5e7eb", borderRadius: "2px", overflow: "hidden" }}>
-                                            <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
-                                          </div>
-                                          <span style={{ width: "24px", textAlign: "right", color: "#57606a" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
-                                          <span style={{ color: "#57606a", fontSize: "10px" }}>↗</span>
-                                        </div>
-                                      </a>
-                                    );
-                                  })}
-                                </div>
-                              )}
+                              {/* Compact clickable client cards */}
+                              <ClientCardSection
+                                text={msg.content}
+                                relevantClients={msg.relevantClients}
+                                sources={msg.sources}
+                                compact={true}
+                              />
                             </>
                           ) : (
                             <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "white" }}>{msg.content}</p>

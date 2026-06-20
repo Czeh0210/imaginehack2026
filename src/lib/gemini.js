@@ -2,7 +2,7 @@
  * lib/gemini.js
  * Thin wrapper around @google/generative-ai for:
  *   - Text embeddings  (text-embedding-004, 768-dim)
- *   - Chat generation  (gemini-2.0-flash)
+ *   - Chat generation  (gemini-2.0-flash — 1,500 req/day free tier)
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -56,7 +56,7 @@ export async function embedBatch(texts, batchSize = 5) {
  */
 export async function generateReply(systemPrompt, messages) {
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash-lite',
+    model: 'gemini-2.5-flash',
     systemInstruction: systemPrompt,
   });
 

@@ -10,6 +10,7 @@ import {
 import { CLIENTS } from "@/lib/mockData";
 import TopNav from "@/components/TopNav";
 import UserMessage from "@/components/ui/UserMessage";
+import { ClientCardSection } from "@/components/ui/ClientCard";
 
 const clientIdToRepoId = {
   "005511": "005511_LimWeiMing",
@@ -515,12 +516,14 @@ export default function ChatbotPage() {
                         <div className="ai-avatar">✦</div>
 
                         <div className="bubble assistant">
+                          {/* Markdown text */}
                           <div dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
 
+                          {/* Raw sources collapsible (keep for power users) */}
                           {msg.sources && msg.sources.length > 0 && (
                             <details style={{ marginTop: "10px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "8px" }}>
                               <summary style={{ fontSize: "12px", color: "#c97c3a", cursor: "pointer", fontWeight: 600, outline: "none" }}>
-                                🔍 {msg.sources.length} matching sources
+                                🔍 {msg.sources.length} matching memory sources
                               </summary>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
                                 {msg.sources.map((s, sIdx) => {
@@ -543,26 +546,13 @@ export default function ChatbotPage() {
                             </details>
                           )}
 
-                          {msg.relevantClients && msg.relevantClients.length > 0 && (
-                            <div style={{ marginTop: "10px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "8px" }}>
-                              <span style={{ fontSize: "12px", fontWeight: 600, color: "#57606a", display: "block", marginBottom: "6px" }}>👥 Matching Clients:</span>
-                              {msg.relevantClients.map((rc, rIdx) => {
-                                const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
-                                return (
-                                  <a key={rIdx} href={`/client/${repoSlug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", marginBottom: "5px", padding: "4px", borderRadius: "5px" }}>
-                                      <span style={{ width: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: "#24292f" }}>{rc.clientName}</span>
-                                      <div style={{ flex: 1, height: "4px", background: "#e5e7eb", borderRadius: "3px", overflow: "hidden" }}>
-                                        <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
-                                      </div>
-                                      <span style={{ width: "30px", textAlign: "right", color: "#57606a", fontSize: "11px" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
-                                      <span style={{ color: "#57606a" }}>↗</span>
-                                    </div>
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          )}
+                          {/* Clickable client cards — parsed from response text + RAG data */}
+                          <ClientCardSection
+                            text={msg.content}
+                            relevantClients={msg.relevantClients}
+                            sources={msg.sources}
+                            compact={false}
+                          />
                         </div>
                       </div>
                     );
