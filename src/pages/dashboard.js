@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import TopNav from "@/components/TopNav";
@@ -7,7 +7,6 @@ import {
   Plus,
   ChevronDown,
   Book,
-  Star,
   History,
   MoreHorizontal,
   User,
@@ -16,9 +15,44 @@ import {
   AlertTriangle,
   Calendar,
   Users,
+  ArrowUp,
+  ExternalLink,
 } from "lucide-react";
 
+// ── Design tokens (from design.md) ──────────────────────────────────────────
+const TAG_STYLES = {
+  Risk:       { bg: "#fffbeb", text: "#d97706", border: "#fde68a" },
+  FIRE:       { bg: "#fffbeb", text: "#d97706", border: "#fde68a" },
+  Draft:      { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" },
+  Legal:      { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
+  Corporate:  { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" },
+  Portfolio:  { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
+  Estate:     { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe" },
+  Education:  { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
+  Planning:   { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
+  Retirement: { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
+  Insurance:  { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
+};
+const TAG_DEFAULT = { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" };
 
+const AVATAR_PALETTE = [
+  { bg: "#dbeafe", text: "#1d4ed8" },
+  { bg: "#dcfce7", text: "#15803d" },
+  { bg: "#fef3c7", text: "#b45309" },
+  { bg: "#ede9fe", text: "#7c3aed" },
+  { bg: "#fce7f3", text: "#be185d" },
+  { bg: "#ffedd5", text: "#c2410c" },
+];
+
+function avatarColor(name = "") {
+  return AVATAR_PALETTE[(name.charCodeAt(0) || 0) % AVATAR_PALETTE.length];
+}
+
+function clientInitial(actor = "") {
+  return actor.split("/")[1]?.[0]?.toUpperCase() ?? "?";
+}
+
+// ── Data ────────────────────────────────────────────────────────────────────
 const TOP_REPOSITORIES = [
   { id: 1,  name: "005511/LimWeiMing" },
   { id: 2,  name: "005512/SarahTan" },
@@ -112,134 +146,10 @@ const ADVISOR_ACTIVITY = [
 ];
 
 const SCHEDULE = [
-  {
-    time: "10:00 AM",
-    title: "FIRE Strategy Review",
-    client: "005515/DavidNg",
-    type: "ZOOM",
-  },
-  {
-    time: "01:30 PM",
-    title: "Trust Fund Signing",
-    client: "005514/JenniferKoh",
-    type: "IN-PERSON",
-  },
-  {
-    time: "04:00 PM",
-    title: "Estate Exit Update",
-    client: "005511/LimWeiMing",
-    type: "TEAMS",
-  },
+  { time: "10:00 AM", title: "FIRE Strategy Review",  client: "005515/DavidNg",     type: "ZOOM"      },
+  { time: "01:30 PM", title: "Trust Fund Signing",    client: "005514/JenniferKoh", type: "IN-PERSON" },
+  { time: "04:00 PM", title: "Estate Exit Update",    client: "005511/LimWeiMing",  type: "TEAMS"     },
 ];
-
-function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsCreatingNew, newRepoName, setNewRepoName, onCreateRepo }) {
-  const [showAll, setShowAll] = useState(false);
-
-  // When searching, always show all matches; otherwise respect the toggle
-  const isSearching = searchQuery.trim().length > 0;
-  const visibleRepos = isSearching || showAll ? repos : repos.slice(0, INITIAL_VISIBLE);
-  const hasMore = !isSearching && repos.length > INITIAL_VISIBLE;
-
-  return (
-    <aside className="hidden md:block w-[280px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pb-8 pr-4 text-sm bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-gray-900 font-semibold">Top repositories</h2>
-        <button
-          onClick={() => setIsCreatingNew(!isCreatingNew)}
-          className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors shadow-sm"
-        >
-          <Book size={14} />
-          New
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Find a repository..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-white border border-gray-300 text-gray-900 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
-        />
-      </div>
-
-      {isCreatingNew && (
-        <form onSubmit={onCreateRepo} className="mb-4 flex flex-col gap-2 p-3 bg-white border border-gray-300 rounded-md shadow-sm">
-          <input
-            type="text"
-            autoFocus
-            placeholder="Repository name..."
-            value={newRepoName}
-            onChange={(e) => setNewRepoName(e.target.value)}
-            className="w-full bg-white border border-gray-300 text-gray-900 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          />
-          <div className="flex gap-2">
-            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-colors">
-              Create
-            </button>
-            <button type="button" onClick={() => setIsCreatingNew(false)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-md border border-gray-300 transition-colors">
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      <ul className="flex flex-col gap-1">
-        {visibleRepos.map((repo) => {
-          const urlSafeName = repo.name.replace("/", "_");
-          return (
-            <li key={repo.id} className="flex items-center gap-2 group cursor-pointer px-2 py-1.5 hover:bg-gray-100 rounded-md transition-colors">
-              <span className="w-4 h-4 rounded-full bg-gray-300 border border-gray-400 flex-shrink-0"></span>
-              <Link href={`/client/${urlSafeName}`} className="text-gray-700 font-medium hover:text-blue-600 truncate">
-                {repo.name}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-
-      {hasMore && (
-        <div className="mt-2 px-2">
-          <button
-            onClick={() => setShowAll(true)}
-            className="text-gray-500 hover:text-blue-600 text-xs transition-colors font-medium"
-          >
-            Show more
-          </button>
-        </div>
-      )}
-    </aside>
-  );
-}
-
-function ActivityCard({ item }) {
-  const urlSafeName = item.actor.replace("/", "_");
-  return (
-    <Link
-      href={`/client/${urlSafeName}`}
-      className="block bg-white border border-gray-200 rounded-lg p-4 shadow-sm text-sm no-underline hover:border-blue-300 hover:shadow-md transition-all duration-150 cursor-pointer"
-    >
-      <div className="flex items-center gap-3 mb-3">
-        <span className="w-5 h-5 rounded-full bg-gray-300 border border-gray-400 flex-shrink-0"></span>
-        <span className="font-semibold text-gray-900 group-hover:text-blue-600">
-          {item.actor}
-        </span>
-      </div>
-      <h3 className="text-base font-semibold text-gray-900 mb-1">{item.title}</h3>
-      <p className="text-gray-600 mb-3">{item.description}</p>
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center gap-2">
-          {item.tags.map((tag, idx) => (
-            <span key={idx} className="bg-gray-100 text-gray-600 border border-gray-300 rounded-full px-2.5 py-0.5 text-xs font-medium">
-              {tag}
-            </span>
-          ))}
-        </div>
-        <span className="text-gray-500 text-xs">{item.time}</span>
-      </div>
-    </Link>
-  );
-}
 
 const SCOPE_OPTIONS = [
   { value: "all",    label: "All clients" },
@@ -251,6 +161,161 @@ const SCOPE_OPTIONS = [
   { value: "005516", label: "005516 / RosnahYusof" },
 ];
 
+const TYPE_STYLES = {
+  ZOOM:        { bg: "#ddf4ff", text: "#0969da", border: "#b6e3ff", dot: "#0969da" },
+  "IN-PERSON": { bg: "#dafbe1", text: "#1a7f37", border: "#aceebb", dot: "#1a7f37" },
+  TEAMS:       { bg: "#fff8c5", text: "#9a6700", border: "#f0d800", dot: "#9a6700" },
+};
+
+// ── LeftSidebar ──────────────────────────────────────────────────────────────
+function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsCreatingNew, newRepoName, setNewRepoName, onCreateRepo }) {
+  const [showAll, setShowAll] = useState(false);
+  const isSearching = searchQuery.trim().length > 0;
+  const visibleRepos = isSearching || showAll ? repos : repos.slice(0, INITIAL_VISIBLE);
+  const hasMore = !isSearching && repos.length > INITIAL_VISIBLE;
+
+  return (
+    <aside className="hidden md:block w-[280px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pb-8 text-sm bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-gray-900 font-semibold text-[13px] tracking-wide">Top repositories</h2>
+        <button
+          onClick={() => setIsCreatingNew(!isCreatingNew)}
+          className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-2.5 py-1 rounded-md transition-colors"
+        >
+          <Book size={12} />
+          New
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="mb-3">
+        <div className="relative">
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Find a repository…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-gray-300 text-gray-900 rounded-md pl-8 pr-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          />
+        </div>
+      </div>
+
+      {/* Create new form */}
+      {isCreatingNew && (
+        <form onSubmit={onCreateRepo} className="mb-3 flex flex-col gap-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
+          <input
+            type="text"
+            autoFocus
+            placeholder="Repository name…"
+            value={newRepoName}
+            onChange={(e) => setNewRepoName(e.target.value)}
+            className="w-full bg-white border border-gray-300 text-gray-900 rounded-md px-3 py-1.5 text-[13px] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+          />
+          <div className="flex gap-2">
+            <button type="submit" className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-md transition-colors">
+              Create
+            </button>
+            <button type="button" onClick={() => setIsCreatingNew(false)} className="bg-white hover:bg-gray-50 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-md border border-gray-300 transition-colors">
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Repo list */}
+      <ul className="flex flex-col gap-0.5">
+        {visibleRepos.map((repo) => {
+          const urlSafeName = repo.name.replace("/", "_");
+          const av = avatarColor(repo.name);
+          const init = clientInitial(repo.name);
+          return (
+            <li key={repo.id}>
+              <Link
+                href={`/client/${urlSafeName}`}
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-gray-100 transition-colors group"
+              >
+                <span
+                  className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-bold"
+                  style={{ background: av.bg, color: av.text }}
+                >
+                  {init}
+                </span>
+                <span className="text-gray-700 font-medium group-hover:text-blue-600 truncate text-[13px]">
+                  {repo.name}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+
+      {hasMore && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="mt-2 ml-1 text-gray-500 hover:text-blue-600 text-xs font-medium transition-colors"
+        >
+          Show {repos.length - INITIAL_VISIBLE} more →
+        </button>
+      )}
+    </aside>
+  );
+}
+
+// ── ActivityCard ─────────────────────────────────────────────────────────────
+function ActivityCard({ item }) {
+  const urlSafeName = item.actor.replace("/", "_");
+  const av = avatarColor(item.actor);
+  const init = clientInitial(item.actor);
+
+  return (
+    <Link
+      href={`/client/${urlSafeName}`}
+      className="block bg-white border border-gray-200 rounded-lg p-4 no-underline hover:border-blue-300 hover:shadow-md transition-all duration-150 group"
+      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}
+    >
+      {/* Actor row */}
+      <div className="flex items-center gap-2.5 mb-3">
+        <span
+          className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
+          style={{ background: av.bg, color: av.text }}
+        >
+          {init}
+        </span>
+        <span className="text-[13px] font-semibold text-gray-500 group-hover:text-blue-600 transition-colors">
+          {item.actor}
+        </span>
+        <ExternalLink size={12} className="ml-auto text-gray-300 group-hover:text-blue-400 flex-shrink-0 transition-colors" />
+      </div>
+
+      {/* Title + description */}
+      <h3 className="text-[15px] font-semibold text-gray-900 mb-1 leading-snug">{item.title}</h3>
+      <p className="text-[13px] text-gray-500 leading-relaxed mb-3">{item.description}</p>
+
+      {/* Tags + time */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {item.tags.map((tag) => {
+            const s = TAG_STYLES[tag] ?? TAG_DEFAULT;
+            return (
+              <span
+                key={tag}
+                className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}` }}
+              >
+                {tag}
+              </span>
+            );
+          })}
+        </div>
+        <span className="text-gray-400 text-[12px] flex-shrink-0 ml-3">{item.time}</span>
+      </div>
+    </Link>
+  );
+}
+
+// ── Feed ─────────────────────────────────────────────────────────────────────
 function Feed({ activity }) {
   const [query, setQuery]               = useState("");
   const [scope, setScope]               = useState("all");
@@ -263,7 +328,6 @@ function Feed({ activity }) {
 
   const scopeLabel = SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? "All clients";
 
-  // Scroll only the messages container — never the whole page
   useEffect(() => {
     const el = messagesContainerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -311,14 +375,16 @@ function Feed({ activity }) {
 
   const clearChat = () => { setMessages([]); setSessionId(null); };
 
+  const canSend = query.trim().length > 0 && !isLoading;
+
   return (
     <main className="flex-1 w-full max-w-[800px]">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-4">Home</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-5 tracking-tight">Home</h1>
 
-      {/* ── Inline Chatbot Box ── */}
-      <div className="bg-white border border-gray-200 rounded-lg mb-6 shadow-sm overflow-hidden">
+      {/* ── IntelliBot inline chat ── */}
+      <div className="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
 
-        {/* Messages area — only shown when conversation has started */}
+        {/* Messages */}
         {messages.length > 0 && (
           <div
             ref={messagesContainerRef}
@@ -326,14 +392,13 @@ function Feed({ activity }) {
           >
             {messages.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
+                <div className={`max-w-[80%] px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-sm"
-                    : "bg-gray-100 text-gray-800 rounded-bl-sm border border-gray-200"
+                    ? "bg-blue-600 text-white rounded-xl rounded-br-sm"
+                    : "bg-[#f0f2f4] text-gray-900 rounded-xl rounded-bl-sm border border-gray-200"
                 }`}>
                   {msg.content}
                 </div>
-                {/* Client repo cards — shown below assistant bubbles */}
                 {msg.role === "assistant" && (
                   <div className="w-full mt-1">
                     <ClientCardSection
@@ -348,10 +413,13 @@ function Feed({ activity }) {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 border border-gray-200 rounded-xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
+                <div className="bg-[#f0f2f4] border border-gray-200 rounded-xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
                   {[0, 1, 2].map((d) => (
-                    <span key={d} style={{ animationDelay: `${d * 0.18}s` }}
-                      className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+                    <span
+                      key={d}
+                      style={{ animationDelay: `${d * 0.18}s` }}
+                      className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    />
                   ))}
                 </div>
               </div>
@@ -361,7 +429,6 @@ function Feed({ activity }) {
 
         {/* Input area */}
         <div className="p-4">
-          {/* Text input */}
           <div className="flex items-start gap-2 mb-3">
             <textarea
               ref={inputRef}
@@ -372,35 +439,42 @@ function Feed({ activity }) {
               placeholder={messages.length === 0
                 ? "Ask anything about your clients or type @ to add context"
                 : "Follow up…"}
-              className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 resize-none text-base leading-snug"
+              className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 resize-none text-[15px] leading-snug"
               style={{ minHeight: "28px", maxHeight: "96px" }}
             />
             {messages.length > 0 && (
-              <button onClick={clearChat} className="text-gray-400 hover:text-red-500 text-xs font-medium transition-colors shrink-0 mt-0.5">
+              <button
+                onClick={clearChat}
+                className="text-gray-400 hover:text-red-500 text-xs font-medium transition-colors shrink-0 mt-0.5"
+              >
                 Clear
               </button>
             )}
           </div>
 
-          {/* Toolbar row */}
+          {/* Toolbar */}
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Scope dropdown */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Scope selector */}
               <div className="relative">
                 <button
                   onClick={() => setShowScopeMenu((v) => !v)}
-                  className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                  className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors"
                 >
-                  <Users size={14} /> {scopeLabel} <ChevronDown size={13} />
+                  <Users size={13} />
+                  <span>{scopeLabel}</span>
+                  <ChevronDown size={12} />
                 </button>
                 {showScopeMenu && (
-                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px]">
+                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg py-1 min-w-[200px]" style={{ boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
                     {SCOPE_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => { setScope(opt.value); setShowScopeMenu(false); }}
-                        className={`w-full text-left px-3 py-1.5 text-sm transition-colors ${
-                          scope === opt.value ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-50"
+                        className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors ${
+                          scope === opt.value
+                            ? "bg-blue-50 text-blue-700 font-semibold"
+                            : "text-gray-700 hover:bg-gray-50"
                         }`}
                       >
                         {opt.label}
@@ -409,70 +483,64 @@ function Feed({ activity }) {
                   </div>
                 )}
               </div>
-              <button className="text-gray-400 hover:text-gray-600 p-1.5 border border-transparent hover:border-gray-300 rounded-md transition-colors">
-                <Plus size={16} />
+
+              <button className="text-gray-400 hover:text-gray-600 p-1.5 border border-transparent hover:border-gray-200 rounded-md transition-colors">
+                <Plus size={15} />
               </button>
             </div>
 
-            {/* Send button */}
+            {/* Send */}
             <button
               onClick={() => sendMessage()}
-              disabled={!query.trim() || isLoading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-md p-1.5 transition-colors"
+              disabled={!canSend}
+              className="flex items-center justify-center rounded-lg p-1.5 transition-colors"
+              style={{
+                background: canSend ? "#24292f" : "#e5e7eb",
+                color: canSend ? "#ffffff" : "#9ca3af",
+                cursor: canSend ? "pointer" : "not-allowed",
+              }}
             >
-              <ChevronDown size={18} className="-rotate-90" />
+              <ArrowUp size={16} />
             </button>
           </div>
 
-          {/* Quick action pills */}
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <button
-              onClick={() => sendMessage("Summarise the latest activity across all clients")}
-              className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-            >
-              <Search size={13} /> Client summary
-            </button>
-            <button
-              onClick={() => sendMessage("Which clients have pending document reviews or expiring policies?")}
-              className="flex items-center gap-1 text-gray-600 hover:bg-gray-100 border border-transparent hover:border-gray-300 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-            >
-              <FileText size={13} /> Pending reviews
-            </button>
-            <button
-              onClick={() => sendMessage("Which clients have high financial risk exposure or flagged concerns?")}
-              className="flex items-center gap-1 text-yellow-600 hover:bg-yellow-50 border border-transparent hover:border-yellow-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-            >
-              <AlertTriangle size={13} /> Risk flags
-            </button>
-            <button
-              onClick={() => sendMessage("List clients with upcoming estate or retirement milestones")}
-              className="flex items-center gap-1 text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-            >
-              <Calendar size={13} /> Milestones
-            </button>
-            <button
-              onClick={() => sendMessage("Which clients should I prioritise contacting this week?")}
-              className="flex items-center gap-1 text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
-            >
-              <Users size={13} /> Prioritise <ChevronDown size={11} />
-            </button>
+          {/* Quick action chips */}
+          <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+            {[
+              { icon: Search,        label: "Client summary",  color: "text-blue-600",   prompt: "Summarise the latest activity across all clients" },
+              { icon: FileText,      label: "Pending reviews", color: "text-gray-600",   prompt: "Which clients have pending document reviews or expiring policies?" },
+              { icon: AlertTriangle, label: "Risk flags",      color: "text-amber-600",  prompt: "Which clients have high financial risk exposure or flagged concerns?" },
+              { icon: Calendar,      label: "Milestones",      color: "text-green-600",  prompt: "List clients with upcoming estate or retirement milestones" },
+              { icon: Users,         label: "Prioritise",      color: "text-purple-600", prompt: "Which clients should I prioritise contacting this week?" },
+            ].map(({ icon: Icon, label, color, prompt }) => (
+              <button
+                key={label}
+                onClick={() => sendMessage(prompt)}
+                className={`flex items-center gap-1.5 ${color} bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors`}
+              >
+                <Icon size={12} />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ── Feed Section ── */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Feed</h2>
-        <button className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1 transition-colors shadow-sm">
-          <MoreHorizontal size={16} /> Filter
+      {/* ── Feed header ── */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold text-gray-900">Feed</h2>
+          <span className="flex items-center gap-1 text-gray-400 text-[13px]">
+            <History size={13} />
+            Recent activity
+          </span>
+        </div>
+        <button className="flex items-center gap-1 bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors" style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
+          <MoreHorizontal size={14} /> Filter
         </button>
       </div>
 
-      <div className="flex items-center gap-2 text-gray-500 mb-4 text-sm font-medium">
-        <History size={16} className="text-red-500" /> Recent client activity
-      </div>
-
-      <div className="flex flex-col gap-4 pb-8">
+      <div className="flex flex-col gap-3 pb-8">
         {activity.map((item) => (
           <ActivityCard key={item.id} item={item} />
         ))}
@@ -481,12 +549,7 @@ function Feed({ activity }) {
   );
 }
 
-const TYPE_STYLES = {
-  ZOOM:        { bg: "#ddf4ff", text: "#0969da", border: "#b6e3ff", dot: "#0969da" },
-  "IN-PERSON": { bg: "#dafbe1", text: "#1a7f37", border: "#aceebb", dot: "#1a7f37" },
-  TEAMS:       { bg: "#fff8c5", text: "#9a6700", border: "#f0d800", dot: "#9a6700" },
-};
-
+// ── RightSidebar ─────────────────────────────────────────────────────────────
 function RightSidebar({ schedule }) {
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "short",
@@ -495,23 +558,25 @@ function RightSidebar({ schedule }) {
   });
 
   return (
-    <aside className="hidden lg:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pl-4 text-sm">
-      {/* Today's Schedule — vertical timeline */}
-      <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+    <aside className="hidden lg:flex flex-col gap-4 w-[300px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pl-2 text-sm">
+
+      {/* Today's Schedule */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-gray-900 font-semibold text-base">Today&apos;s Schedule</h2>
-          <span className="text-gray-500 text-xs font-medium">{today}</span>
+          <h2 className="text-gray-900 font-semibold text-[14px]">Today&apos;s Schedule</h2>
+          <span className="text-gray-400 text-[12px] font-medium">{today}</span>
         </div>
 
         <div className="relative">
-          {/* Continuous vertical line */}
-          <div style={{ position: "absolute", left: "7px", top: "8px", bottom: "8px", width: "2px", background: "#e4ebe6", borderRadius: "2px" }} />
+          {/* Timeline line */}
+          <div style={{ position: "absolute", left: "7px", top: "10px", bottom: "10px", width: "1.5px", background: "#e5e7eb", borderRadius: "2px" }} />
 
           <div className="flex flex-col gap-5">
             {schedule.map((item, idx) => {
-              const s = TYPE_STYLES[item.type] || TYPE_STYLES["ZOOM"];
+              const s = TYPE_STYLES[item.type] ?? TYPE_STYLES.ZOOM;
+              const av = avatarColor(item.client);
               return (
-                <div key={idx} style={{ display: "flex", gap: "14px", position: "relative" }}>
+                <div key={idx} className="flex gap-3.5 relative">
                   {/* Dot */}
                   <div style={{
                     flexShrink: 0,
@@ -526,28 +591,17 @@ function RightSidebar({ schedule }) {
                   }} />
 
                   {/* Content */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: "11px", color: "#57606a", fontWeight: 500, marginBottom: "3px" }}>
-                      {item.time}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] text-gray-400 font-medium mb-1">{item.time}</div>
+                    <div className="font-semibold text-gray-900 text-[13.5px] mb-1 leading-snug">{item.title}</div>
+                    <div className="flex items-center gap-1 text-gray-400 text-[12px] mb-2">
+                      <User size={11} className="flex-shrink-0" />
+                      <span className="truncate">{item.client}</span>
                     </div>
-                    <div style={{ fontWeight: 600, color: "#1c2128", fontSize: "13.5px", marginBottom: "4px", lineHeight: 1.35 }}>
-                      {item.title}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#57606a", fontSize: "12px", marginBottom: "7px" }}>
-                      <User size={12} style={{ flexShrink: 0 }} />
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.client}</span>
-                    </div>
-                    <span style={{
-                      display: "inline-block",
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      letterSpacing: "0.04em",
-                      padding: "2px 9px",
-                      borderRadius: "20px",
-                      background: s.bg,
-                      color: s.text,
-                      border: `1px solid ${s.border}`,
-                    }}>
+                    <span
+                      className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}`, letterSpacing: "0.04em" }}
+                    >
                       {item.type}
                     </span>
                   </div>
@@ -557,24 +611,35 @@ function RightSidebar({ schedule }) {
           </div>
         </div>
 
-        <button className="w-full mt-5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md px-4 py-2 text-sm font-medium transition-colors">
-          Open full calendar →
+        <button className="w-full mt-5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-md px-4 py-2 text-[13px] font-medium transition-colors text-left flex items-center justify-between">
+          Open full calendar
+          <ExternalLink size={13} className="text-gray-400" />
         </button>
       </div>
 
       {/* Client Portal Analytics */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-        <h2 className="text-gray-900 font-semibold mb-3">Client Portal Analytics</h2>
-        <p className="text-gray-600 mb-4">3 clients viewed their estate plans today.</p>
-        <a href="#" className="text-blue-600 hover:underline text-sm font-medium flex items-center gap-1">
-          View report <ChevronDown size={14} className="-rotate-90" />
+      <div className="bg-white border border-gray-200 rounded-xl p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-gray-900 font-semibold text-[14px]">Portal Analytics</h2>
+          <span
+            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+            style={{ background: "#ecfdf5", color: "#16a34a", border: "1px solid #bbf7d0" }}
+          >
+            Live
+          </span>
+        </div>
+        <p className="text-gray-500 text-[13px] mb-3 leading-relaxed">
+          3 clients viewed their estate plans today.
+        </p>
+        <a href="#" className="text-blue-600 hover:text-blue-700 text-[13px] font-medium flex items-center gap-1 transition-colors">
+          View report <ChevronDown size={13} className="-rotate-90" />
         </a>
       </div>
     </aside>
   );
 }
 
-
+// ── Dashboard page ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [repos, setRepos] = useState(TOP_REPOSITORIES);
   const [searchQuery, setSearchQuery] = useState("");
@@ -584,10 +649,7 @@ export default function Dashboard() {
   const handleCreateRepo = (e) => {
     e.preventDefault();
     if (!newRepoName.trim()) return;
-    setRepos([
-      { id: Date.now(), name: newRepoName.trim() },
-      ...repos,
-    ]);
+    setRepos([{ id: Date.now(), name: newRepoName.trim() }, ...repos]);
     setNewRepoName("");
     setIsCreatingNew(false);
   };
@@ -604,7 +666,7 @@ export default function Dashboard() {
 
       <TopNav />
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 pt-6 flex justify-center gap-6 lg:gap-8 relative">
+      <div className="max-w-[1440px] mx-auto px-4 md:px-8 pt-6 flex justify-center gap-6 lg:gap-8">
         <LeftSidebar
           repos={filteredRepos}
           searchQuery={searchQuery}
@@ -617,11 +679,6 @@ export default function Dashboard() {
         />
         <Feed activity={ADVISOR_ACTIVITY} />
         <RightSidebar schedule={SCHEDULE} />
-
-        {/* Floating Action Button */}
-        <button className="fixed bottom-8 right-8 bg-white text-gray-900 p-3 rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors z-50">
-          <Star size={20} fill="currentColor" className="text-gray-900" />
-        </button>
       </div>
     </div>
   );
