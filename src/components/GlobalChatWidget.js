@@ -50,14 +50,18 @@ export default function GlobalChatWidget() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState(null);
 
+  // Session history
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+
   const [activePageClient, setActivePageClient] = useState(null);
   const [searchScope, setSearchScope] = useState("global"); // "client" or "global"
   const [showContextList, setShowContextList] = useState(false);
   const [contextSearchQuery, setContextSearchQuery] = useState("");
 
   // Size states (anchored bottom-right, resizable top-left)
-  const [width, setWidth] = useState(380);
-  const [height, setHeight] = useState(500);
+  const [width, setWidth] = useState(700);
+  const [height, setHeight] = useState(600);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeMode, setResizeMode] = useState(null); // 'left', 'top', 'both'
 
@@ -73,6 +77,61 @@ export default function GlobalChatWidget() {
     setFilePreview(null);
     setSessionId(null);
   }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await fetch('/api/chat/session');
+      const data = await res.json();
+      setSessions(data.sessions || []);
+    } catch (e) {
+      console.error('Failed to fetch sessions', e);
+    }
+  };
+
+  const createNewSession = async () => {
+    try {
+      const res = await fetch('/api/chat/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: selectedClientId || undefined }),
+      });
+      const data = await res.json();
+      setSessionId(data.sessionId);
+      setActiveSessionId(data.sessionId);
+      setMessages([]);
+      fetchSessions();
+    } catch (e) {
+      console.error('Failed to create session', e);
+    }
+  };
+
+  const deleteSession = async (id) => {
+    try {
+      await fetch(`/api/chat/session?sessionId=${id}`, { method: 'DELETE' });
+      if (activeSessionId === id) {
+        setSessionId(null);
+        setActiveSessionId(null);
+        setMessages([]);
+      }
+      fetchSessions();
+    } catch (e) {
+      console.error('Failed to delete session', e);
+    }
+  };
+
+  const selectSession = async (id) => {
+    setActiveSessionId(id);
+    setSessionId(id);
+    try {
+      const res = await fetch(`/api/chat/session?sessionId=${id}`);
+      const data = await res.json();
+      if (data.session) {
+        setMessages(data.session.messages || []);
+      }
+    } catch (e) {
+      console.error('Failed to load session', e);
+    }
+  };
 
   // Close context dropdown on click outside
   useEffect(() => {
@@ -120,6 +179,10 @@ export default function GlobalChatWidget() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) fetchSessions();
+  }, [isOpen]);
 
   // Adjust textarea height inside widget
   const adjustTextarea = useCallback(() => {
@@ -300,7 +363,12 @@ export default function GlobalChatWidget() {
         throw new Error(data.error || "Failed to retrieve RAG response.");
       }
 
-      if (data.sessionId) setSessionId(data.sessionId);
+      if (data.sessionId) {
+        setSessionId(data.sessionId);
+        setActiveSessionId(data.sessionId);
+      }
+
+      fetchSessions();
 
       // Add assistant response
       setMessages([
@@ -458,182 +526,219 @@ export default function GlobalChatWidget() {
             )}
           </div>
 
-          {/* Messages Area */}
-          <div className="widget-body">
-            {messages.length === 0 ? (
-              <div className="widget-welcome">
-                <span className="welcome-icon">✦</span>
-                <h5>ImagineHack 2026</h5>
-                <p>
-                  Search embedded client memories, check risk goals, or upload a proposal to analyze against client records.
-                </p>
-                <div className="widget-pills">
-                  <button className="widget-pill" onClick={() => setInput("What are their retirement concerns?")}>
-                    👵 Retirement concerns?
+          {/* Main Content Area */}
+          <div className="widget-main-content">
+            {/* Session Sidebar */}
+            <div className="widget-sidebar">
+              <div className="widget-sidebar-header">
+                <span className="widget-sidebar-title">History</span>
+                <button className="widget-sidebar-new-btn" onClick={createNewSession}>
+                  + New
+                </button>
+              </div>
+              <div className="widget-sidebar-list">
+                {sessions.length === 0 ? (
+                  <div className="widget-sidebar-empty">No sessions yet</div>
+                ) : (
+                  [...sessions].reverse().map(s => (
+                    <div
+                      key={s.id}
+                      className={`widget-sidebar-item ${activeSessionId === s.id ? "active" : ""}`}
+                      onClick={() => selectSession(s.id)}
+                    >
+                      <div className="widget-sidebar-item-title">
+                        {s.messages?.[0]?.content?.slice(0, 22) || "Empty chat"}
+                      </div>
+                      <div className="widget-sidebar-item-meta">
+                        <span>{s.messageCount || 0} msgs</span>
+                        <span>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ""}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Chat Column */}
+            <div className="widget-chat-column">
+              {/* Messages Area */}
+              <div className="widget-body">
+                {messages.length === 0 ? (
+                  <div className="widget-welcome">
+                    <span className="welcome-icon">✦</span>
+                    <h5>ImagineHack 2026</h5>
+                    <p>
+                      Search embedded client memories, check risk goals, or upload a proposal to analyze against client records.
+                    </p>
+                    <div className="widget-pills">
+                      <button className="widget-pill" onClick={() => setInput("What are their retirement concerns?")}>
+                        👵 Retirement concerns?
+                      </button>
+                      <button className="widget-pill" onClick={() => setInput("Summarize passive income streams")}>
+                        📈 Passive income?
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="widget-msg-list">
+                    {messages.map((msg, index) => (
+                      <div
+                        key={index}
+                        className={`widget-msg-wrapper ${msg.role === "user" ? "user" : "assistant"}`}
+                      >
+                        <div className="widget-msg-bubble">
+                          {msg.file && (
+                            <div style={{ fontSize: "11px", background: "rgba(0,0,0,0.05)", padding: "4px 8px", borderRadius: "4px", marginBottom: "4px" }}>
+                              📄 {msg.file.name}
+                            </div>
+                          )}
+                          {msg.systemNotice && (
+                            <div style={{ fontSize: "11px", background: "#f0fdf4", color: "#16a34a", padding: "4px 8px", borderRadius: "4px", marginBottom: "6px", fontWeight: 500 }}>
+                              💾 {msg.systemNotice}
+                            </div>
+                          )}
+                          
+                          {msg.role === "assistant" ? (
+                            <>
+                              <div
+                                className="widget-markdown-content"
+                                dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                              />
+                              
+                              {/* Collapsible sources list */}
+                              {msg.sources && msg.sources.length > 0 && (
+                                <details style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
+                                  <summary style={{ fontSize: "11px", color: "#c97c3a", cursor: "pointer", fontWeight: "600", outline: "none" }}>
+                                    🔍 {msg.sources.length} matching sources
+                                  </summary>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
+                                    {msg.sources.map((s, sIdx) => {
+                                      const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
+                                      const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
+                                      const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
+                                      return (
+                                        <a
+                                          key={sIdx}
+                                          href={linkUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                                        >
+                                          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#64748b" }}>
+                                              <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
+                                              <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
+                                            </div>
+                                            <div style={{ fontStyle: "italic", color: "#64748b", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
+                                            <div style={{ fontSize: "9px", color: "#c97c3a", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
+                                          </div>
+                                        </a>
+                                      );
+                                    })}
+                                  </div>
+                                </details>
+                              )}
+                              
+                              {/* Relevance Ranking */}
+                              {msg.relevantClients && msg.relevantClients.length > 0 && (
+                                <div style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
+                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
+                                  {msg.relevantClients.map((rc, rIdx) => {
+                                    const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
+                                    const linkUrl = `/client/${repoSlug}`;
+                                    return (
+                                      <a
+                                        key={rIdx}
+                                        href={linkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                                      >
+                                        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "4px", cursor: "pointer", padding: "4px", borderRadius: "4px" }}>
+                                          <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550 }}>{rc.clientName}</span>
+                                          <div style={{ flex: 1, height: "4px", background: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
+                                            <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
+                                          </div>
+                                          <span style={{ width: "24px", textAlign: "right" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
+                                          <span style={{ color: "#94a3b8", fontSize: "10px" }}>↗</span>
+                                        </div>
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="widget-msg-wrapper assistant">
+                        <div className="widget-msg-bubble loading">
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              {/* Error Banner */}
+              {error && (
+                <div className="widget-error-banner">
+                  <span>⚠️ {error}</span>
+                  <button onClick={() => setError(null)}>×</button>
+                </div>
+              )}
+
+              {/* Footer Input */}
+              <div className="widget-input-area">
+                {filePreview && (
+                  <div style={{ padding: "4px 8px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: "6px", fontSize: "11px", marginBottom: "4px" }}>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "200px" }}>📄 {filePreview.name}</span>
+                    <button style={{ border: "none", background: "none", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }} onClick={() => { setUploadedFile(null); setFilePreview(null); }}>×</button>
+                  </div>
+                )}
+                <div className="widget-input-row">
+                  <button
+                    className="widget-act-btn"
+                    title={selectedClientId ? "Upload proposal PDF" : "Select client context first"}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isLoading || !selectedClientId}
+                  >
+                    📎
                   </button>
-                  <button className="widget-pill" onClick={() => setInput("Summarize passive income streams")}>
-                    📈 Passive income?
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.txt"
+                    style={{ display: "none" }}
+                    onChange={(e) => handleFileUpload(e.target.files[0])}
+                  />
+                  <textarea
+                    ref={textareaRef}
+                    className="widget-textarea"
+                    rows={1}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask anything about clients…"
+                    disabled={isLoading}
+                  />
+                  <button
+                    className={`widget-send-btn ${input.trim() || uploadedFile ? "active" : ""}`}
+                    disabled={(!input.trim() && !uploadedFile) || isLoading}
+                    onClick={() => sendMessage()}
+                  >
+                    ➤
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="widget-msg-list">
-                {messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`widget-msg-wrapper ${msg.role === "user" ? "user" : "assistant"}`}
-                  >
-                    <div className="widget-msg-bubble">
-                      {msg.file && (
-                        <div style={{ fontSize: "11px", background: "rgba(0,0,0,0.05)", padding: "4px 8px", borderRadius: "4px", marginBottom: "4px" }}>
-                          📄 {msg.file.name}
-                        </div>
-                      )}
-                      {msg.systemNotice && (
-                        <div style={{ fontSize: "11px", background: "#f0fdf4", color: "#16a34a", padding: "4px 8px", borderRadius: "4px", marginBottom: "6px", fontWeight: 500 }}>
-                          💾 {msg.systemNotice}
-                        </div>
-                      )}
-                      
-                      {msg.role === "assistant" ? (
-                        <>
-                          <div
-                            className="widget-markdown-content"
-                            dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
-                          />
-                          
-                          {/* Collapsible sources list */}
-                          {msg.sources && msg.sources.length > 0 && (
-                            <details style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
-                              <summary style={{ fontSize: "11px", color: "#c97c3a", cursor: "pointer", fontWeight: "600", outline: "none" }}>
-                                🔍 {msg.sources.length} matching sources
-                              </summary>
-                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
-                                {msg.sources.map((s, sIdx) => {
-                                  const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
-                                  const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
-                                  const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
-                                  return (
-                                    <a
-                                      key={sIdx}
-                                      href={linkUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                                    >
-                                      <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#64748b" }}>
-                                          <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
-                                          <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
-                                        </div>
-                                        <div style={{ fontStyle: "italic", color: "#64748b", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
-                                        <div style={{ fontSize: "9px", color: "#c97c3a", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
-                                      </div>
-                                    </a>
-                                  );
-                                })}
-                              </div>
-                            </details>
-                          )}
-                          
-                          {/* Relevance Ranking */}
-                          {msg.relevantClients && msg.relevantClients.length > 0 && (
-                            <div style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
-                              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
-                              {msg.relevantClients.map((rc, rIdx) => {
-                                const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
-                                const linkUrl = `/client/${repoSlug}`;
-                                return (
-                                  <a
-                                    key={rIdx}
-                                    href={linkUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                                  >
-                                    <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "4px", cursor: "pointer", padding: "4px", borderRadius: "4px" }}>
-                                      <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550 }}>{rc.clientName}</span>
-                                      <div style={{ flex: 1, height: "4px", background: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
-                                        <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
-                                      </div>
-                                      <span style={{ width: "24px", textAlign: "right" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
-                                      <span style={{ color: "#94a3b8", fontSize: "10px" }}>↗</span>
-                                    </div>
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="widget-msg-wrapper assistant">
-                    <div className="widget-msg-bubble loading">
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-          </div>
-
-          {/* Error Banner */}
-          {error && (
-            <div className="widget-error-banner">
-              <span>⚠️ {error}</span>
-              <button onClick={() => setError(null)}>×</button>
-            </div>
-          )}
-
-          {/* Footer Input */}
-          <div className="widget-input-area">
-            {filePreview && (
-              <div style={{ padding: "4px 8px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: "6px", fontSize: "11px", marginBottom: "4px" }}>
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "200px" }}>📄 {filePreview.name}</span>
-                <button style={{ border: "none", background: "none", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }} onClick={() => { setUploadedFile(null); setFilePreview(null); }}>×</button>
-              </div>
-            )}
-            <div className="widget-input-row">
-              <button
-                className="widget-act-btn"
-                title={selectedClientId ? "Upload proposal PDF" : "Select client context first"}
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading || !selectedClientId}
-              >
-                📎
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.txt"
-                style={{ display: "none" }}
-                onChange={(e) => handleFileUpload(e.target.files[0])}
-              />
-              <textarea
-                ref={textareaRef}
-                className="widget-textarea"
-                rows={1}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask anything about clients…"
-                disabled={isLoading}
-              />
-              <button
-                className={`widget-send-btn ${input.trim() || uploadedFile ? "active" : ""}`}
-                disabled={(!input.trim() && !uploadedFile) || isLoading}
-                onClick={() => sendMessage()}
-              >
-                ➤
-              </button>
             </div>
           </div>
         </div>
@@ -648,27 +753,28 @@ export default function GlobalChatWidget() {
           right: 24px;
           width: 56px;
           height: 56px;
-          border-radius: var(--borderRadius-full);
-          background: var(--bgColor-accent-emphasis);
-          border: none;
-          box-shadow: var(--shadow-resting-medium);
-          color: var(--fgColor-onEmphasis);
+          border-radius: var(--radius-full);
+          background: var(--color-surface);
+          border: var(--border-thin) solid var(--color-border);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+          color: var(--color-on-surface);
           cursor: pointer;
           z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all var(--motion-transition-hover);
+          transition: all 0.2s ease;
         }
 
         .floating-chat-bubble:hover {
-          transform: scale(1.08) translateY(-2px);
-          box-shadow: var(--shadow-resting-large);
+          transform: scale(1.05) translateY(-2px);
+          background: var(--color-primary);
+          border-color: var(--color-primary-hover);
         }
 
         .floating-chat-bubble.chat-open {
-          background: var(--bgColor-emphasis);
-          box-shadow: var(--shadow-resting-medium);
+          background: var(--color-surface);
+          border-color: var(--color-border);
           transform: rotate(90deg);
         }
 
@@ -687,18 +793,16 @@ export default function GlobalChatWidget() {
           position: fixed;
           bottom: 84px;
           right: 24px;
-          background: var(--bgColor-default);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: var(--borderWidth-thin) solid var(--borderColor-default);
-          box-shadow: var(--shadow-floating-large);
-          border-radius: var(--borderRadius-large);
+          background: var(--color-neutral);
+          border: var(--border-thin) solid var(--color-border);
+          box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+          border-radius: var(--radius-lg);
           display: flex;
           flex-direction: column;
           z-index: 1000;
           overflow: hidden;
-          font-family: var(--fontStack-system);
-          animation: slideUpWidget 0.25s var(--motion-easing-default);
+          font-family: var(--font-sans);
+          animation: slideUpWidget 0.2s ease-out;
         }
 
         @keyframes slideUpWidget {
@@ -742,8 +846,8 @@ export default function GlobalChatWidget() {
           justify-content: space-between;
           align-items: center;
           padding: 12px 14px;
-          background: var(--bgColor-muted);
-          border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted);
+          background: var(--color-surface);
+          border-bottom: var(--border-thin) solid var(--color-border);
           cursor: move;
         }
 
@@ -754,14 +858,14 @@ export default function GlobalChatWidget() {
         }
 
         .header-icon {
-          color: var(--fgColor-accent);
+          color: var(--color-primary);
           font-weight: 700;
         }
 
         .header-title {
-          font-size: 13.5px;
+          font-size: var(--text-sm);
           font-weight: 600;
-          color: var(--fgColor-default);
+          color: var(--color-on-surface);
         }
 
         .widget-header-actions {
@@ -772,20 +876,20 @@ export default function GlobalChatWidget() {
 
         .expand-page-link {
           text-decoration: none;
-          color: var(--fgColor-muted);
+          color: var(--color-muted);
           font-size: 14px;
-          transition: color var(--motion-duration-fast);
+          transition: color 0.15s;
           padding: 2px;
         }
 
         .expand-page-link:hover {
-          color: var(--fgColor-accent);
+          color: var(--color-tertiary);
         }
 
         .minimize-btn {
           background: none;
           border: none;
-          color: #64748b;
+          color: var(--color-muted);
           font-size: 20px;
           cursor: pointer;
           line-height: 1;
@@ -794,7 +898,7 @@ export default function GlobalChatWidget() {
         }
 
         .minimize-btn:hover {
-          color: #ef4444;
+          color: var(--color-error);
         }
 
         /* Selector Bar */
@@ -931,6 +1035,119 @@ export default function GlobalChatWidget() {
 
         .widget-clear-btn:hover {
           background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Main Content Layout (sidebar + chat column) */
+        .widget-main-content {
+          display: flex;
+          flex-direction: row;
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        /* Sidebar */
+        .widget-sidebar {
+          width: 190px;
+          flex-shrink: 0;
+          border-right: 1px solid #e2e8f0;
+          background: rgba(0,0,0,0.01);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .widget-sidebar-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 10px;
+          border-bottom: 1px solid #e2e8f0;
+        }
+
+        .widget-sidebar-title {
+          font-size: 11px;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+
+        .widget-sidebar-new-btn {
+          border: none;
+          background: #c97c3a;
+          color: white;
+          border-radius: 4px;
+          padding: 2px 8px;
+          font-size: 10px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.15s;
+        }
+
+        .widget-sidebar-new-btn:hover {
+          background: #b06d32;
+        }
+
+        .widget-sidebar-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 4px;
+        }
+
+        .widget-sidebar-empty {
+          text-align: center;
+          padding: 16px 8px;
+          font-size: 11px;
+          color: #94a3b8;
+        }
+
+        .widget-sidebar-item {
+          padding: 6px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-bottom: 2px;
+          transition: background 0.12s;
+          border: 1px solid transparent;
+        }
+
+        .widget-sidebar-item:hover {
+          background: #f1f5f9;
+        }
+
+        .widget-sidebar-item.active {
+          background: rgba(201, 124, 58, 0.08);
+          border-color: rgba(201, 124, 58, 0.25);
+        }
+
+        .widget-sidebar-item-title {
+          font-size: 11px;
+          font-weight: 600;
+          color: #334155;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-bottom: 1px;
+        }
+
+        .widget-sidebar-item.active .widget-sidebar-item-title {
+          color: #c97c3a;
+        }
+
+        .widget-sidebar-item-meta {
+          font-size: 9px;
+          color: #94a3b8;
+          display: flex;
+          justify-content: space-between;
+        }
+
+        /* Chat Column (right panel) */
+        .widget-chat-column {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-width: 0;
         }
 
         /* Body & Welcome */
