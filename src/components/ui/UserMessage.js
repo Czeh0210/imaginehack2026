@@ -42,9 +42,9 @@ export default function UserMessage({ content, file, onFileClick }) {
         }
 
         .user-bubble {
-          background: #ddf4ff;
-          border: 1px solid #54aeff;
-          color: #032f62;
+          background: #BFFFD1;
+          border: 1px solid #8CF2A6;
+          color: #0A241B;
           padding: 12px 16px;
           border-radius: 16px;
           border-bottom-right-radius: 4px;
@@ -72,13 +72,13 @@ export default function UserMessage({ content, file, onFileClick }) {
         }
 
         .user-file-card:hover {
-          border-color: #0969da;
-          background: #f6f8fa;
+          border-color: #0FBF3E;
+          background: #F2F5F3;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         .file-icon {
-          color: #0969da;
+          color: #08872B;
           flex-shrink: 0;
         }
 
@@ -100,7 +100,7 @@ export default function UserMessage({ content, file, onFileClick }) {
 
         .file-action {
           font-size: 10.5px;
-          color: #0969da;
+          color: #08872B;
           font-weight: 500;
           margin-top: 1px;
         }
@@ -109,14 +109,14 @@ export default function UserMessage({ content, file, onFileClick }) {
           width: 30px;
           height: 30px;
           border-radius: 50%;
-          background: #0969da;
+          background: #0FBF3E;
           color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 11px;
           font-weight: 600;
-          border: 1.5px solid #54aeff;
+          border: 1.5px solid #8CF2A6;
           flex-shrink: 0;
         }
       `}</style>

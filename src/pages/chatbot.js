@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { 
   Paperclip, ArrowUp, Plus, Home, Users, MessageSquare, ChevronLeft, Landmark, 
   Coins, FileClock, ShieldAlert, PanelLeftClose, PanelLeftOpen, Search, 
-  FolderKanban, Sparkles, Code, Sliders, SlidersHorizontal 
+  FolderKanban, Sparkles, Code, Sliders, SlidersHorizontal, Handshake 
 } from "lucide-react";
 import { CLIENTS } from "@/lib/mockData";
 import TopNav from "@/components/TopNav";
@@ -33,18 +33,18 @@ function renderMarkdown(text) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#f0f2f4;padding:12px;border-radius:8px;font-size:13px;overflow-x:auto;color:#24292f;margin:8px 0;border:1px solid #d0d7de;"><code>${code.trim()}</code></pre>`)
-    .replace(/`([^`]+)`/g, '<code style="background:#eaecef;padding:2px 5px;border-radius:4px;font-size:13px;color:#c97c3a;">$1</code>')
+    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#F2F5F3;padding:12px;border-radius:8px;font-size:13px;overflow-x:auto;color:#101411;margin:8px 0;border:1px solid #E4EBE6;"><code>${code.trim()}</code></pre>`)
+    .replace(/`([^`]+)`/g, '<code style="background:#E4EBE6;padding:2px 5px;border-radius:4px;font-size:13px;color:#08872B;">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;margin:10px 0 5px;font-weight:600;color:#24292f;">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 style="font-size:16px;margin:12px 0 6px;font-weight:600;color:#24292f;">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 style="font-size:18px;margin:14px 0 8px;font-weight:700;color:#1c2128;">$1</h1>')
-    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#24292f;margin-bottom:3px;">$1</li>')
-    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#24292f;margin-bottom:3px;">$1</li>')
+    .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;margin:10px 0 5px;font-weight:600;color:#101411;">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="font-size:16px;margin:12px 0 6px;font-weight:600;color:#101411;">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="font-size:18px;margin:14px 0 8px;font-weight:700;color:#101411;">$1</h1>')
+    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#101411;margin-bottom:3px;">$1</li>')
+    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#101411;margin-bottom:3px;">$1</li>')
     .replace(/\n\n/g, "</p><p>")
     .replace(/\n/g, "<br/>");
-  return `<p style="margin:0 0 10px;color:#24292f;line-height:1.65;">${html}</p>`;
+  return `<p style="margin:0 0 10px;color:#101411;line-height:1.65;">${html}</p>`;
 }
 
 export default function ChatbotPage() {
@@ -289,31 +289,6 @@ export default function ChatbotPage() {
             <Paperclip size={16} />
           </button>
           <input ref={fileInputRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={(e) => handleFileUpload(e.target.files[0])} />
-          {process.env.NODE_ENV === "development" && (
-            <button
-              id="mock-upload-btn"
-              onClick={() => {
-                const mockContent = `Client Proposal\nPrepared for: Sarah Tan\nAdvisor: Chloe Lee\n\nExecutive Summary:\nWe propose reallocating 15% of the current equity portfolio to high-yield fixed-income instruments. This adjustment aims to minimize downside risk while maintaining a yield of 4.8% annually, aligning with the client's conservative risk profile for the upcoming retirement transition in 5 years.\n\nKey Details:\n1. Increase bond allocation from 20% to 35%.\n2. Reduce tech sector exposure.\n3. Optimize tax-loss harvesting by year-end.`;
-                const base64 = btoa(unescape(encodeURIComponent(mockContent)));
-                const dataUrl = `data:text/plain;base64,${base64}`;
-                setUploadedFile({ name: "test_proposal.txt", type: "text/plain" });
-                setFilePreview({ name: "test_proposal.txt", dataUrl });
-              }}
-              style={{
-                fontSize: "10px",
-                padding: "2px 6px",
-                background: "#f6f8fa",
-                border: "1px solid #d0d7de",
-                borderRadius: "4px",
-                cursor: "pointer",
-                color: "#57606a",
-                marginLeft: "4px"
-              }}
-              title="Developer Mock Upload"
-            >
-              Mock Upload
-            </button>
-          )}
         </div>
 
         {/* Right */}
@@ -385,14 +360,14 @@ export default function ChatbotPage() {
                 <button className="collapsed-nav-btn active" onClick={createNewSession} title="Chats">
                   <MessageSquare size={18} />
                 </button>
-                <button className="collapsed-nav-btn" title="Projects">
-                  <FolderKanban size={18} />
+                <button className="collapsed-nav-btn" title="Clients">
+                  <Users size={18} />
                 </button>
                 <button className="collapsed-nav-btn" title="Artifacts">
                   <Sparkles size={18} />
                 </button>
-                <button className="collapsed-nav-btn" title="Code">
-                  <Code size={18} />
+                <button className="collapsed-nav-btn" title="Partners">
+                  <Handshake size={18} />
                 </button>
                 <button className="collapsed-nav-btn" title="Customize">
                   <Sliders size={18} />
@@ -434,17 +409,16 @@ export default function ChatbotPage() {
                   <span>Chats</span>
                 </button>
                 <button className="sb-nav-link">
-                  <FolderKanban size={16} />
-                  <span>Projects</span>
+                  <Users size={16} />
+                  <span>Clients</span>
                 </button>
                 <button className="sb-nav-link">
                   <Sparkles size={16} />
                   <span>Artifacts</span>
                 </button>
                 <button className="sb-nav-link">
-                  <Code size={16} />
-                  <span>Code</span>
-                  <span className="upgrade-badge">Upgrade</span>
+                  <Handshake size={16} />
+                  <span>Partners</span>
                 </button>
                 <button className="sb-nav-link">
                   <Sliders size={16} />
@@ -664,8 +638,8 @@ export default function ChatbotPage() {
         .sidebar {
           width: 256px;
           flex-shrink: 0;
-          background: #f7f7f8;
-          border-right: 1px solid #e5e5e8;
+          background: #F2F5F3;
+          border-right: 1px solid #E4EBE6;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -696,7 +670,7 @@ export default function ChatbotPage() {
         .sb-brand-name {
           font-size: 16px;
           font-weight: 700;
-          color: #191919;
+          color: #101411;
           font-family: serif;
           letter-spacing: -0.2px;
         }
@@ -711,7 +685,7 @@ export default function ChatbotPage() {
           background: transparent;
           border: none;
           cursor: pointer;
-          color: #6e6e73;
+          color: #909692;
           padding: 4px;
           border-radius: 6px;
           display: flex;
@@ -721,8 +695,8 @@ export default function ChatbotPage() {
         }
 
         .sb-header-btn:hover {
-          background-color: rgba(0, 0, 0, 0.05);
-          color: #191919;
+          background-color: #E4EBE6;
+          color: #101411;
         }
 
         .new-chat-btn {
@@ -732,11 +706,11 @@ export default function ChatbotPage() {
           margin: 0 12px 14px;
           padding: 8px 12px;
           background: #ffffff;
-          border: 1px solid #e5e5e8;
+          border: 1px solid #E4EBE6;
           border-radius: 8px;
           font-size: 14px;
           font-weight: 500;
-          color: #191919;
+          color: #101411;
           cursor: pointer;
           font-family: inherit;
           transition: background 0.12s, border-color 0.12s;
@@ -744,8 +718,8 @@ export default function ChatbotPage() {
         }
 
         .new-chat-btn:hover {
-          background: #f4f4f5;
-          border-color: #d1d1d6;
+          background: #F2F5F3;
+          border-color: #B6BFB8;
         }
 
         .sb-main-nav {
@@ -763,7 +737,7 @@ export default function ChatbotPage() {
           padding: 7px 10px;
           border-radius: 8px;
           font-size: 14px;
-          color: #6e6e73;
+          color: #909692;
           text-decoration: none;
           border: none;
           background: none;
@@ -776,13 +750,13 @@ export default function ChatbotPage() {
         }
 
         .sb-nav-link:hover {
-          background: rgba(0, 0, 0, 0.04);
-          color: #191919;
+          background: #E4EBE6;
+          color: #101411;
         }
 
         .sb-nav-link.active {
-          background: rgba(0, 0, 0, 0.06);
-          color: #191919;
+          background: #E4EBE6;
+          color: #101411;
           font-weight: 500;
         }
 
@@ -793,9 +767,9 @@ export default function ChatbotPage() {
           transform: translateY(-50%);
           font-size: 10px;
           font-weight: 600;
-          color: #0969da;
-          background: #ddf4ff;
-          border: 1px solid #54aeff;
+          color: #08872B;
+          background: #BFFFD1;
+          border: 1px solid #8CF2A6;
           padding: 1px 6px;
           border-radius: 10px;
         }
@@ -807,7 +781,7 @@ export default function ChatbotPage() {
           overflow: hidden;
           margin-top: 14px;
           padding: 0 12px;
-          border-top: 1px solid #e5e5e8;
+          border-top: 1px solid #E4EBE6;
         }
 
         .sb-recents-header {
@@ -821,7 +795,7 @@ export default function ChatbotPage() {
         .sb-recents-label {
           font-size: 11px;
           font-weight: 600;
-          color: #8e8e93;
+          color: #909692;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -830,7 +804,7 @@ export default function ChatbotPage() {
           background: transparent;
           border: none;
           cursor: pointer;
-          color: #8e8e93;
+          color: #909692;
           padding: 2px;
           border-radius: 4px;
           display: flex;
@@ -839,8 +813,8 @@ export default function ChatbotPage() {
         }
 
         .sb-recents-config-btn:hover {
-          background-color: rgba(0, 0, 0, 0.05);
-          color: #191919;
+          background-color: #E4EBE6;
+          color: #101411;
         }
 
         .sb-recents-list {
@@ -850,12 +824,12 @@ export default function ChatbotPage() {
         }
 
         .sb-recents-list::-webkit-scrollbar { width: 3px; }
-        .sb-recents-list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 2px; }
+        .sb-recents-list::-webkit-scrollbar-thumb { background: #E4EBE6; border-radius: 2px; }
 
         .sb-recents-empty {
           padding: 12px 10px;
           font-size: 12.5px;
-          color: #8e8e93;
+          color: #909692;
         }
 
         .sb-session-item {
@@ -864,7 +838,7 @@ export default function ChatbotPage() {
           padding: 7px 10px;
           border-radius: 8px;
           font-size: 13px;
-          color: #191919;
+          color: #101411;
           border: none;
           background: none;
           cursor: pointer;
@@ -877,8 +851,8 @@ export default function ChatbotPage() {
           margin-bottom: 1px;
         }
 
-        .sb-session-item:hover { background: rgba(0, 0, 0, 0.04); }
-        .sb-session-item.active { background: rgba(0, 0, 0, 0.06); font-weight: 500; }
+        .sb-session-item:hover { background: #E4EBE6; }
+        .sb-session-item.active { background: #E4EBE6; font-weight: 500; }
 
         .sb-bottom {
           padding: 10px 12px 14px;
@@ -894,8 +868,8 @@ export default function ChatbotPage() {
           border-radius: 8px;
           font-size: 13.5px;
           font-weight: 500;
-          color: #6e6e73;
-          border: 1px solid #e5e5e8;
+          color: #909692;
+          border: 1px solid #E4EBE6;
           background: #ffffff;
           cursor: pointer;
           font-family: inherit;
@@ -903,7 +877,7 @@ export default function ChatbotPage() {
           box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
-        .sb-minimize-btn:hover { background: #f4f4f5; color: #191919; border-color: #d1d1d6; }
+        .sb-minimize-btn:hover { background: #F2F5F3; color: #101411; border-color: #B6BFB8; }
 
         /* Sidebar Collapsed Content */
         .sidebar-collapsed-content {
@@ -919,7 +893,7 @@ export default function ChatbotPage() {
           background: transparent;
           border: none;
           cursor: pointer;
-          color: #6e6e73;
+          color: #909692;
           padding: 6px;
           border-radius: 6px;
           margin-bottom: 16px;
@@ -930,8 +904,8 @@ export default function ChatbotPage() {
         }
 
         .collapsed-toggle-btn:hover {
-          background-color: rgba(0, 0, 0, 0.05);
-          color: #191919;
+          background-color: #E4EBE6;
+          color: #101411;
         }
 
         .collapsed-new-chat-btn {
@@ -941,9 +915,9 @@ export default function ChatbotPage() {
           width: 38px;
           height: 38px;
           background: #ffffff;
-          border: 1px solid #e5e5e8;
+          border: 1px solid #E4EBE6;
           border-radius: 50%;
-          color: #191919;
+          color: #101411;
           cursor: pointer;
           transition: all 0.12s;
           box-shadow: 0 1px 2px rgba(0,0,0,0.02);
@@ -951,8 +925,8 @@ export default function ChatbotPage() {
         }
 
         .collapsed-new-chat-btn:hover {
-          background: #f4f4f5;
-          border-color: #d1d1d6;
+          background: #F2F5F3;
+          border-color: #B6BFB8;
           transform: scale(1.05);
         }
 
@@ -969,7 +943,7 @@ export default function ChatbotPage() {
           background: transparent;
           border: none;
           cursor: pointer;
-          color: #6e6e73;
+          color: #909692;
           width: 38px;
           height: 38px;
           border-radius: 8px;
@@ -980,13 +954,13 @@ export default function ChatbotPage() {
         }
 
         .collapsed-nav-btn:hover {
-          background-color: rgba(0, 0, 0, 0.04);
-          color: #191919;
+          background-color: #E4EBE6;
+          color: #101411;
         }
 
         .collapsed-nav-btn.active {
-          background-color: rgba(0, 0, 0, 0.06);
-          color: #191919;
+          background-color: #E4EBE6;
+          color: #101411;
         }
 
         .collapsed-bottom {
@@ -1026,7 +1000,7 @@ export default function ChatbotPage() {
         .welcome-heading {
           font-size: 36px;
           font-weight: 700;
-          color: #24292f;
+          color: #101411;
           margin: 0 0 12px;
           letter-spacing: -0.6px;
           text-align: center;
@@ -1034,7 +1008,7 @@ export default function ChatbotPage() {
 
         .welcome-sub {
           font-size: 15px;
-          color: #57606a;
+          color: #909692;
           text-align: center;
           max-width: 480px;
           line-height: 1.6;
@@ -1056,11 +1030,11 @@ export default function ChatbotPage() {
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          background: #f6f8fa;
-          border: 1px solid #d0d7de;
+          background: #F2F5F3;
+          border: 1px solid #E4EBE6;
           border-radius: 9999px;
           font-size: 13.5px;
-          color: #24292f;
+          color: #101411;
           cursor: pointer;
           font-family: inherit;
           transition: all 0.12s ease-in-out;
@@ -1068,9 +1042,9 @@ export default function ChatbotPage() {
         }
 
         .action-pill:hover {
-          border-color: #8c959f;
-          background: #eaecef;
-          color: #24292f;
+          border-color: #B6BFB8;
+          background: #E4EBE6;
+          color: #101411;
         }
 
         /* Messages area */
@@ -1081,7 +1055,7 @@ export default function ChatbotPage() {
         }
 
         .messages-area::-webkit-scrollbar { width: 4px; }
-        .messages-area::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 2px; }
+        .messages-area::-webkit-scrollbar-thumb { background: #E4EBE6; border-radius: 2px; }
 
         .messages-inner {
           max-width: 720px;
@@ -1102,8 +1076,8 @@ export default function ChatbotPage() {
           flex-shrink: 0;
           border-radius: 50%;
           background: #ffffff;
-          border: 1px solid #d0d7de;
-          color: #24292f;
+          border: 1px solid #E4EBE6;
+          color: #101411;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1121,15 +1095,15 @@ export default function ChatbotPage() {
         }
 
         .bubble.user {
-          background: #0969da;
+          background: #0FBF3E;
           color: white;
           border-bottom-right-radius: 4px;
         }
 
         .bubble.assistant {
           background: #ffffff;
-          border: 1px solid #d0d7de;
-          color: #24292f;
+          border: 1px solid #E4EBE6;
+          color: #101411;
           border-bottom-left-radius: 4px;
           box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
@@ -1145,7 +1119,7 @@ export default function ChatbotPage() {
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: #d0d7de;
+          background: #E4EBE6;
           animation: dotAnim 1.2s infinite ease-in-out;
         }
 
@@ -1154,7 +1128,7 @@ export default function ChatbotPage() {
 
         @keyframes dotAnim {
           0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-          40% { transform: scale(1.15); opacity: 1; background: #0969da; }
+          40% { transform: scale(1.15); opacity: 1; background: #0FBF3E; }
         }
 
         /* Error */
@@ -1189,7 +1163,7 @@ export default function ChatbotPage() {
         /* ── Shared input card (GitHub Light Theme) ── */
         :global(.input-card) {
           background: #ffffff;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           border-radius: 14px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           overflow: visible;
@@ -1197,8 +1171,8 @@ export default function ChatbotPage() {
         }
 
         :global(.input-card:focus-within) {
-          border-color: #0969da;
-          box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+          border-color: #0FBF3E;
+          box-shadow: 0 0 0 3px rgba(15, 191, 62, 0.3);
         }
 
         :global(.file-bar) {
@@ -1206,16 +1180,16 @@ export default function ChatbotPage() {
           align-items: center;
           justify-content: space-between;
           padding: 8px 14px;
-          background: #f6f8fa;
-          border-bottom: 1px solid #d0d7de;
+          background: #F2F5F3;
+          border-bottom: 1px solid #E4EBE6;
           font-size: 12.5px;
-          color: #24292f;
+          color: #101411;
           border-radius: 14px 14px 0 0;
         }
 
         :global(.file-preview-name-clickable) {
           cursor: pointer;
-          color: #0969da;
+          color: #08872B;
           font-weight: 500;
         }
 
@@ -1236,14 +1210,14 @@ export default function ChatbotPage() {
           resize: none;
           font-size: 15px;
           font-family: inherit;
-          color: #24292f;
+          color: #101411;
           background: transparent;
           box-sizing: border-box;
           line-height: 1.6;
           overflow-y: auto;
         }
 
-        :global(.chat-textarea::placeholder) { color: #57606a; }
+        :global(.chat-textarea::placeholder) { color: #909692; }
 
         :global(.input-toolbar) {
           display: flex;
@@ -1272,14 +1246,14 @@ export default function ChatbotPage() {
           justify-content: center;
           border: none;
           background: none;
-          color: #57606a;
+          color: #909692;
           cursor: pointer;
           padding: 6px;
           border-radius: 7px;
           transition: color 0.12s, background-color 0.12s;
         }
 
-        :global(.toolbar-icon-btn:hover:not(:disabled)) { color: #24292f; background-color: #f6f8fa; }
+        :global(.toolbar-icon-btn:hover:not(:disabled)) { color: #101411; background-color: #F2F5F3; }
         :global(.toolbar-icon-btn:disabled) { opacity: 0.3; cursor: not-allowed; }
 
         /* Scope/Client Button */
@@ -1291,27 +1265,27 @@ export default function ChatbotPage() {
           gap: 6px;
           padding: 6px 12px;
           border-radius: 8px;
-          border: 1px dashed #d0d7de;
-          background: #f6f8fa;
+          border: 1px dashed #B6BFB8;
+          background: #F2F5F3;
           cursor: pointer;
           font-family: inherit;
           font-size: 12.5px;
           font-weight: 500;
-          color: #24292f;
+          color: #101411;
           transition: all 0.15s;
           white-space: nowrap;
         }
 
         :global(.context-btn:hover) {
-          background-color: #eaecef;
-          color: #24292f;
-          border-color: #8c959f;
+          background-color: #E4EBE6;
+          color: #101411;
+          border-color: #909692;
         }
 
         :global(.context-btn.selected) {
-          border: 1px solid #d0d7de;
-          background: #eaecef;
-          color: #24292f;
+          border: 1px solid #E4EBE6;
+          background: #E4EBE6;
+          color: #101411;
         }
 
         /* Scope popover (GitHub Style) */
@@ -1321,7 +1295,7 @@ export default function ChatbotPage() {
           right: 0;
           width: 240px;
           background: #ffffff;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           border-radius: 12px;
           box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
           overflow: hidden;
@@ -1330,29 +1304,29 @@ export default function ChatbotPage() {
           z-index: 200;
         }
 
-        :global(.sp-search) { padding: 8px; border-bottom: 1px solid #d0d7de; }
+        :global(.sp-search) { padding: 8px; border-bottom: 1px solid #E4EBE6; }
 
         :global(.sp-input) {
           width: 100%;
           padding: 6px 10px;
           border-radius: 6px;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           font-size: 12.5px;
           outline: none;
           font-family: inherit;
-          color: #24292f;
+          color: #101411;
           background: #ffffff;
           box-sizing: border-box;
         }
 
         :global(.sp-input:focus) {
-          border-color: #0969da;
-          box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
+          border-color: #0FBF3E;
+          box-shadow: 0 0 0 2px rgba(15, 191, 62, 0.2);
         }
 
         :global(.sp-options) { max-height: 200px; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
         :global(.sp-options::-webkit-scrollbar) { width: 3px; }
-        :global(.sp-options::-webkit-scrollbar-thumb) { background: #d0d7de; border-radius: 2px; }
+        :global(.sp-options::-webkit-scrollbar-thumb) { background: #E4EBE6; border-radius: 2px; }
 
         :global(.sp-item) {
           width: 100%;
@@ -1364,14 +1338,14 @@ export default function ChatbotPage() {
           text-align: left;
           font-family: inherit;
           font-size: 13px;
-          color: #24292f;
+          color: #101411;
           transition: background 0.1s, color 0.1s;
         }
 
-        :global(.sp-item:hover) { background: #f6f8fa; }
-        :global(.sp-item.active) { background: #0969da; color: #ffffff; font-weight: 600; }
+        :global(.sp-item:hover) { background: #F2F5F3; }
+        :global(.sp-item.active) { background: #0FBF3E; color: #ffffff; font-weight: 600; }
 
-        :global(.sp-divider) { font-size: 10px; font-weight: 600; color: #57606a; text-transform: uppercase; padding: 5px 12px 3px; letter-spacing: 0.4px; }
+        :global(.sp-divider) { font-size: 10px; font-weight: 600; color: #909692; text-transform: uppercase; padding: 5px 12px 3px; letter-spacing: 0.4px; }
 
         /* Reset Button */
         :global(.reset-btn) {
@@ -1379,7 +1353,7 @@ export default function ChatbotPage() {
           background: transparent;
           cursor: pointer;
           font-size: 12.5px;
-          color: #57606a;
+          color: #909692;
           font-weight: 500;
           padding: 6px 8px;
           font-family: inherit;
@@ -1396,8 +1370,8 @@ export default function ChatbotPage() {
           width: 32px;
           height: 32px;
           border: none;
-          background: #eaecef;
-          color: #8c959f;
+          background: #E4EBE6;
+          color: #909692;
           cursor: not-allowed;
           transition: all 0.12s ease-in-out;
           border-radius: 50%;
@@ -1405,13 +1379,13 @@ export default function ChatbotPage() {
         }
 
         :global(.send-btn.active) {
-          background: #2da44e;
+          background: #0FBF3E;
           color: #ffffff;
           cursor: pointer;
           box-shadow: 0 1px 0 rgba(27,31,36,0.1);
         }
 
-        :global(.send-btn.active:hover) { background: #2c974b; transform: scale(1.04); }
+        :global(.send-btn.active:hover) { background: #08872B; transform: scale(1.04); }
 
         /* ── File Preview Modal overlay ── */
         .preview-modal-overlay {
@@ -1431,7 +1405,7 @@ export default function ChatbotPage() {
         .preview-modal-container {
           background: #ffffff;
           border-radius: 12px;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
           width: 80%;
           max-width: 800px;
@@ -1453,14 +1427,14 @@ export default function ChatbotPage() {
           justify-content: space-between;
           align-items: center;
           padding: 12px 18px;
-          border-bottom: 1px solid #d0d7de;
-          background: #f6f8fa;
+          border-bottom: 1px solid #E4EBE6;
+          background: #F2F5F3;
         }
 
         .preview-modal-title {
           font-size: 14px;
           font-weight: 600;
-          color: #24292f;
+          color: #101411;
         }
 
         .preview-modal-close {
@@ -1468,7 +1442,7 @@ export default function ChatbotPage() {
           border: none;
           font-size: 18px;
           cursor: pointer;
-          color: #57606a;
+          color: #909692;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1486,13 +1460,13 @@ export default function ChatbotPage() {
           flex: 1;
           overflow: hidden;
           padding: 16px;
-          background: #f6f8fa;
+          background: #F2F5F3;
         }
 
         .preview-iframe {
           width: 100%;
           height: 100%;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           border-radius: 6px;
           background: #ffffff;
         }
@@ -1502,11 +1476,11 @@ export default function ChatbotPage() {
           word-break: break-word;
           font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
           font-size: 13px;
-          color: #24292f;
+          color: #101411;
           background: #ffffff;
           padding: 16px;
           border-radius: 6px;
-          border: 1px solid #d0d7de;
+          border: 1px solid #E4EBE6;
           overflow: auto;
           margin: 0;
           height: 100%;
