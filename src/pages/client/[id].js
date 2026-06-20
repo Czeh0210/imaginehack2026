@@ -2323,7 +2323,7 @@ export default function ClientRepo() {
       <header className="repo-header">
         <div className="header-container">
           <div style={{ display: "flex", alignItems: "center", flexWrap: "nowrap", fontSize: 14, gap: 0, minWidth: 0 }}>
-            <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#2563eb", textDecoration: "none", padding: "4px 6px", borderRadius: 6, flexShrink: 0, fontSize: 14, fontWeight: 400 }}>
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#2563eb", textDecoration: "none", padding: "4px 6px", borderRadius: 6, flexShrink: 0, fontSize: 14, fontWeight: 400 }}>
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor" style={{ display: "inline", flexShrink: 0 }}>
                 <path d="M11.28 3.22a.75.75 0 0 0-1.06 0L5.47 7.97a.75.75 0 0 0 0 1.06l4.75 4.75a.75.75 0 0 0 1.06-1.06L7.06 8l4.22-4.22a.75.75 0 0 0 0-1.06Z"></path>
               </svg>

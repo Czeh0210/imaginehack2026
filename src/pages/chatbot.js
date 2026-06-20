@@ -245,7 +245,7 @@ export default function ChatbotPage() {
     const params = new URLSearchParams({ openChat: "1" });
     if (sessionId) params.set("sessionId", sessionId);
     if (selectedClientId) params.set("clientId", selectedClientId);
-    router.push(`/dashboard?${params.toString()}`);
+    router.push(`/?${params.toString()}`);
   }, [router, sessionId, selectedClientId]);
 
   // ── Shared input card ──────────────────────────────────────
