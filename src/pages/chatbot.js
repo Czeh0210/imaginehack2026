@@ -12,14 +12,6 @@ import TopNav from "@/components/TopNav";
 import UserMessage from "@/components/ui/UserMessage";
 import { ClientCardSection } from "@/components/ui/ClientCard";
 
-const clientIdToRepoId = {
-  "005511": "005511_LimWeiMing",
-  "005512": "005512_SarahTan",
-  "005513": "005513_AhmadRazif",
-  "005514": "005514_JenniferKoh",
-  "005515": "005515_DavidNg",
-  "005516": "005516_RosnahYusof",
-};
 
 const QUICK_ACTIONS = [
   { icon: ShieldAlert, label: "Analyze client risk profile" },
@@ -253,7 +245,7 @@ export default function ChatbotPage() {
     const params = new URLSearchParams({ openChat: "1" });
     if (sessionId) params.set("sessionId", sessionId);
     if (selectedClientId) params.set("clientId", selectedClientId);
-    router.push(`/dashboard?${params.toString()}`);
+    router.push(`/?${params.toString()}`);
   }, [router, sessionId, selectedClientId]);
 
   // ── Shared input card ──────────────────────────────────────
@@ -301,9 +293,9 @@ export default function ChatbotPage() {
           )}
 
           <div className="scope-pill-container">
-            <button className={`context-btn ${activeClient ? "selected" : ""}`} onClick={() => setShowContextList(!showContextList)}>
+            <button className={`context-btn ${activeClient ? "selected" : ""}`} onClick={() => setShowContextList(!showContextList)} title={activeClient ? activeClient.name : "Select Client Context"}>
               <Plus size={14} />
-              <span>{activeClient ? `Client: ${activeClient.name.split("/")[1] || activeClient.name}` : "Client"}</span>
+              <span>{activeClient ? `Client: ${activeClient.name}` : "Client"}</span>
             </button>
 
             {showContextList && (
@@ -527,7 +519,7 @@ export default function ChatbotPage() {
                               </summary>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
                                 {msg.sources.map((s, sIdx) => {
-                                  const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
+                                  const repoSlug = s.clientId;
                                   const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
                                   return (
                                     <a key={sIdx} href={`/client/${repoSlug}?tab=${tabParam}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>

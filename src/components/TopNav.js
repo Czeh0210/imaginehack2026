@@ -43,7 +43,7 @@ export default function TopNav() {
       }}>
         {/* Left: Brand + context breadcrumb */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginRight: "auto" }}>
-          <Link href="/dashboard" style={{
+          <Link href="/" style={{
             fontWeight: 600,
             fontSize: "15px",
             color: "#111827",
