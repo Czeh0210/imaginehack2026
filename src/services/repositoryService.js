@@ -25,32 +25,42 @@ export async function getClients() {
 }
 
 /**
- * Create a new client repository with only the three mandatory scaffold files.
- * No additional folders are created — those are user-defined resources.
+ * List all non-folder files at the bucket root (uploaded directly by the advisor).
+ */
+export async function getRootFiles() {
+  const supabase = createClient()
+  const { data, error } = await supabase.storage.from(BUCKET).list('', {
+    limit: 200,
+    sortBy: { column: 'updated_at', order: 'desc' },
+  })
+  if (error) throw error
+  return (data || [])
+    .filter((item) => item.id !== null && item.name !== '.gitkeep' && item.name !== '.placeholder')
+    .map((item) => ({
+      name: item.name,
+      path: item.name,
+      type: 'file',
+      metadata: item.metadata,
+      updatedAt: item.updated_at,
+    }))
+}
+
+/**
+ * Create a new client repository as an empty folder.
+ * Supabase Storage has no real folders; a .gitkeep marker materialises the path prefix.
+ * No scaffold files are pre-created — all content is advisor-driven.
  */
 export async function createClientRepository(clientName) {
   const supabase = createClient()
   const safeName = sanitizePath(clientName)
 
-  const scaffoldFiles = {
-    'CLAUDE.md': `# ${safeName}\n\nClient-specific instructions and context for AI interactions.\n`,
-    'MEMORY.md': `# Memory Log\n\n## ${new Date().toISOString().split('T')[0]}\n- Repository created\n`,
-    'README.md': `# ${safeName}\n\n## Overview\nClient repository for ${safeName}.\n\n## Files\n- \`CLAUDE.md\` — AI context and instructions\n- \`MEMORY.md\` — Running memory log\n`,
-  }
+  const blob = new Blob([''], { type: 'text/plain' })
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(`${safeName}/.gitkeep`, blob, { upsert: false })
 
-  const results = []
-  for (const [filePath, content] of Object.entries(scaffoldFiles)) {
-    const fullPath = `${safeName}/${filePath}`
-    const blob = new Blob([content], { type: 'text/markdown' })
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .upload(fullPath, blob, { upsert: true })
-
-    if (error) console.error(`Error creating ${fullPath}:`, error.message)
-    results.push({ path: fullPath, data, error })
-  }
-
-  return results
+  if (error) throw error
+  return data
 }
 
 // ──────────────────────────────────────────────
@@ -206,6 +216,18 @@ export async function deleteFolder(folderPath) {
     const { error } = await supabase.storage.from(BUCKET).remove(allFiles)
     if (error) throw error
   }
+}
+
+/**
+ * Upload a raw File object to the bucket root (no client prefix).
+ */
+export async function uploadToRoot(file) {
+  const supabase = createClient()
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(file.name, file, { upsert: true })
+  if (error) throw error
+  return data
 }
 
 /**
