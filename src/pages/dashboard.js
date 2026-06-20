@@ -141,7 +141,7 @@ function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsC
   const hasMore = !isSearching && repos.length > INITIAL_VISIBLE;
 
   return (
-    <aside className="hidden md:block w-[280px] shrink-0 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-8 pr-4 text-sm bg-gray-50/50 p-4 rounded-lg border border-gray-200 shadow-sm">
+    <aside className="hidden md:block w-[280px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pb-8 pr-4 text-sm bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-gray-900 font-semibold">Top repositories</h2>
         <button
@@ -495,7 +495,7 @@ function RightSidebar({ schedule }) {
   });
 
   return (
-    <aside className="hidden lg:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pl-4 text-sm">
+    <aside className="hidden lg:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pl-4 text-sm">
       {/* Today's Schedule — vertical timeline */}
       <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
         <div className="flex items-center justify-between mb-5">

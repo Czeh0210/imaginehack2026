@@ -25,139 +25,147 @@ export default function TopNav() {
       position: "sticky",
       top: 0,
       width: "100%",
-      height: "56px",
-      backgroundColor: "#ffffff",
+      height: "44px",
+      backgroundColor: "#f3f4f6",
       borderBottom: "1px solid #e5e7eb",
       zIndex: 100,
-      display: "flex",
-      alignItems: "center",
-      padding: "0 24px",
-      gap: "16px",
       boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
     }}>
-      {/* Left: Brand + context breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginRight: "auto" }}>
-        <Link href="/dashboard" style={{
-          fontWeight: 700,
-          fontSize: "20px",
-          color: "#111827",
-          textDecoration: "none",
-          letterSpacing: "-0.3px",
-          whiteSpace: "nowrap",
-        }}>
-          AdvisorOS
-        </Link>
-
-        {isClientPage && extractedId && (
-          <nav style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "15px", color: "#111827" }}>
-            <span style={{ color: "#9ca3af" }}>/</span>
-            <span style={{ color: "#6b7280", fontWeight: 400 }}>{extractedId}</span>
-            <span style={{ color: "#9ca3af" }}>/</span>
-            <span style={{ fontWeight: 600 }}>{fullName}</span>
-          </nav>
-        )}
-      </div>
-
-      {/* Center: Search bar */}
+      {/* Inner container mirrors the page layout: max-w-[1440px] mx-auto px-8 */}
       <div style={{
+        maxWidth: "1440px",
+        margin: "0 auto",
+        padding: "0 32px",
+        height: "100%",
         display: "flex",
         alignItems: "center",
-        backgroundColor: "#f3f4f6",
-        border: "1px solid #d1d5db",
-        borderRadius: "8px",
-        padding: "0 10px",
-        height: "36px",
-        width: "320px",
-        gap: "8px",
-        flexShrink: 0,
+        gap: "16px",
       }}>
-        <Search size={14} color="#9ca3af" />
-        <input
-          type="text"
-          placeholder="Search..."
-          style={{
-            border: "none",
-            background: "transparent",
-            outline: "none",
-            fontSize: "14px",
+        {/* Left: Brand + context breadcrumb */}
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginRight: "auto" }}>
+          <Link href="/dashboard" style={{
+            fontWeight: 600,
+            fontSize: "15px",
             color: "#111827",
-            width: "100%",
-          }}
-        />
+            textDecoration: "none",
+            letterSpacing: "-0.2px",
+            whiteSpace: "nowrap",
+          }}>
+            AdvisorOS
+          </Link>
+
+          {isClientPage && extractedId && (
+            <nav style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", color: "#111827" }}>
+              <span style={{ color: "#9ca3af" }}>/</span>
+              <span style={{ color: "#6b7280", fontWeight: 400 }}>{extractedId}</span>
+              <span style={{ color: "#9ca3af" }}>/</span>
+              <span style={{ fontWeight: 600 }}>{fullName}</span>
+            </nav>
+          )}
+        </div>
+
+        {/* Center: Search bar */}
         <div style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          border: "1px solid #d1d5db",
-          borderRadius: "4px",
-          padding: "1px 5px",
           backgroundColor: "#ffffff",
-          color: "#9ca3af",
-          fontSize: "11px",
-          fontFamily: "monospace",
-          userSelect: "none",
+          border: "1px solid #d1d5db",
+          borderRadius: "7px",
+          padding: "0 10px",
+          height: "30px",
+          width: "280px",
+          gap: "7px",
           flexShrink: 0,
         }}>
-          /
-        </div>
-      </div>
-
-      {/* Right: Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        {/* Bell with notification dot */}
-        <button style={{
-          position: "relative",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "#6b7280",
-          display: "flex",
-          alignItems: "center",
-          padding: "6px",
-          borderRadius: "6px",
-        }}>
-          <Bell size={20} />
-          <span style={{
-            position: "absolute",
-            top: "5px",
-            right: "5px",
-            width: "8px",
-            height: "8px",
-            backgroundColor: "#ef4444",
-            borderRadius: "50%",
-            border: "2px solid #ffffff",
-          }} />
-        </button>
-
-        {/* + with chevron */}
-        <button style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "2px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "#6b7280",
-          padding: "6px",
-          borderRadius: "6px",
-        }}>
-          <Plus size={20} />
-          <ChevronDown size={14} />
-        </button>
-
-        {/* Avatar */}
-        <img
-          src={MOCK_AVATAR}
-          alt="Profile"
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "50%",
+          <Search size={13} color="#9ca3af" />
+          <input
+            type="text"
+            placeholder="Search..."
+            style={{
+              border: "none",
+              background: "transparent",
+              outline: "none",
+              fontSize: "13px",
+              color: "#111827",
+              width: "100%",
+            }}
+          />
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             border: "1px solid #d1d5db",
+            borderRadius: "4px",
+            padding: "1px 5px",
+            backgroundColor: "#f3f4f6",
+            color: "#9ca3af",
+            fontSize: "11px",
+            fontFamily: "monospace",
+            userSelect: "none",
+            flexShrink: 0,
+          }}>
+            /
+          </div>
+        </div>
+
+        {/* Right: Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {/* Bell with notification dot */}
+          <button style={{
+            position: "relative",
+            background: "none",
+            border: "none",
             cursor: "pointer",
-            objectFit: "cover",
-          }}
-        />
+            color: "#6b7280",
+            display: "flex",
+            alignItems: "center",
+            padding: "5px",
+            borderRadius: "6px",
+          }}>
+            <Bell size={17} />
+            <span style={{
+              position: "absolute",
+              top: "4px",
+              right: "4px",
+              width: "7px",
+              height: "7px",
+              backgroundColor: "#ef4444",
+              borderRadius: "50%",
+              border: "1.5px solid #f3f4f6",
+            }} />
+          </button>
+
+          {/* + with chevron */}
+          <button style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "2px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#6b7280",
+            padding: "5px",
+            borderRadius: "6px",
+          }}>
+            <Plus size={17} />
+            <ChevronDown size={13} />
+          </button>
+
+          {/* Avatar */}
+          <img
+            src={MOCK_AVATAR}
+            alt="Profile"
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "50%",
+              border: "1px solid #d1d5db",
+              cursor: "pointer",
+              objectFit: "cover",
+              marginLeft: "2px",
+            }}
+          />
+        </div>
       </div>
     </header>
   );

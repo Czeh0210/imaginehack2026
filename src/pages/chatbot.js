@@ -619,7 +619,7 @@ export default function ChatbotPage() {
         /* Root workspace below TopNav */
         .workspace {
           display: flex;
-          height: calc(100vh - 56px);
+          height: calc(100vh - 44px);
           overflow: hidden;
           background: #ffffff;
         }
