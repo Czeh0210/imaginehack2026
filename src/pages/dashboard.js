@@ -5,12 +5,12 @@ import Link from "next/link";
 export default function Dashboard() {
   // Mock data for repositories/clients
   const [repos, setRepos] = useState([
-    { id: 1, name: "AcmeCorp/estate-plan", type: "Private", lastActive: "2h ago" },
-    { id: 2, name: "Globex/wealth-trust", type: "Public", lastActive: "5h ago" },
-    { id: 3, name: "SmithFamily/will-draft", type: "Private", lastActive: "1d ago" },
-    { id: 4, name: "WayneEnterprises/succession", type: "Private", lastActive: "2d ago" },
-    { id: 5, name: "AhmadRazif/education-plan", type: "Private", lastActive: "3d ago" },
-    { id: 6, name: "RosnahYusof/retirement-estate", type: "Private", lastActive: "4d ago" },
+    { id: 1, name: "005511/LimWeiMing", type: "Private", lastActive: "2h ago" },
+    { id: 2, name: "005512/SarahTan", type: "Public", lastActive: "5h ago" },
+    { id: 3, name: "005513/AhmadRazif", type: "Private", lastActive: "3d ago" },
+    { id: 4, name: "005514/JenniferKoh", type: "Private", lastActive: "1d ago" },
+    { id: 5, name: "005515/DavidNg", type: "Private", lastActive: "2d ago" },
+    { id: 6, name: "005516/RosnahYusof", type: "Private", lastActive: "4d ago" },
   ]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +42,7 @@ export default function Dashboard() {
   const feedItems = [
     {
       id: 1,
-      repo: "AcmeCorp/estate-plan",
+      repo: "005511/LimWeiMing",
       title: "Updated Living Trust Document",
       description: "Added new clauses regarding digital assets and cryptocurrency holdings.",
       time: "2 hours ago",
@@ -50,7 +50,7 @@ export default function Dashboard() {
     },
     {
       id: 2,
-      repo: "WayneEnterprises/succession",
+      repo: "005515/DavidNg",
       title: "Board Meeting Notes Uploaded",
       description: "Summary of succession planning decisions from Q3 board meeting.",
       time: "Yesterday",
@@ -60,9 +60,9 @@ export default function Dashboard() {
 
   // Mock data for calendar meetings
   const meetings = [
-    { id: 1, time: "10:00 AM", client: "Bruce Wayne", title: "Succession Review", type: "Zoom" },
-    { id: 2, time: "01:30 PM", client: "John Smith", title: "Will Signing", type: "In-person" },
-    { id: 3, time: "04:00 PM", client: "Acme Corp Board", title: "Quarterly Estate Update", type: "Teams" },
+    { id: 1, time: "10:00 AM", client: "005515/DavidNg", title: "FIRE Strategy Review", type: "Zoom" },
+    { id: 2, time: "01:30 PM", client: "005514/JenniferKoh", title: "Trust Fund Signing", type: "In-person" },
+    { id: 3, time: "04:00 PM", client: "005511/LimWeiMing", title: "Estate Exit Update", type: "Teams" },
   ];
 
   return (

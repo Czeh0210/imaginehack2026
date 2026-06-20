@@ -7,12 +7,12 @@
 import { useState } from 'react';
 
 const CLIENTS = [
-  { id: 'c1-lim-wei-ming',  name: 'Lim Wei Ming' },
-  { id: 'c2-sarah-tan',     name: 'Sarah Tan Hui Ling' },
-  { id: 'c3-ahmad-razif',   name: 'Ahmad Razif bin Hamid' },
-  { id: 'c4-jennifer-koh',  name: 'Jennifer Koh Mei Lin' },
-  { id: 'c5-david-ng',      name: 'David Ng Jia Hao' },
-  { id: 'c6-rosnah-yusof',  name: 'Puan Rosnah binti Yusof' },
+  { id: '005511',  name: '005511/LimWeiMing' },
+  { id: '005512',     name: '005512/SarahTan' },
+  { id: '005513',   name: '005513/AhmadRazif' },
+  { id: '005514',  name: '005514/JenniferKoh' },
+  { id: '005515',      name: '005515/DavidNg' },
+  { id: '005516',  name: '005516/RosnahYusof' },
 ];
 
 const DEMO_QUERIES = [
@@ -39,7 +39,7 @@ export default function TestPage() {
 
   // ── Chat state ────────────────────────────────────────────────────────────
   const [chatMessage, setChatMessage] = useState('What are this client\'s retirement concerns and long-term financial goals?');
-  const [chatClientId, setChatClientId] = useState('c1-lim-wei-ming');
+  const [chatClientId, setChatClientId] = useState('005511');
   const [chatResult, setChatResult] = useState(null);
   const [chatting, setChatting] = useState(false);
 

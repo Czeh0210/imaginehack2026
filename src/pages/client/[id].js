@@ -35,14 +35,14 @@ export default function ClientRepo() {
   };
 
   const repoToClientId = {
-    "AcmeCorp_estate-plan": "c1-lim-wei-ming",
-    "Globex_wealth-trust": "c2-sarah-tan",
-    "SmithFamily_will-draft": "c4-jennifer-koh",
-    "WayneEnterprises_succession": "c5-david-ng",
-    "AhmadRazif_education-plan": "c3-ahmad-razif",
-    "RosnahYusof_retirement-estate": "c6-rosnah-yusof"
+    "005511_LimWeiMing": "005511",
+    "005512_SarahTan": "005512",
+    "005513_AhmadRazif": "005513",
+    "005514_JenniferKoh": "005514",
+    "005515_DavidNg": "005515",
+    "005516_RosnahYusof": "005516"
   };
-  const matchedClientId = repoToClientId[id] || "c1-lim-wei-ming";
+  const matchedClientId = repoToClientId[id] || "005511";
 
   return (
     <div className="repo-root">

@@ -17,8 +17,8 @@
 
 export const CLIENTS = [
   {
-    id: 'c1-lim-wei-ming',
-    name: 'Lim Wei Ming',
+    id: '005511',
+    name: '005511/LimWeiMing',
     age: 48,
     gender: 'Male',
     riskProfile: 'Moderate',
@@ -28,8 +28,8 @@ export const CLIENTS = [
     summary: 'Senior executive looking to leave corporate life before 55. Main concern is whether his savings can sustain 25–30 years post-employment.',
   },
   {
-    id: 'c2-sarah-tan',
-    name: 'Sarah Tan Hui Ling',
+    id: '005512',
+    name: '005512/SarahTan',
     age: 35,
     gender: 'Female',
     riskProfile: 'Aggressive',
@@ -39,8 +39,8 @@ export const CLIENTS = [
     summary: 'Tech entrepreneur with high risk appetite. Recently received a significant liquidity event and wants to deploy capital strategically.',
   },
   {
-    id: 'c3-ahmad-razif',
-    name: 'Ahmad Razif bin Hamid',
+    id: '005513',
+    name: '005513/AhmadRazif',
     age: 52,
     gender: 'Male',
     riskProfile: 'Conservative',
@@ -50,8 +50,8 @@ export const CLIENTS = [
     summary: 'Government servant approaching retirement. Primary concern is securing his three children\'s university education and protecting against medical costs.',
   },
   {
-    id: 'c4-jennifer-koh',
-    name: 'Jennifer Koh Mei Lin',
+    id: '005514',
+    name: '005514/JenniferKoh',
     age: 41,
     gender: 'Female',
     riskProfile: 'Moderate-Aggressive',
@@ -61,8 +61,8 @@ export const CLIENTS = [
     summary: 'Recently divorced single mother rebuilding her financial life. Runs an e-commerce business alongside her day job. Wants growth but cannot afford large capital losses.',
   },
   {
-    id: 'c5-david-ng',
-    name: 'David Ng Jia Hao',
+    id: '005515',
+    name: '005515/DavidNg',
     age: 29,
     gender: 'Male',
     riskProfile: 'Aggressive',
@@ -72,8 +72,8 @@ export const CLIENTS = [
     summary: 'Young banking professional with strong savings discipline. Inspired by the FIRE movement and wants a passive, low-maintenance investment approach.',
   },
   {
-    id: 'c6-rosnah-yusof',
-    name: 'Puan Rosnah binti Yusof',
+    id: '005516',
+    name: '005516/RosnahYusof',
     age: 55,
     gender: 'Female',
     riskProfile: 'Conservative',
@@ -85,10 +85,10 @@ export const CLIENTS = [
 ];
 
 export const MEMORIES = [
-  // ── Client 1: Lim Wei Ming ─────────────────────────────────────────────────
+  // ── Client 1: 005511/LimWeiMing ─────────────────────────────────────────────────
   {
-    clientId: 'c1-lim-wei-ming',
-    clientName: 'Lim Wei Ming',
+    clientId: '005511',
+    clientName: '005511/LimWeiMing',
     sourceType: 'crm_note',
     sourceRef: 'crm_2023_06',
     content:
@@ -96,8 +96,8 @@ export const MEMORIES = [
     metadata: { date: '2023-06-14', tags: ['career exit', 'lifestyle goal'] },
   },
   {
-    clientId: 'c1-lim-wei-ming',
-    clientName: 'Lim Wei Ming',
+    clientId: '005511',
+    clientName: '005511/LimWeiMing',
     sourceType: 'transcript',
     sourceRef: 'call_2024_02',
     content:
@@ -105,8 +105,8 @@ export const MEMORIES = [
     metadata: { date: '2024-02-08', tags: ['EPF', 'longevity risk', 'projection needed'] },
   },
   {
-    clientId: 'c1-lim-wei-ming',
-    clientName: 'Lim Wei Ming',
+    clientId: '005511',
+    clientName: '005511/LimWeiMing',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2024_09',
     content:
@@ -114,8 +114,8 @@ export const MEMORIES = [
     metadata: { date: '2024-09-20', tags: ['passive income', 'REITs', 'dividend investing'] },
   },
   {
-    clientId: 'c1-lim-wei-ming',
-    clientName: 'Lim Wei Ming',
+    clientId: '005511',
+    clientName: '005511/LimWeiMing',
     sourceType: 'crm_note',
     sourceRef: 'crm_2025_01',
     content:
@@ -123,8 +123,8 @@ export const MEMORIES = [
     metadata: { date: '2025-01-15', tags: ['annuity', 'guaranteed income', 'low maintenance'] },
   },
   {
-    clientId: 'c1-lim-wei-ming',
-    clientName: 'Lim Wei Ming',
+    clientId: '005511',
+    clientName: '005511/LimWeiMing',
     sourceType: 'transcript',
     sourceRef: 'call_2025_06',
     content:
@@ -134,8 +134,8 @@ export const MEMORIES = [
 
   // ── Client 2: Sarah Tan ────────────────────────────────────────────────────
   {
-    clientId: 'c2-sarah-tan',
-    clientName: 'Sarah Tan Hui Ling',
+    clientId: '005512',
+    clientName: '005512/SarahTan',
     sourceType: 'crm_note',
     sourceRef: 'crm_2023_03',
     content:
@@ -143,8 +143,8 @@ export const MEMORIES = [
     metadata: { date: '2023-03-22', tags: ['high risk', 'tech founder', 'long horizon'] },
   },
   {
-    clientId: 'c2-sarah-tan',
-    clientName: 'Sarah Tan Hui Ling',
+    clientId: '005512',
+    clientName: '005512/SarahTan',
     sourceType: 'transcript',
     sourceRef: 'call_2023_11',
     content:
@@ -152,8 +152,8 @@ export const MEMORIES = [
     metadata: { date: '2023-11-10', tags: ['equities', 'crypto', 'growth investing', 'diversification'] },
   },
   {
-    clientId: 'c2-sarah-tan',
-    clientName: 'Sarah Tan Hui Ling',
+    clientId: '005512',
+    clientName: '005512/SarahTan',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2024_05',
     content:
@@ -161,8 +161,8 @@ export const MEMORIES = [
     metadata: { date: '2024-05-17', tags: ['ETF', 'startup funding', 'liquidity planning'] },
   },
   {
-    clientId: 'c2-sarah-tan',
-    clientName: 'Sarah Tan Hui Ling',
+    clientId: '005512',
+    clientName: '005512/SarahTan',
     sourceType: 'crm_note',
     sourceRef: 'crm_2025_02',
     content:
@@ -172,8 +172,8 @@ export const MEMORIES = [
 
   // ── Client 3: Ahmad Razif ──────────────────────────────────────────────────
   {
-    clientId: 'c3-ahmad-razif',
-    clientName: 'Ahmad Razif bin Hamid',
+    clientId: '005513',
+    clientName: '005513/AhmadRazif',
     sourceType: 'crm_note',
     sourceRef: 'crm_2022_08',
     content:
@@ -181,8 +181,8 @@ export const MEMORIES = [
     metadata: { date: '2022-08-11', tags: ['education fund', 'capital protection', 'takaful'] },
   },
   {
-    clientId: 'c3-ahmad-razif',
-    clientName: 'Ahmad Razif bin Hamid',
+    clientId: '005513',
+    clientName: '005513/AhmadRazif',
     sourceType: 'transcript',
     sourceRef: 'call_2023_04',
     content:
@@ -190,8 +190,8 @@ export const MEMORIES = [
     metadata: { date: '2023-04-05', tags: ['healthcare', 'critical illness', 'medical insurance'] },
   },
   {
-    clientId: 'c3-ahmad-razif',
-    clientName: 'Ahmad Razif bin Hamid',
+    clientId: '005513',
+    clientName: '005513/AhmadRazif',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2023_12',
     content:
@@ -199,8 +199,8 @@ export const MEMORIES = [
     metadata: { date: '2023-12-14', tags: ['sukuk', 'Shariah', 'fixed income', 'halal investing'] },
   },
   {
-    clientId: 'c3-ahmad-razif',
-    clientName: 'Ahmad Razif bin Hamid',
+    clientId: '005513',
+    clientName: '005513/AhmadRazif',
     sourceType: 'crm_note',
     sourceRef: 'crm_2024_07',
     content:
@@ -208,8 +208,8 @@ export const MEMORIES = [
     metadata: { date: '2024-07-09', tags: ['education fund', 'urgent', 'timeline'] },
   },
   {
-    clientId: 'c3-ahmad-razif',
-    clientName: 'Ahmad Razif bin Hamid',
+    clientId: '005513',
+    clientName: '005513/AhmadRazif',
     sourceType: 'transcript',
     sourceRef: 'call_2025_03',
     content:
@@ -219,8 +219,8 @@ export const MEMORIES = [
 
   // ── Client 4: Jennifer Koh ─────────────────────────────────────────────────
   {
-    clientId: 'c4-jennifer-koh',
-    clientName: 'Jennifer Koh Mei Lin',
+    clientId: '005514',
+    clientName: '005514/JenniferKoh',
     sourceType: 'crm_note',
     sourceRef: 'crm_2023_01',
     content:
@@ -228,8 +228,8 @@ export const MEMORIES = [
     metadata: { date: '2023-01-18', tags: ['life change', 'financial independence', 'new start'] },
   },
   {
-    clientId: 'c4-jennifer-koh',
-    clientName: 'Jennifer Koh Mei Lin',
+    clientId: '005514',
+    clientName: '005514/JenniferKoh',
     sourceType: 'transcript',
     sourceRef: 'call_2023_09',
     content:
@@ -237,8 +237,8 @@ export const MEMORIES = [
     metadata: { date: '2023-09-25', tags: ['estate planning', 'will', 'trust', 'single parent'] },
   },
   {
-    clientId: 'c4-jennifer-koh',
-    clientName: 'Jennifer Koh Mei Lin',
+    clientId: '005514',
+    clientName: '005514/JenniferKoh',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2024_03',
     content:
@@ -246,8 +246,8 @@ export const MEMORIES = [
     metadata: { date: '2024-03-12', tags: ['balanced portfolio', 'downside protection', 'school fees'] },
   },
   {
-    clientId: 'c4-jennifer-koh',
-    clientName: 'Jennifer Koh Mei Lin',
+    clientId: '005514',
+    clientName: '005514/JenniferKoh',
     sourceType: 'crm_note',
     sourceRef: 'crm_2024_11',
     content:
@@ -255,8 +255,8 @@ export const MEMORIES = [
     metadata: { date: '2024-11-06', tags: ['business income', 'dual income', 'cash flow management'] },
   },
   {
-    clientId: 'c4-jennifer-koh',
-    clientName: 'Jennifer Koh Mei Lin',
+    clientId: '005514',
+    clientName: '005514/JenniferKoh',
     sourceType: 'transcript',
     sourceRef: 'call_2025_04',
     content:
@@ -266,8 +266,8 @@ export const MEMORIES = [
 
   // ── Client 5: David Ng ─────────────────────────────────────────────────────
   {
-    clientId: 'c5-david-ng',
-    clientName: 'David Ng Jia Hao',
+    clientId: '005515',
+    clientName: '005515/DavidNg',
     sourceType: 'crm_note',
     sourceRef: 'crm_2023_07',
     content:
@@ -275,8 +275,8 @@ export const MEMORIES = [
     metadata: { date: '2023-07-03', tags: ['first-time investor', 'home purchase', 'beginner'] },
   },
   {
-    clientId: 'c5-david-ng',
-    clientName: 'David Ng Jia Hao',
+    clientId: '005515',
+    clientName: '005515/DavidNg',
     sourceType: 'transcript',
     sourceRef: 'call_2024_01',
     content:
@@ -284,8 +284,8 @@ export const MEMORIES = [
     metadata: { date: '2024-01-22', tags: ['FIRE', 'financial independence', 'early retirement', 'high savings rate'] },
   },
   {
-    clientId: 'c5-david-ng',
-    clientName: 'David Ng Jia Hao',
+    clientId: '005515',
+    clientName: '005515/DavidNg',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2024_08',
     content:
@@ -293,8 +293,8 @@ export const MEMORIES = [
     metadata: { date: '2024-08-15', tags: ['index fund', 'S&P 500', 'passive investing', 'ETF'] },
   },
   {
-    clientId: 'c5-david-ng',
-    clientName: 'David Ng Jia Hao',
+    clientId: '005515',
+    clientName: '005515/DavidNg',
     sourceType: 'crm_note',
     sourceRef: 'crm_2025_01',
     content:
@@ -304,8 +304,8 @@ export const MEMORIES = [
 
   // ── Client 6: Puan Rosnah ──────────────────────────────────────────────────
   {
-    clientId: 'c6-rosnah-yusof',
-    clientName: 'Puan Rosnah binti Yusof',
+    clientId: '005516',
+    clientName: '005516/RosnahYusof',
     sourceType: 'crm_note',
     sourceRef: 'crm_2024_03',
     content:
@@ -313,8 +313,8 @@ export const MEMORIES = [
     metadata: { date: '2024-03-08', tags: ['widowed', 'inherited assets', 'new to finance management'] },
   },
   {
-    clientId: 'c6-rosnah-yusof',
-    clientName: 'Puan Rosnah binti Yusof',
+    clientId: '005516',
+    clientName: '005516/RosnahYusof',
     sourceType: 'transcript',
     sourceRef: 'call_2024_05',
     content:
@@ -322,8 +322,8 @@ export const MEMORIES = [
     metadata: { date: '2024-05-20', tags: ['financial literacy', 'low complexity', 'trust in advisor'] },
   },
   {
-    clientId: 'c6-rosnah-yusof',
-    clientName: 'Puan Rosnah binti Yusof',
+    clientId: '005516',
+    clientName: '005516/RosnahYusof',
     sourceType: 'meeting_summary',
     sourceRef: 'meeting_2024_09',
     content:
@@ -331,8 +331,8 @@ export const MEMORIES = [
     metadata: { date: '2024-09-11', tags: ['Tabung Haji', 'ASB', 'fixed deposit', 'income requirement'] },
   },
   {
-    clientId: 'c6-rosnah-yusof',
-    clientName: 'Puan Rosnah binti Yusof',
+    clientId: '005516',
+    clientName: '005516/RosnahYusof',
     sourceType: 'crm_note',
     sourceRef: 'crm_2025_01',
     content:
@@ -340,8 +340,8 @@ export const MEMORIES = [
     metadata: { date: '2025-01-09', tags: ['hibah', 'estate distribution', 'Islamic estate planning'] },
   },
   {
-    clientId: 'c6-rosnah-yusof',
-    clientName: 'Puan Rosnah binti Yusof',
+    clientId: '005516',
+    clientName: '005516/RosnahYusof',
     sourceType: 'transcript',
     sourceRef: 'call_2025_05',
     content:

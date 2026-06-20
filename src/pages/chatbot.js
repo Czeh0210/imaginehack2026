@@ -161,12 +161,12 @@ const SUGGESTIONS = [
 ];
 
 const clientIdToRepoId = {
-  "c1-lim-wei-ming": "AcmeCorp_estate-plan",
-  "c2-sarah-tan": "Globex_wealth-trust",
-  "c3-ahmad-razif": "AhmadRazif_education-plan",
-  "c4-jennifer-koh": "SmithFamily_will-draft",
-  "c5-david-ng": "WayneEnterprises_succession",
-  "c6-rosnah-yusof": "RosnahYusof_retirement-estate"
+  "005511": "005511_LimWeiMing",
+  "005512": "005512_SarahTan",
+  "005513": "005513_AhmadRazif",
+  "005514": "005514_JenniferKoh",
+  "005515": "005515_DavidNg",
+  "005516": "005516_RosnahYusof"
 };
 
 export default function Chatbot() {
@@ -401,7 +401,7 @@ export default function Chatbot() {
         }
 
         const selectedClient = CLIENTS.find(c => c.id === selectedClientId);
-        const clientName = selectedClient ? selectedClient.name : "Lim Wei Ming";
+        const clientName = selectedClient ? selectedClient.name : "005511/LimWeiMing";
 
         const formData = new FormData();
         formData.append("file", currentFile.rawFile);
@@ -686,7 +686,7 @@ export default function Chatbot() {
                               }}
                             >
                               <span className="option-avatar">
-                                {c.name.split(" ").map(n => n[0]).join("")}
+                                {(c.name.includes("/") ? c.name.split("/")[1] : c.name).replace(/[^A-Z]/g, "").slice(0, 2) || c.name.slice(0, 2)}
                               </span>
                               <span className="option-label">{c.name}</span>
                             </button>
@@ -794,7 +794,7 @@ export default function Chatbot() {
                                   </summary>
                                   <div className="sources-list">
                                     {msg.sources.map((src, sIdx) => {
-                                      const repoSlug = clientIdToRepoId[src.clientId] || "AcmeCorp_estate-plan";
+                                      const repoSlug = clientIdToRepoId[src.clientId] || "005511_LimWeiMing";
                                       const tabParam = (src.sourceType === "document" || src.sourceType === "proposal") ? "photo" : "info";
                                       const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
                                       return (
@@ -837,7 +837,7 @@ export default function Chatbot() {
                                 <span className="relevant-title">👥 Top Relevant Clients (Click to view Repo)</span>
                                 <div className="relevant-list">
                                   {msg.relevantClients.map((rc, rIdx) => {
-                                    const repoSlug = clientIdToRepoId[rc.clientId] || "AcmeCorp_estate-plan";
+                                    const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
                                     const linkUrl = `/client/${repoSlug}`;
                                     return (
                                       <a
@@ -1007,7 +1007,7 @@ export default function Chatbot() {
               <div className="panel-body">
                 <div className="profile-hero">
                   <div className="profile-avatar-large">
-                    {selectedClient.name.split(" ").map(n => n[0]).join("")}
+                    {(selectedClient.name.includes("/") ? selectedClient.name.split("/")[1] : selectedClient.name).replace(/[^A-Z]/g, "").slice(0, 2) || selectedClient.name.slice(0, 2)}
                   </div>
                   <h4>{selectedClient.name}</h4>
                   <span className="profile-meta">{selectedClient.age} years old · {selectedClient.gender}</span>

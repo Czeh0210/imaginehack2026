@@ -4,12 +4,12 @@ import Link from "next/link";
 import { CLIENTS } from "@/lib/mockData";
 
 const clientIdToRepoId = {
-  "c1-lim-wei-ming": "AcmeCorp_estate-plan",
-  "c2-sarah-tan": "Globex_wealth-trust",
-  "c3-ahmad-razif": "AhmadRazif_education-plan",
-  "c4-jennifer-koh": "SmithFamily_will-draft",
-  "c5-david-ng": "WayneEnterprises_succession",
-  "c6-rosnah-yusof": "RosnahYusof_retirement-estate"
+  "005511": "005511_LimWeiMing",
+  "005512": "005512_SarahTan",
+  "005513": "005513_AhmadRazif",
+  "005514": "005514_JenniferKoh",
+  "005515": "005515_DavidNg",
+  "005516": "005516_RosnahYusof"
 };
 
 // Simple markdown-like renderer (scoped inside widget)
@@ -90,12 +90,12 @@ export default function GlobalChatWidget() {
     if (!router.isReady) return;
 
     const repoToClientId = {
-      "AcmeCorp_estate-plan": "c1-lim-wei-ming",
-      "Globex_wealth-trust": "c2-sarah-tan",
-      "SmithFamily_will-draft": "c4-jennifer-koh",
-      "WayneEnterprises_succession": "c5-david-ng",
-      "AhmadRazif_education-plan": "c3-ahmad-razif",
-      "RosnahYusof_retirement-estate": "c6-rosnah-yusof"
+      "005511_LimWeiMing": "005511",
+      "005512_SarahTan": "005512",
+      "005513_AhmadRazif": "005513",
+      "005514_JenniferKoh": "005514",
+      "005515_DavidNg": "005515",
+      "005516_RosnahYusof": "005516"
     };
 
     const isClientPage = router.pathname.startsWith("/client/");
@@ -248,7 +248,7 @@ export default function GlobalChatWidget() {
         }
 
         const selectedClient = CLIENTS.find(c => c.id === selectedClientId);
-        const clientName = selectedClient ? selectedClient.name : "Lim Wei Ming";
+        const clientName = selectedClient ? selectedClient.name : "005511/LimWeiMing";
 
         const formData = new FormData();
         formData.append("file", currentFile.rawFile);
@@ -389,7 +389,7 @@ export default function GlobalChatWidget() {
                   >
                     <span className="trigger-icon">{activeClient ? "👤" : "🌐"}</span>
                     <span className="trigger-text">
-                      {activeClient ? activeClient.name.split(" ")[0] : "Global"}
+                      {activeClient ? activeClient.name : "Global"}
                     </span>
                     <span className="trigger-chevron">▾</span>
                   </button>
@@ -506,7 +506,7 @@ export default function GlobalChatWidget() {
                               </summary>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
                                 {msg.sources.map((s, sIdx) => {
-                                  const repoSlug = clientIdToRepoId[s.clientId] || "AcmeCorp_estate-plan";
+                                  const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
                                   const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
                                   const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
                                   return (
@@ -537,7 +537,7 @@ export default function GlobalChatWidget() {
                             <div style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
                               <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
                               {msg.relevantClients.map((rc, rIdx) => {
-                                const repoSlug = clientIdToRepoId[rc.clientId] || "AcmeCorp_estate-plan";
+                                const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
                                 const linkUrl = `/client/${repoSlug}`;
                                 return (
                                   <a
