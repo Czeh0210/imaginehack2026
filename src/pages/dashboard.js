@@ -367,7 +367,7 @@ function Feed({ activity }) {
     <main className="flex-1 w-full max-w-[800px]">
       <h1 className="text-2xl font-semibold text-gray-900 mb-5 tracking-tight">Home</h1>
 
-      {/* IntelliBot inline chat */}
+      {/* Search */}
       <div
         className="bg-white border border-gray-200 rounded-xl mb-6 overflow-hidden"
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}
@@ -381,8 +381,8 @@ function Feed({ activity }) {
               <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                 <div className={`max-w-[80%] px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                   msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-xl rounded-br-sm"
-                    : "bg-[#f0f2f4] text-gray-900 rounded-xl rounded-bl-sm border border-gray-200"
+                    ? "bg-[#0FBF3E] text-white rounded-xl rounded-br-sm"
+                    : "bg-[#F2F5F3] text-gray-900 rounded-xl rounded-bl-sm border border-[#E4EBE6]"
                 }`}>
                   {msg.content}
                 </div>
@@ -400,7 +400,7 @@ function Feed({ activity }) {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-[#f0f2f4] border border-gray-200 rounded-xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
+                <div className="bg-[#F2F5F3] border border-[#E4EBE6] rounded-xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
                   {[0, 1, 2].map((d) => (
                     <span
                       key={d}
@@ -460,8 +460,8 @@ function Feed({ activity }) {
                         onClick={() => { setScope(opt.value); setShowScopeMenu(false); }}
                         className={`w-full text-left px-3 py-1.5 text-[13px] transition-colors ${
                           scope === opt.value
-                            ? "bg-blue-50 text-blue-700 font-semibold"
-                            : "text-gray-700 hover:bg-gray-50"
+                            ? "bg-[#BFFFD1] text-[#08872B] font-semibold"
+                            : "text-gray-700 hover:bg-[#F2F5F3]"
                         }`}
                       >
                         {opt.label}
@@ -480,8 +480,8 @@ function Feed({ activity }) {
               disabled={!canSend}
               className="flex items-center justify-center rounded-lg p-1.5 transition-colors"
               style={{
-                background: canSend ? "#24292f" : "#e5e7eb",
-                color: canSend ? "#ffffff" : "#9ca3af",
+                background: canSend ? "#0FBF3E" : "#E4EBE6",
+                color: canSend ? "#ffffff" : "#909692",
                 cursor: canSend ? "pointer" : "not-allowed",
               }}
             >
@@ -492,16 +492,16 @@ function Feed({ activity }) {
           {/* Quick action chips */}
           <div className="flex items-center gap-1.5 mt-3 flex-wrap">
             {[
-              { icon: Search,        label: "Client summary",  color: "text-blue-600",   prompt: "Summarise the latest activity across all clients" },
-              { icon: FileText,      label: "Pending reviews", color: "text-gray-600",   prompt: "Which clients have pending document reviews or expiring policies?" },
-              { icon: AlertTriangle, label: "Risk flags",      color: "text-amber-600",  prompt: "Which clients have high financial risk exposure or flagged concerns?" },
-              { icon: Calendar,      label: "Milestones",      color: "text-green-600",  prompt: "List clients with upcoming estate or retirement milestones" },
-              { icon: Users,         label: "Prioritise",      color: "text-purple-600", prompt: "Which clients should I prioritise contacting this week?" },
-            ].map(({ icon: Icon, label, color, prompt }) => (
+              { icon: Search,        label: "Client summary",  prompt: "Summarise the latest activity across all clients" },
+              { icon: FileText,      label: "Pending reviews", prompt: "Which clients have pending document reviews or expiring policies?" },
+              { icon: AlertTriangle, label: "Risk flags",      prompt: "Which clients have high financial risk exposure or flagged concerns?" },
+              { icon: Calendar,      label: "Milestones",      prompt: "List clients with upcoming estate or retirement milestones" },
+              { icon: Users,         label: "Prioritise",      prompt: "Which clients should I prioritise contacting this week?" },
+            ].map(({ icon: Icon, label, prompt }) => (
               <button
                 key={label}
                 onClick={() => sendMessage(prompt)}
-                className={`flex items-center gap-1.5 ${color} bg-white hover:bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors`}
+                className="flex items-center gap-1.5 text-[#909692] bg-white hover:bg-[#F2F5F3] hover:text-[#0FBF3E] border border-[#E4EBE6] hover:border-[#0FBF3E] rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors"
               >
                 <Icon size={12} />
                 {label}

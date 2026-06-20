@@ -746,12 +746,12 @@ const getClientMilestones = (displayId) => {
   if (cleanId.includes("acme") || cleanId.includes("amcord")) {
     return [
       { id: 1, date: "2026-05-28", label: "Client Onboarded",       type: "start",    color: "#2563eb", description: "Advisory relationship established. Risk profile assessed: Moderate-Conservative. Focus area: Estate Planning & Business Succession." },
-      { id: 2, date: "2026-06-10", label: "Initial Consultation",   type: "meeting",  color: "#16a34a", description: "First meeting with AMCORD board. Estate planning and shareholder protection needs clearly identified." },
+      { id: 2, date: "2026-06-10", label: "Initial Consultation",   type: "meeting",  color: "#0FBF3E", description: "First meeting with AMCORD board. Estate planning and shareholder protection needs clearly identified." },
       { id: 3, date: "2026-06-14", label: "Document Review",        type: "document", color: "#d97706", description: "Corporate profile and intake notes reviewed. Shareholder protection identified as primary advisory focus." },
       { id: 4, date: "2026-06-18", label: "Advisory Session",       type: "meeting",  color: "#2563eb", description: "Second meeting with legal counsel. Key decisions made on revocable trust structure and capital gains tax strategy." },
       { id: 5, date: "2026-06-18", label: "Follow-Up Sent",         type: "comms",    color: "#d97706", description: "WhatsApp follow-up after estate planning discussion. Client requested a simplified summary before the next session." },
       { id: 6, date: "2026-06-21", label: "Proposal Prep",          type: "proposal", color: "#2563eb", description: "Preparing simplified estate planning proposal — covering will structure, trust setup, and business succession in plain language." },
-      { id: 7, date: "2026-06-21", label: "TaxCorp Advisory Joined",type: "partner",  color: "#16a34a", description: "TaxCorp Advisory onboarded as tax consultant partner for the AMCORD estate planning engagement. They will advise on tax-efficient trust structures and capital gains planning." },
+      { id: 7, date: "2026-06-21", label: "TaxCorp Advisory Joined",type: "partner",  color: "#0FBF3E", description: "TaxCorp Advisory onboarded as tax consultant partner for the AMCORD estate planning engagement. They will advise on tax-efficient trust structures and capital gains planning." },
       { id: 8, date: "2026-06-25", label: "Follow-Up Scheduled",    type: "upcoming", color: "#6b7280", description: "Planned: Send WhatsApp summary and gauge readiness for a deeper estate planning discussion session." },
     ];
   } else if (cleanId.includes("globex")) {
@@ -759,14 +759,14 @@ const getClientMilestones = (displayId) => {
       { id: 1, date: "2026-05-10", label: "Client Onboarded",   type: "start",    color: "#2563eb", description: "Globex Holdings onboarded. Complex offshore asset protection trust identified as the primary advisory structure." },
       { id: 2, date: "2026-05-18", label: "Trust Deed Review",  type: "document", color: "#d97706", description: "Irrevocable Asset Protection Trust deed analyzed. Foreign holding disclosure requirements flagged for compliance." },
       { id: 3, date: "2026-06-01", label: "Compliance Brief",   type: "document", color: "#d97706", description: "Regulatory compliance brief prepared covering global tax treaty obligations and international disclosure requirements." },
-      { id: 4, date: "2026-06-12", label: "Offshore Meeting",   type: "meeting",  color: "#16a34a", description: "Offshore structures discussion. Reviewed compliance and tax implications of global asset holdings under the family trust." },
+      { id: 4, date: "2026-06-12", label: "Offshore Meeting",   type: "meeting",  color: "#0FBF3E", description: "Offshore structures discussion. Reviewed compliance and tax implications of global asset holdings under the family trust." },
       { id: 5, date: "2026-06-20", label: "Portfolio Review",   type: "proposal", color: "#2563eb", description: "Q2 asset allocation spreadsheet finalized. Milestone distribution amendment drafted and prepared for board review." },
       { id: 6, date: "2026-06-30", label: "Board Approval",     type: "upcoming", color: "#6b7280", description: "Planned: Board approval of succession protocol and final asset distribution amendment resolution." },
     ];
   } else if (cleanId.includes("smith")) {
     return [
       { id: 1, date: "2026-05-05", label: "Client Onboarded",      type: "start",    color: "#2563eb", description: "Smith family estate planning engagement commenced. Will writing and executor designation identified as priorities." },
-      { id: 2, date: "2026-06-10", label: "Executor Consultation",  type: "meeting",  color: "#16a34a", description: "Initial consultation on will structure and executor designation. Alternate executor nominated by client." },
+      { id: 2, date: "2026-06-10", label: "Executor Consultation",  type: "meeting",  color: "#0FBF3E", description: "Initial consultation on will structure and executor designation. Alternate executor nominated by client." },
       { id: 3, date: "2026-06-15", label: "Asset Inventory",        type: "document", color: "#d97706", description: "Family asset inventory reviewed. Primary residence, liquid savings, and account details documented securely." },
       { id: 4, date: "2026-06-19", label: "Will Review",            type: "meeting",  color: "#2563eb", description: "Final will review meeting. Asset allocation confirmed. Guardian spelling correction noted before signing." },
       { id: 5, date: "2026-06-25", label: "Notary Appointment",     type: "upcoming", color: "#6b7280", description: "Planned: Schedule notary appointment for official will signing and legal execution." },
@@ -775,7 +775,7 @@ const getClientMilestones = (displayId) => {
     return [
       { id: 1, date: "2026-04-20", label: "Engagement Start",      type: "start",    color: "#2563eb", description: "Wayne Enterprises succession planning engagement initiated. Security clearance Level 4 required for all documents." },
       { id: 2, date: "2026-05-05", label: "Leadership Assessment",  type: "document", color: "#d97706", description: "Key man insurance requirements assessed. Leadership transition pathways documented and reviewed by advisor." },
-      { id: 3, date: "2026-05-20", label: "Board Consultation",     type: "meeting",  color: "#16a34a", description: "Board governance alignment session. Critical succession gaps identified and prioritized for resolution." },
+      { id: 3, date: "2026-05-20", label: "Board Consultation",     type: "meeting",  color: "#0FBF3E", description: "Board governance alignment session. Critical succession gaps identified and prioritized for resolution." },
       { id: 4, date: "2026-06-15", label: "Succession Meeting",     type: "meeting",  color: "#2563eb", description: "Formal succession planning meeting. Action plan finalized: key-man insurance evaluation to be completed by Q3 2026." },
       { id: 5, date: "2026-06-18", label: "Buyout Draft",           type: "proposal", color: "#d97706", description: "Emergency buyout agreement draft completed. Contingency bylaws reviewed with legal counsel and board." },
       { id: 6, date: "2026-06-30", label: "Board Approval",         type: "upcoming", color: "#6b7280", description: "Planned: Board approval for succession protocol and finalization of key-man insurance policy." },
@@ -783,7 +783,7 @@ const getClientMilestones = (displayId) => {
   }
   return [
     { id: 1, date: "2026-05-15", label: "Client Onboarded",  type: "start",    color: "#2563eb", description: "Advisory relationship established. Initial profiling and risk assessment completed." },
-    { id: 2, date: "2026-06-01", label: "Kickoff Meeting",   type: "meeting",  color: "#16a34a", description: "Initial consultation. Advisory objectives, risk tolerance, and planning scope established." },
+    { id: 2, date: "2026-06-01", label: "Kickoff Meeting",   type: "meeting",  color: "#0FBF3E", description: "Initial consultation. Advisory objectives, risk tolerance, and planning scope established." },
     { id: 3, date: "2026-06-10", label: "Document Upload",   type: "document", color: "#d97706", description: "Client profile and initial assessment documents uploaded and reviewed." },
     { id: 4, date: "2026-06-20", label: "Proposal Ready",    type: "proposal", color: "#2563eb", description: "First advisory proposal drafted and prepared for client review." },
     { id: 5, date: "2026-06-30", label: "Review Scheduled",  type: "upcoming", color: "#6b7280", description: "Planned: Client review of advisory proposal and next steps planning." },
@@ -856,19 +856,19 @@ const CLIENT_META = {
     description: "Last will & testament drafting, executor designation, and testamentary trust planning for the Smith family estate.",
     topics: ["will-drafting", "estate-planning", "executor", "testamentary-trust", "family"],
     risk: "Conservative", stage: "Active", lastContact: "14 Jun 2026", relationshipScore: 81,
-    portfolioAlloc: [{ label: "Estate / Property", pct: 50, color: "#7c3aed" }, { label: "Fixed Deposits", pct: 30, color: "#16a34a" }, { label: "Insurance", pct: 20, color: "#2563eb" }],
+    portfolioAlloc: [{ label: "Estate / Property", pct: 50, color: "#7c3aed" }, { label: "Fixed Deposits", pct: 30, color: "#0FBF3E" }, { label: "Insurance", pct: 20, color: "#2563eb" }],
   },
   "WayneEnterprises/succession": {
     description: "Multi-generational succession planning and family office governance for Wayne Enterprises. Covers board transition and philanthropic mandates.",
     topics: ["succession", "family-office", "governance", "philanthropy", "corporate"],
     risk: "Moderate-Aggressive", stage: "Active", lastContact: "10 Jun 2026", relationshipScore: 92,
-    portfolioAlloc: [{ label: "Corporate Equity", pct: 45, color: "#2563eb" }, { label: "Real Estate", pct: 30, color: "#d97706" }, { label: "Philanthropy Fund", pct: 25, color: "#16a34a" }],
+    portfolioAlloc: [{ label: "Corporate Equity", pct: 45, color: "#2563eb" }, { label: "Real Estate", pct: 30, color: "#d97706" }, { label: "Philanthropy Fund", pct: 25, color: "#0FBF3E" }],
   },
   "LimWeiMing/retirement-plan": {
     description: "Retirement income planning for a senior executive aiming to exit corporate life before 55. Focused on capital preservation and passive income.",
     topics: ["retirement", "passive-income", "capital-preservation", "annuity", "FIRE-adjacent"],
     risk: "Moderate", stage: "Active", lastContact: "15 Jun 2026", relationshipScore: 77,
-    portfolioAlloc: [{ label: "Fixed Income / EPF", pct: 50, color: "#16a34a" }, { label: "Balanced Fund", pct: 30, color: "#2563eb" }, { label: "Annuity", pct: 20, color: "#d97706" }],
+    portfolioAlloc: [{ label: "Fixed Income / EPF", pct: 50, color: "#0FBF3E" }, { label: "Balanced Fund", pct: 30, color: "#2563eb" }, { label: "Annuity", pct: 20, color: "#d97706" }],
   },
   "SarahTan/portfolio-growth": {
     description: "Aggressive growth portfolio for a tech entrepreneur post-liquidity event. Strategic equity deployment and tax optimisation.",
@@ -880,13 +880,13 @@ const CLIENT_META = {
     description: "Shariah-compliant education trust and capital-preservation plan for a government servant with three children approaching university age.",
     topics: ["education-fund", "halal-investing", "sukuk", "capital-preservation", "critical-illness"],
     risk: "Conservative", stage: "Active", lastContact: "11 Jun 2026", relationshipScore: 79,
-    portfolioAlloc: [{ label: "Sukuk / Fixed Income", pct: 55, color: "#16a34a" }, { label: "Education Fund", pct: 30, color: "#2563eb" }, { label: "Takaful", pct: 15, color: "#d97706" }],
+    portfolioAlloc: [{ label: "Sukuk / Fixed Income", pct: 55, color: "#0FBF3E" }, { label: "Education Fund", pct: 30, color: "#2563eb" }, { label: "Takaful", pct: 15, color: "#d97706" }],
   },
   "JenniferKoh/family-estate": {
     description: "Balanced growth and estate planning for a dual-income single mother. Children's trust fund alongside business income management.",
     topics: ["estate-planning", "balanced-portfolio", "unit-trusts", "childrens-trust", "dual-income"],
     risk: "Moderate-Aggressive", stage: "Active", lastContact: "16 Jun 2026", relationshipScore: 83,
-    portfolioAlloc: [{ label: "Unit Trusts", pct: 40, color: "#2563eb" }, { label: "Children Trust", pct: 30, color: "#7c3aed" }, { label: "Insurance", pct: 30, color: "#16a34a" }],
+    portfolioAlloc: [{ label: "Unit Trusts", pct: 40, color: "#2563eb" }, { label: "Children Trust", pct: 30, color: "#7c3aed" }, { label: "Insurance", pct: 30, color: "#0FBF3E" }],
   },
   "DavidNg/fire-strategy": {
     description: "FIRE movement strategy for a young banking professional — low-maintenance ETF/index portfolio, property financing, and aggressive savings discipline.",
@@ -898,12 +898,12 @@ const CLIENT_META = {
     description: "Conservative income plan for a widow managing inherited joint assets. Guaranteed income products, Tabung Haji, and Hibah estate distribution.",
     topics: ["fixed-income", "tabung-haji", "hibah", "estate-distribution", "income-generation"],
     risk: "Conservative", stage: "Nurture", lastContact: "13 Jun 2026", relationshipScore: 68,
-    portfolioAlloc: [{ label: "Fixed Deposits", pct: 45, color: "#16a34a" }, { label: "Tabung Haji", pct: 35, color: "#d97706" }, { label: "Hibah / Estate", pct: 20, color: "#7c3aed" }],
+    portfolioAlloc: [{ label: "Fixed Deposits", pct: 45, color: "#0FBF3E" }, { label: "Tabung Haji", pct: 35, color: "#d97706" }, { label: "Hibah / Estate", pct: 20, color: "#7c3aed" }],
   },
 };
 
-const RISK_COLOR = { "Conservative": "#16a34a", "Moderate-Conservative": "#d97706", "Moderate": "#2563eb", "Moderate-Aggressive": "#7c3aed", "Aggressive": "#dc2626" };
-const STAGE_COLOR = { "Active": { bg: "#ecfdf5", text: "#16a34a" }, "Warm Prospect": { bg: "#fffbeb", text: "#d97706" }, "Nurture": { bg: "#eff6ff", text: "#2563eb" } };
+const RISK_COLOR = { "Conservative": "#0FBF3E", "Moderate-Conservative": "#d97706", "Moderate": "#2563eb", "Moderate-Aggressive": "#7c3aed", "Aggressive": "#dc2626" };
+const STAGE_COLOR = { "Active": { bg: "#ecfdf5", text: "#0FBF3E" }, "Warm Prospect": { bg: "#fffbeb", text: "#d97706" }, "Nurture": { bg: "#eff6ff", text: "#2563eb" } };
 
 export default function ClientRepo() {
   const router = useRouter();
@@ -1853,7 +1853,7 @@ export default function ClientRepo() {
       address: "IOI Resort City, 62502 Putrajaya, Selangor",
       lat: 2.9723,
       lng: 101.7229,
-      color: "#16a34a",
+      color: "#0FBF3E",
     },
     {
       id: 3,
@@ -2329,9 +2329,9 @@ export default function ClientRepo() {
               </svg>
               Dashboard
             </Link>
-            <span style={{ color: "#656d76", margin: "0 4px", fontSize: 18, fontWeight: 300, lineHeight: 1 }}>/</span>
+            <span style={{ color: "#909692", margin: "0 4px", fontSize: 18, fontWeight: 300, lineHeight: 1 }}>/</span>
             <span style={{ fontWeight: 600, fontSize: 14, color: "#2563eb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{displayId}</span>
-            <span style={{ fontSize: 11, color: "#656d76", border: "1px solid #d0d7de", borderRadius: "2em", padding: "1px 7px", fontWeight: 500, marginLeft: 8, flexShrink: 0, lineHeight: "18px" }}>Public</span>
+            <span style={{ fontSize: 11, color: "#909692", border: "1px solid #d0d7de", borderRadius: "2em", padding: "1px 7px", fontWeight: 500, marginLeft: 8, flexShrink: 0, lineHeight: "18px" }}>Public</span>
           </div>
           <div className="repo-actions">
             {/* Watch split button */}
@@ -2339,7 +2339,7 @@ export default function ClientRepo() {
               <button className="split-main">
                 <svg aria-hidden="true" height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M8 2c1.981 0 3.671.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 0 1 0 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.671-.992-4.933-2.078C1.797 10.83.88 9.576.43 8.898a1.62 1.62 0 0 1 0-1.798c.45-.677 1.367-1.931 2.637-3.022C4.33 2.992 6.019 2 8 2ZM1.679 7.932a.12.12 0 0 0 0 .136c.411.622 1.241 1.75 2.366 2.717C5.176 11.758 6.527 12.5 8 12.5c1.473 0 2.825-.742 3.955-1.715 1.124-.967 1.954-2.096 2.366-2.717a.12.12 0 0 0 0-.136c-.412-.621-1.242-1.75-2.366-2.717C10.824 4.242 9.473 3.5 8 3.5c-1.473 0-2.825.742-3.955 1.715-1.124.967-1.954 2.096-2.366 2.717ZM8 10a2 2 0 1 1-.001-3.999A2 2 0 0 1 8 10Z"/></svg>
                 Watch
-                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#656d76" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
+                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#909692" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
               </button>
               <span className="split-count">1</span>
             </div>
@@ -2348,7 +2348,7 @@ export default function ClientRepo() {
               <button className="split-main">
                 <svg aria-hidden="true" height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z"/></svg>
                 Fork
-                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#656d76" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
+                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#909692" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
               </button>
               <span className="split-count">0</span>
             </div>
@@ -2357,7 +2357,7 @@ export default function ClientRepo() {
               <button className="split-main">
                 <svg aria-hidden="true" height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>
                 Star
-                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#656d76" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
+                <svg aria-hidden="true" height="12" viewBox="0 0 16 16" width="12" fill="currentColor" style={{ marginLeft: 2, color: "#909692" }}><path d="M4.427 7.427l3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"/></svg>
               </button>
               <span className="split-count">4</span>
             </div>
@@ -2472,7 +2472,7 @@ export default function ClientRepo() {
                                     className="noti-run-btn"
                                     onClick={() => { setActiveTab("documents"); setNotiOpen(false); }}
                                   >
-                                    Run AI →
+                                    Analyse →
                                   </button>
                                 </div>
                               </div>
@@ -2617,7 +2617,7 @@ export default function ClientRepo() {
                             <p className="dz-label">Parsing document & creating preview…</p>
                             {repoUploadProgress > 0 && (
                               <div className="dz-progress-bar" style={{width: 200, height: 6, background: '#eee', borderRadius: 3, overflow: 'hidden', marginTop: 8}}>
-                                <div className="dz-progress-fill" style={{ width: `${repoUploadProgress}%`, height: '100%', background: '#0969da' }}></div>
+                                <div className="dz-progress-fill" style={{ width: `${repoUploadProgress}%`, height: '100%', background: '#0FBF3E' }}></div>
                               </div>
                             )}
                           </div>
@@ -2805,7 +2805,7 @@ export default function ClientRepo() {
                       <div className="repo-actions-bar">
                         <div className="branch-and-path">
                           <button className="btn-secondary branch-btn">
-                            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="#656d76" style={{ marginRight: 6 }}>
+                            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="#909692" style={{ marginRight: 6 }}>
                               <path d="M11.75 2.5a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm-6 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Zm4.25 11.25H3.75v-1.5a.25.25 0 0 1 .25-.25h8a.25.25 0 0 1 .25.25v1.5ZM4.5 1.5a2.25 2.25 0 0 0-2.25 2.25v4.5A2.25 2.25 0 0 0 4.5 10.5h7a2.25 2.25 0 0 0 2.25-2.25v-4.5A2.25 2.25 0 0 0 11.5 1.5h-7Z" />
                             </svg>
                             <span>main</span>
@@ -2910,7 +2910,7 @@ export default function ClientRepo() {
                                 return (
                                   <tr>
                                     <td colSpan="5" className="empty-files-slate">
-                                      <svg aria-hidden="true" height="32" viewBox="0 0 24 24" version="1.1" width="32" fill="#656d76">
+                                      <svg aria-hidden="true" height="32" viewBox="0 0 24 24" version="1.1" width="32" fill="#909692">
                                         <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
                                       </svg>
                                       <h4>This client repository is empty</h4>
@@ -2926,7 +2926,7 @@ export default function ClientRepo() {
                                 const relativePath = currentPath ? `${currentPath}/${item.name}` : item.name;
                                 
                                 let icon = (
-                                  <svg className="file-icon" height="16" viewBox="0 0 16 16" width="16" fill="#656d76"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
+                                  <svg className="file-icon" height="16" viewBox="0 0 16 16" width="16" fill="#909692"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
                                 );
 
                                 if (isFolder) {
@@ -2937,7 +2937,7 @@ export default function ClientRepo() {
                                   );
                                 } else if (item.type === "xlsx" || item.type === "xls") {
                                   icon = (
-                                    <svg className="file-icon excel-icon" height="16" viewBox="0 0 16 16" width="16" fill="#16a34a"><path d="M1 1.75C1 .784 1.784 0 2.75 0h8.5c.966 0 1.75.784 1.75 1.75v12.5A1.75 1.75 0 0 1 11.25 16h-8.5A1.75 1.75 0 0 1 1 14.25V1.75ZM2.75 1.5a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5Z"/><path d="M4 4.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 4.75Zm0 3a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 7.75Zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z"/></svg>
+                                    <svg className="file-icon excel-icon" height="16" viewBox="0 0 16 16" width="16" fill="#0FBF3E"><path d="M1 1.75C1 .784 1.784 0 2.75 0h8.5c.966 0 1.75.784 1.75 1.75v12.5A1.75 1.75 0 0 1 11.25 16h-8.5A1.75 1.75 0 0 1 1 14.25V1.75ZM2.75 1.5a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5Z"/><path d="M4 4.75a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 4.75Zm0 3a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 7.75Zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1-.75-.75Z"/></svg>
                                   );
                                 } else if (item.type === "pdf") {
                                   icon = (
@@ -3645,7 +3645,7 @@ export default function ClientRepo() {
                       borderTopRightRadius: 6,
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <svg className="octicon octicon-file" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true" fill="#656d76">
+                        <svg className="octicon octicon-file" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true" fill="#909692">
                           <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path>
                         </svg>
                         <span style={{ fontWeight: 600, fontSize: 13, color: "#1f2328" }}>{docResult.filename}</span>
@@ -3877,7 +3877,7 @@ export default function ClientRepo() {
                       borderTopRightRadius: 6,
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <svg className="octicon octicon-file" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true" fill="#656d76">
+                        <svg className="octicon octicon-file" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true" fill="#909692">
                           <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"></path>
                         </svg>
                         <span style={{ fontWeight: 600, fontSize: 13, color: "#1f2328" }}>{audioResult.filename}</span>
@@ -4083,7 +4083,7 @@ export default function ClientRepo() {
                     <div className="contact-compose-to-label">To</div>
                     <div className="contact-compose-to-value">
                       <strong>{cd.contactPerson}</strong>
-                      <span style={{color: "#656d76", fontSize: 13}}> · +{cd.phone}</span>
+                      <span style={{color: "#909692", fontSize: 13}}> · +{cd.phone}</span>
                     </div>
                   </div>
 
@@ -4309,7 +4309,7 @@ export default function ClientRepo() {
                 <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16, marginTop: 8}}>
                   {[
                     { label: "Milestones Reached", value: milestones.filter(m => m.type !== "upcoming").length, color: "#2563eb", surface: "#eff6ff", icon: "🏁" },
-                    { label: "Meetings Held",       value: milestones.filter(m => m.type === "meeting").length,  color: "#16a34a", surface: "#f0fdf4", icon: "🤝" },
+                    { label: "Meetings Held",       value: milestones.filter(m => m.type === "meeting").length,  color: "#0FBF3E", surface: "#f0fdf4", icon: "🤝" },
                     { label: "Documents Filed",     value: advisoryFiles.length,                                 color: "#d97706", surface: "#fffbeb", icon: "📂" },
                     { label: "Days Active",         value: Math.max(1, Math.round((Date.now() - new Date(milestones[0]?.date).getTime()) / 86400000)), color: "#374151", surface: "#f3f4f6", icon: "📅" },
                   ].map((stat, idx) => (
@@ -4390,7 +4390,7 @@ export default function ClientRepo() {
           padding: 28px 16px;
           text-align: center;
           font-size: 13px;
-          color: #656d76;
+          color: #909692;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -4427,7 +4427,7 @@ export default function ClientRepo() {
         }
         .noti-item-file {
           font-size: 11px;
-          color: #656d76;
+          color: #909692;
           font-family: "SFMono-Regular", Consolas, monospace;
           white-space: nowrap;
           overflow: hidden;
@@ -4435,7 +4435,7 @@ export default function ClientRepo() {
         }
         .noti-item-time {
           font-size: 11px;
-          color: #656d76;
+          color: #909692;
           margin-top: 3px;
         }
         .noti-item-actions {
@@ -4447,7 +4447,7 @@ export default function ClientRepo() {
         .noti-run-btn {
           font-size: 12px;
           font-weight: 600;
-          color: #0969da;
+          color: #0FBF3E;
           background: #dff0ff;
           border: none;
           border-radius: 4px;
@@ -4486,7 +4486,7 @@ export default function ClientRepo() {
           width: 44px;
           height: 44px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #0969da, #1f883d);
+          background: linear-gradient(135deg, #0FBF3E, #08872B);
           color: #fff;
           font-size: 20px;
           font-weight: 700;
@@ -4507,7 +4507,7 @@ export default function ClientRepo() {
         }
         .contact-client-phone {
           font-size: 12px;
-          color: #656d76;
+          color: #909692;
           margin-top: 2px;
           font-family: "SFMono-Regular", Consolas, monospace;
         }
@@ -4518,7 +4518,7 @@ export default function ClientRepo() {
           font-size: 11px;
           font-weight: 600;
           background: #dff0ff;
-          color: #0969da;
+          color: #0FBF3E;
           padding: 2px 8px;
           border-radius: 12px;
         }
@@ -4559,7 +4559,7 @@ export default function ClientRepo() {
         .contact-compose-to-label {
           font-size: 11px;
           font-weight: 700;
-          color: #656d76;
+          color: #909692;
           text-transform: uppercase;
           letter-spacing: 0.06em;
           flex-shrink: 0;
@@ -4574,7 +4574,7 @@ export default function ClientRepo() {
         .contact-compose-label {
           font-size: 11px;
           font-weight: 700;
-          color: #656d76;
+          color: #909692;
           text-transform: uppercase;
           letter-spacing: 0.06em;
           margin-bottom: 8px;
@@ -4593,7 +4593,7 @@ export default function ClientRepo() {
         }
         .contact-textarea:focus {
           outline: none;
-          border-color: #0969da;
+          border-color: #0FBF3E;
           box-shadow: 0 0 0 3px rgba(9,105,218,0.12);
         }
         .contact-actions {
@@ -4635,7 +4635,7 @@ export default function ClientRepo() {
         .contact-btn-reset {
           padding: 8px 16px;
           background: transparent;
-          color: #656d76;
+          color: #909692;
           font-size: 13px;
           font-weight: 500;
           border: 1px solid #d0d7de;
@@ -4714,7 +4714,7 @@ export default function ClientRepo() {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: #0969da;
+          background: #0FBF3E;
           color: #fff;
           font-size: 10px;
           font-weight: 700;
@@ -4733,7 +4733,7 @@ export default function ClientRepo() {
         .commit-hash-tag {
           font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
           font-size: 12px;
-          color: #0969da;
+          color: #0FBF3E;
           background: #dff0ff;
           padding: 2px 8px;
           border-radius: 4px;
@@ -4784,7 +4784,7 @@ export default function ClientRepo() {
           gap: 4px;
           padding: 4px 6px;
           border-radius: 6px;
-          color: #0969da;
+          color: #0FBF3E;
           flex-shrink: 0;
         }
         .back-link:hover {
@@ -4792,7 +4792,7 @@ export default function ClientRepo() {
           text-decoration: none;
         }
         .separator {
-          color: #656d76;
+          color: #909692;
           margin: 0 4px;
           font-weight: 300;
           font-size: 18px;
@@ -4801,14 +4801,14 @@ export default function ClientRepo() {
         .repo-name {
           font-weight: 600;
           font-size: 14px;
-          color: #0969da;
+          color: #0FBF3E;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .badge {
           font-size: 11px;
-          color: #656d76;
+          color: #909692;
           border: 1px solid #d0d7de;
           border-radius: 2em;
           padding: 1px 7px;
@@ -4864,7 +4864,7 @@ export default function ClientRepo() {
         }
         .split-count:hover {
           background: #eaeef2;
-          color: #0969da;
+          color: #0FBF3E;
         }
 
         /* ── TABS ── */
@@ -4898,10 +4898,10 @@ export default function ClientRepo() {
         }
         .tab-item.active {
           font-weight: 600;
-          border-bottom: 2px solid #fd8c73;
+          border-bottom: 2px solid #0FBF3E;
         }
         .tab-item svg {
-          color: #656d76;
+          color: #909692;
         }
         .tab-item.active svg {
           color: #1f2328;
@@ -4919,9 +4919,9 @@ export default function ClientRepo() {
 
         /* BUTTONS */
         .btn-primary {
-          background-color: #1f883d;
+          background-color: #0FBF3E;
           color: #ffffff;
-          border: 1px solid rgba(31, 35, 40, 0.15);
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 6px;
           padding: 5px 16px;
           font-size: 14px;
@@ -4929,7 +4929,7 @@ export default function ClientRepo() {
           cursor: pointer;
         }
         .btn-primary:hover {
-          background-color: #1a7f37;
+          background-color: #08872B;
         }
         .btn-secondary {
           background-color: #f6f8fa;
@@ -4986,7 +4986,7 @@ export default function ClientRepo() {
           font-size: 16px;
         }
         .blank-slate p {
-          color: #656d76;
+          color: #909692;
           font-size: 14px;
           max-width: 400px;
           margin: 0;
@@ -4994,7 +4994,7 @@ export default function ClientRepo() {
         .blank-slate-small {
           padding: 24px;
           text-align: center;
-          color: #656d76;
+          color: #909692;
           font-size: 14px;
         }
 
@@ -5006,7 +5006,7 @@ export default function ClientRepo() {
           margin-bottom: 16px;
         }
         .tab-description {
-          color: #656d76;
+          color: #909692;
           font-size: 14px;
           margin: 0;
         }
@@ -5071,7 +5071,7 @@ export default function ClientRepo() {
         }
         .partner-role {
           font-size: 12px;
-          color: #656d76;
+          color: #909692;
         }
 
         /* ── PHOTO / RECEIPT TAB ── */
@@ -5097,21 +5097,21 @@ export default function ClientRepo() {
           text-align: center;
         }
         .upload-dropzone:hover, .dz--over {
-          border-color: #0969da;
+          border-color: #0FBF3E;
           background: #f0f6ff;
         }
         .dz--uploading {
           cursor: default;
-          border-color: #1f883d;
+          border-color: #0FBF3E;
           background: #f0fff4;
         }
         .dz-icon {
-          color: #656d76;
+          color: #909692;
           margin-bottom: 4px;
           transition: color 0.18s;
         }
         .upload-dropzone:hover .dz-icon, .dz--over .dz-icon {
-          color: #0969da;
+          color: #0FBF3E;
         }
         .dz-label {
           font-size: 15px;
@@ -5120,12 +5120,12 @@ export default function ClientRepo() {
           margin: 0;
         }
         .dz-link {
-          color: #0969da;
+          color: #0FBF3E;
           text-decoration: underline;
         }
         .dz-hint {
           font-size: 12px;
-          color: #656d76;
+          color: #909692;
           margin: 0;
         }
         .dz-uploading-state {
@@ -5139,7 +5139,7 @@ export default function ClientRepo() {
         .dz-spinner {
           width: 32px; height: 32px;
           border: 3px solid #d0d7de;
-          border-top-color: #1f883d;
+          border-top-color: #0FBF3E;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -5153,7 +5153,7 @@ export default function ClientRepo() {
         }
         .dz-progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #0969da, #1f883d);
+          background: linear-gradient(90deg, #0FBF3E, #08872B);
           border-radius: 6px;
           transition: width 0.3s ease;
         }
@@ -5201,7 +5201,7 @@ export default function ClientRepo() {
         }
         .receipts-count {
           font-size: 12px;
-          color: #656d76;
+          color: #909692;
           background: #f6f8fa;
           border: 1px solid #d0d7de;
           border-radius: 12px;
@@ -5213,7 +5213,7 @@ export default function ClientRepo() {
           align-items: center;
           gap: 10px;
           padding: 36px 16px;
-          color: #656d76;
+          color: #909692;
           font-size: 13px;
           border: 1px solid #eaeef2;
           border-radius: 8px;
@@ -5277,7 +5277,7 @@ export default function ClientRepo() {
         }
         .receipt-meta {
           font-size: 11px;
-          color: #656d76;
+          color: #909692;
           margin: 0;
         }
         .receipt-actions {
@@ -5300,7 +5300,7 @@ export default function ClientRepo() {
           transition: background 0.12s;
         }
         .receipt-view-btn {
-          color: #0969da;
+          color: #0FBF3E;
           border-right: 1px solid #eaeef2;
         }
         .receipt-view-btn:hover { background: #f0f6ff; }
@@ -5328,7 +5328,7 @@ export default function ClientRepo() {
         }
         .location-subtitle {
           font-size: 13px;
-          color: #656d76;
+          color: #909692;
           margin: 0;
         }
 
@@ -5378,16 +5378,16 @@ export default function ClientRepo() {
           overflow: hidden;
           display: flex;
           flex-direction: column;
-          border-left: 4px solid var(--stop-color, #0969da);
+          border-left: 4px solid var(--stop-color, #0FBF3E);
         }
         .stop-card:hover {
           box-shadow: 0 4px 16px rgba(0,0,0,0.10);
           transform: translateY(-2px);
-          border-color: var(--stop-color, #0969da);
+          border-color: var(--stop-color, #0FBF3E);
         }
         .stop-card--active {
-          box-shadow: 0 0 0 3px var(--stop-color, #0969da)40;
-          border-color: var(--stop-color, #0969da);
+          box-shadow: 0 0 0 3px var(--stop-color, #0FBF3E)40;
+          border-color: var(--stop-color, #0FBF3E);
         }
         .stop-badge {
           color: #fff;
@@ -5410,7 +5410,7 @@ export default function ClientRepo() {
         }
         .stop-address {
           font-size: 12px;
-          color: #656d76;
+          color: #909692;
           line-height: 1.5;
         }
         .stop-cta {
@@ -5419,7 +5419,7 @@ export default function ClientRepo() {
           gap: 5px;
           font-size: 12px;
           font-weight: 600;
-          color: var(--stop-color, #0969da);
+          color: var(--stop-color, #0FBF3E);
           padding: 8px 14px 12px;
         }
 
@@ -5438,7 +5438,7 @@ export default function ClientRepo() {
           justify-content: center;
           min-height: 220px;
           gap: 16px;
-          color: #656d76;
+          color: #909692;
           font-size: 14px;
         }
         .map-placeholder p { margin: 0; }
@@ -5448,7 +5448,7 @@ export default function ClientRepo() {
           width: 36px;
           height: 36px;
           border: 3px solid #d0d7de;
-          border-top-color: #0969da;
+          border-top-color: #0FBF3E;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -5481,7 +5481,7 @@ export default function ClientRepo() {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #0969da;
+          background: #0FBF3E;
           color: #fff;
           font-size: 12px;
           font-weight: 700;
@@ -5502,7 +5502,7 @@ export default function ClientRepo() {
           font-weight: 500;
         }
         .leg-arrow {
-          color: #0969da;
+          color: #0FBF3E;
           font-size: 12px;
           font-weight: 600;
         }
@@ -5541,7 +5541,7 @@ export default function ClientRepo() {
 
         .doc-section-subtitle {
           font-size: 13px;
-          color: #656d76;
+          color: #909692;
           margin: 0;
         }
 
@@ -5564,13 +5564,13 @@ export default function ClientRepo() {
         }
 
         .doc-dropzone:hover, .doc-dropzone.dz--over {
-          border-color: #0969da;
+          border-color: #0FBF3E;
           background: #f0f6ff;
         }
 
         .doc-dropzone.dz--processing {
           cursor: default;
-          border-color: #0969da;
+          border-color: #0FBF3E;
           background: #f0f6ff;
         }
 
@@ -5579,9 +5579,9 @@ export default function ClientRepo() {
           background: #f5f0ff;
         }
 
-        .doc-dz-icon { color: #656d76; transition: color 0.18s; }
+        .doc-dz-icon { color: #909692; transition: color 0.18s; }
         .doc-dropzone:hover .doc-dz-icon,
-        .doc-dropzone.dz--over .doc-dz-icon { color: #0969da; }
+        .doc-dropzone.dz--over .doc-dz-icon { color: #0FBF3E; }
         .doc-dz-audio { color: #8250df; }
 
         .dz-processing-state {
@@ -5607,7 +5607,7 @@ export default function ClientRepo() {
           animation: spin 0.8s linear infinite;
         }
 
-        .doc-spinner-blue   { border-top-color: #0969da; }
+        .doc-spinner-blue   { border-top-color: #0FBF3E; }
         .doc-spinner-purple { border-top-color: #8250df; }
 
         /* Error banner */
@@ -5667,14 +5667,14 @@ export default function ClientRepo() {
           font-size: 11px;
           font-weight: 700;
           color: #fff;
-          background: #0969da;
+          background: #0FBF3E;
           padding: 2px 7px;
           border-radius: 12px;
         }
 
         .parse-badge-audio { background: #8250df; }
 
-        .parse-chars { font-size: 12px; color: #656d76; }
+        .parse-chars { font-size: 12px; color: #909692; }
         .parse-model { font-size: 11px; color: #8250df; font-style: italic; }
 
         .parse-result-actions { display: flex; gap: 6px; }
@@ -5995,7 +5995,7 @@ export default function ClientRepo() {
         }
 
         .repo-root-name {
-          color: #0969da;
+          color: #0FBF3E;
           cursor: pointer;
         }
 
@@ -6040,7 +6040,7 @@ export default function ClientRepo() {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #0969da;
+          background: #0FBF3E;
           color: white;
           display: flex;
           align-items: center;
@@ -6205,7 +6205,7 @@ export default function ClientRepo() {
 
         .badge-md { background: #eff6ff; color: #2563eb; }
         .badge-pdf { background: #fef2f2; color: #dc2626; }
-        .badge-xlsx { background: #ecfdf5; color: #16a34a; }
+        .badge-xlsx { background: #ecfdf5; color: #0FBF3E; }
         .badge-audio { background: #faf5ff; color: #7c3aed; }
         .badge-folder { background: #f3f4f6; color: #6b7280; }
         .badge-default { background: #f3f4f6; color: #6b7280; }
@@ -6287,7 +6287,7 @@ export default function ClientRepo() {
         .breadcrumb-link-btn {
           background: none;
           border: none;
-          color: #0969da;
+          color: #0FBF3E;
           font-weight: 600;
           font-size: 14px;
           padding: 0;
@@ -6711,16 +6711,16 @@ export default function ClientRepo() {
         }
 
         .repo-dragzone:hover, .repo-dragzone.dz--over {
-          border-color: #0969da;
+          border-color: #0FBF3E;
           background: #f0f6ff;
         }
 
         .upload-dz-icon {
-          color: #656d76;
+          color: #909692;
         }
 
         .repo-dragzone:hover .upload-dz-icon {
-          color: #0969da;
+          color: #0FBF3E;
         }
 
         .dz-staged-state {
@@ -6854,7 +6854,7 @@ export default function ClientRepo() {
 
         .editor-filename-input:focus {
           outline: none;
-          border-color: #0969da;
+          border-color: #0FBF3E;
           box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
         }
 
@@ -6937,13 +6937,13 @@ export default function ClientRepo() {
         }
         .add-dropdown-menu button:hover {
           background-color: #f6f8fa;
-          color: #0969da;
+          color: #0FBF3E;
         }
         .add-dropdown-menu button svg {
           color: #57606a;
         }
         .add-dropdown-menu button:hover svg {
-          color: #0969da;
+          color: #0FBF3E;
         }
 
         /* Modal custom styling */
@@ -7047,7 +7047,7 @@ export default function ClientRepo() {
         .custom-form-group input:focus,
         .custom-form-group textarea:focus {
           outline: none;
-          border-color: #0969da;
+          border-color: #0FBF3E;
           box-shadow: 0 0 0 3px rgba(9,105,218,0.15);
         }
         .custom-dragzone {
@@ -7065,7 +7065,7 @@ export default function ClientRepo() {
         }
         .custom-dragzone:hover {
           background: #f1f5f9;
-          border-color: #0969da;
+          border-color: #0FBF3E;
         }
         .dragzone-placeholder {
           display: flex;
@@ -7096,7 +7096,7 @@ export default function ClientRepo() {
         .file-preview-name {
           font-size: 13.5px;
           font-weight: 600;
-          color: #0969da;
+          color: #0FBF3E;
           max-width: 250px;
           word-break: break-all;
         }
@@ -7114,7 +7114,7 @@ export default function ClientRepo() {
         }
         .modal-progress-bar {
           height: 100%;
-          background: #0969da;
+          background: #0FBF3E;
           transition: width 0.1s;
         }
         .custom-modal-footer {
