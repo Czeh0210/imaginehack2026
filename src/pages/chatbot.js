@@ -455,25 +455,37 @@ export default function Chatbot() {
                 <span className="model-chevron">▾</span>
               </div>
               
-              <div className="header-client-selector">
-                <span className="client-selector-label">Context:</span>
-                <select
-                  id="client-context-select"
-                  className="client-select"
-                  value={selectedClientId}
-                  onChange={(e) => {
-                    setSelectedClientId(e.target.value);
-                    clearChat();
-                  }}
-                >
-                  <option value="">🌐 Global (All Clients)</option>
-                  {CLIENTS.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      👤 {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {clientId ? (() => {
+                const activeClient = CLIENTS.find((c) => c.id === clientId);
+                if (!activeClient) return null;
+                const isSelected = selectedClientId === activeClient.id;
+                return (
+                  <div className="header-segment-control">
+                    <button
+                      className={`header-segment-btn ${isSelected ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedClientId(activeClient.id);
+                        clearChat();
+                      }}
+                    >
+                      👤 {activeClient.name} Memory
+                    </button>
+                    <button
+                      className={`header-segment-btn ${!isSelected ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedClientId("");
+                        clearChat();
+                      }}
+                    >
+                      🌐 Global
+                    </button>
+                  </div>
+                );
+              })() : (
+                <div className="header-global-badge">
+                  🌐 Global Search Active
+                </div>
+              )}
             </div>
             {hasMessages && (
               <button id="clear-chat-btn" className="clear-btn" onClick={clearChat} title="Clear conversation">
@@ -1733,41 +1745,48 @@ export default function Chatbot() {
           gap: 16px;
         }
 
-        .header-client-selector {
+        .header-segment-control {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          border-left: 1px solid #ebebed;
-          padding-left: 16px;
-        }
-
-        .client-selector-label {
-          font-size: 12px;
-          font-weight: 500;
-          color: #888888;
-        }
-
-        .client-select {
-          background: #f7f7f8;
-          border: 1px solid #e5e5e8;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
-          padding: 6px 12px;
-          font-size: 13px;
-          font-family: inherit;
-          color: #444444;
+          padding: 2px;
+          gap: 2px;
+          margin-left: 16px;
+        }
+
+        .header-segment-btn {
+          background: transparent;
+          border: none;
+          padding: 5px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+          border-radius: 6px;
           cursor: pointer;
+          transition: all 0.15s ease;
           outline: none;
-          transition: all 0.15s;
+          font-family: inherit;
         }
 
-        .client-select:hover {
-          background: #eeeeef;
-          border-color: #c8c8cc;
+        .header-segment-btn.active {
+          background: white;
+          color: #c97c3a;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
 
-        .client-select:focus {
-          border-color: #c97c3a;
-          box-shadow: 0 0 0 2px rgba(201, 124, 58, 0.15);
+        .header-global-badge {
+          font-size: 12px;
+          font-weight: 600;
+          color: #c97c3a;
+          background: #fff7ed;
+          border: 1px solid #ffedd5;
+          padding: 5px 12px;
+          border-radius: 20px;
+          margin-left: 16px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
         }
 
         .system-notice {

@@ -41,6 +41,9 @@ export default function GlobalChatWidget() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState(null);
 
+  const [activePageClient, setActivePageClient] = useState(null);
+  const [searchScope, setSearchScope] = useState("global"); // "client" or "global"
+
   // Size states (anchored bottom-right, resizable top-left)
   const [width, setWidth] = useState(380);
   const [height, setHeight] = useState(500);
@@ -50,6 +53,42 @@ export default function GlobalChatWidget() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setError(null);
+    setUploadedFile(null);
+    setFilePreview(null);
+    setSessionId(null);
+  }, []);
+
+  // Sync active page client context based on router pathname
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const repoToClientId = {
+      "AcmeCorp_estate-plan": "c1-lim-wei-ming",
+      "Globex_wealth-trust": "c2-sarah-tan",
+      "SmithFamily_will-draft": "c4-jennifer-koh",
+      "WayneEnterprises_succession": "c5-david-ng"
+    };
+
+    const isClientPage = router.pathname.startsWith("/client/");
+    const clientRepoId = isClientPage ? router.query.id : null;
+    const activePageClientId = clientRepoId ? repoToClientId[clientRepoId] : null;
+    const client = activePageClientId ? CLIENTS.find(c => c.id === activePageClientId) : null;
+
+    setActivePageClient(client);
+
+    if (client) {
+      setSearchScope("client");
+      setSelectedClientId(client.id);
+    } else {
+      setSearchScope("global");
+      setSelectedClientId("");
+    }
+    clearChat();
+  }, [router.isReady, router.pathname, router.query.id, clearChat]);
 
   useEffect(() => {
     if (isOpen) {
@@ -264,14 +303,6 @@ export default function GlobalChatWidget() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
-    setError(null);
-    setUploadedFile(null);
-    setFilePreview(null);
-    setSessionId(null);
-  };
-
   return (
     <>
       {/* 💬 FLOATING TOGGLE BUTTON */}
@@ -321,27 +352,39 @@ export default function GlobalChatWidget() {
             </div>
           </header>
 
-          {/* Context Selector */}
+          {/* Context Selector Toggle/Badge */}
           <div className="widget-selector-bar">
-            <span className="selector-lbl">Context:</span>
-            <select
-              className="widget-select"
-              value={selectedClientId}
-              onChange={(e) => {
-                setSelectedClientId(e.target.value);
-                clearChat();
-              }}
-            >
-              <option value="">🌐 Global (All Clients)</option>
-              {CLIENTS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  👤 {c.name}
-                </option>
-              ))}
-            </select>
+            {activePageClient ? (
+              <div className="widget-segment-control">
+                <button
+                  className={`widget-segment-btn ${searchScope === "client" ? "active" : ""}`}
+                  onClick={() => {
+                    setSearchScope("client");
+                    setSelectedClientId(activePageClient.id);
+                    clearChat();
+                  }}
+                >
+                  👤 {activePageClient.name.split(" ")[0]} Context
+                </button>
+                <button
+                  className={`widget-segment-btn ${searchScope === "global" ? "active" : ""}`}
+                  onClick={() => {
+                    setSearchScope("global");
+                    setSelectedClientId("");
+                    clearChat();
+                  }}
+                >
+                  🌐 Global Search
+                </button>
+              </div>
+            ) : (
+              <div className="widget-global-badge">
+                🌐 Global Search Active
+              </div>
+            )}
             {messages.length > 0 && (
               <button className="widget-clear-btn" onClick={clearChat} title="Reset chat">
-                🗑
+                🗑 Reset
               </button>
             )}
           </div>
@@ -662,37 +705,71 @@ export default function GlobalChatWidget() {
         .widget-selector-bar {
           display: flex;
           align-items: center;
-          gap: 6px;
+          justify-content: space-between;
+          gap: 8px;
           padding: 8px 12px;
           background: rgba(0, 0, 0, 0.02);
           border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
 
-        .selector-lbl {
+        .widget-segment-control {
+          display: flex;
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 8px;
+          padding: 2px;
+          gap: 2px;
+          flex: 1;
+        }
+
+        .widget-segment-btn {
+          flex: 1;
+          background: transparent;
+          border: none;
+          padding: 4px 8px;
           font-size: 11px;
           font-weight: 600;
           color: #64748b;
-          text-transform: uppercase;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          outline: none;
+          font-family: inherit;
         }
 
-        .widget-select {
-          flex: 1;
-          font-size: 12px;
-          padding: 4px 8px;
-          border-radius: 6px;
-          border: 1px solid rgba(0,0,0,0.1);
+        .widget-segment-btn.active {
           background: white;
-          color: #334155;
-          outline: none;
-          cursor: pointer;
+          color: #c97c3a;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .widget-global-badge {
+          font-size: 11px;
+          font-weight: 600;
+          color: #c97c3a;
+          background: #fff7ed;
+          border: 1px solid #ffedd5;
+          padding: 4px 10px;
+          border-radius: 20px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
         }
 
         .widget-clear-btn {
           border: none;
           background: none;
           cursor: pointer;
-          font-size: 12px;
-          padding: 2px;
+          font-size: 11.5px;
+          color: #ef4444;
+          font-weight: 500;
+          padding: 4px 8px;
+          border-radius: 6px;
+          background: rgba(239, 68, 68, 0.08);
+          transition: all 0.15s;
+        }
+
+        .widget-clear-btn:hover {
+          background: rgba(239, 68, 68, 0.15);
         }
 
         /* Body & Welcome */
