@@ -8,6 +8,7 @@ import {
   createSession,
   getSession,
   listSessions,
+  deleteSession,
 } from '@/lib/sessionStore.js';
 
 export default function handler(req, res) {
@@ -32,6 +33,19 @@ export default function handler(req, res) {
     const { clientId } = req.body ?? {};
     const sessionId = createSession({ clientId });
     return res.status(201).json({ sessionId, clientId: clientId || null });
+  }
+
+  // ── DELETE: delete a session ──────────────────────────────────────────────
+  if (req.method === 'DELETE') {
+    const { sessionId } = req.query;
+    if (!sessionId) {
+      return res.status(400).json({ error: 'sessionId is required for deletion.' });
+    }
+    const success = deleteSession(sessionId);
+    if (!success) {
+      return res.status(404).json({ error: `Session '${sessionId}' not found.` });
+    }
+    return res.status(200).json({ success: true });
   }
 
   return res.status(405).json({ error: 'Method not allowed.' });

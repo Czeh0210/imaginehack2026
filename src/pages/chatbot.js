@@ -160,6 +160,15 @@ const SUGGESTIONS = [
   { icon: "🛡️", label: "Risk Tolerance", prompt: "Explain this client's behavioral patterns and risk tolerance" },
 ];
 
+const clientIdToRepoId = {
+  "c1-lim-wei-ming": "AcmeCorp_estate-plan",
+  "c2-sarah-tan": "Globex_wealth-trust",
+  "c3-ahmad-razif": "AhmadRazif_education-plan",
+  "c4-jennifer-koh": "SmithFamily_will-draft",
+  "c5-david-ng": "WayneEnterprises_succession",
+  "c6-rosnah-yusof": "RosnahYusof_retirement-estate"
+};
+
 export default function Chatbot() {
   const router = useRouter();
   const { clientId } = router.query;
@@ -176,9 +185,84 @@ export default function Chatbot() {
   const [greeting, setGreeting] = useState("Hello");
   const [activeModel, setActiveModel] = useState("gemini-2.0-flash-lite");
 
+  // Premium Context Selector Popover States
+  const [showContextList, setShowContextList] = useState(false);
+  const [contextSearchQuery, setContextSearchQuery] = useState("");
+  const contextSelectorRef = useRef(null);
+
+  // Chat Session History States
+  const [sessionsList, setSessionsList] = useState([]);
+  const [historySearchQuery, setHistorySearchQuery] = useState("");
+
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Fetch all chat sessions for history sidebar
+  const fetchSessions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/chat/session");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.sessions) {
+          const sorted = data.sessions.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+          setSessionsList(sorted);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load sessions:", err);
+    }
+  }, []);
+
+  // Delete a session
+  const deleteSessionHandler = async (e, sId) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this chat history?")) return;
+    try {
+      const res = await fetch(`/api/chat/session?sessionId=${sId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        if (sessionId === sId) {
+          clearChat();
+        }
+        fetchSessions();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to delete session.");
+      }
+    } catch (err) {
+      console.error("Error deleting session:", err);
+    }
+  };
+
+  // Load a session
+  const loadSession = (sId, cId) => {
+    router.replace({
+      pathname: router.pathname,
+      query: {
+        ...router.query,
+        sessionId: sId,
+        clientId: cId || ""
+      }
+    }, undefined, { shallow: true });
+  };
+
+  // Close context selector popover on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (contextSelectorRef.current && !contextSelectorRef.current.contains(event.target)) {
+        setShowContextList(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Load list of sessions on mount
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   // Sync URL query parameters (clientId and sessionId)
   useEffect(() => {
@@ -186,6 +270,8 @@ export default function Chatbot() {
 
     if (clientId) {
       setSelectedClientId(clientId);
+    } else {
+      setSelectedClientId("");
     }
 
     const querySessionId = router.query.sessionId;
@@ -207,6 +293,9 @@ export default function Chatbot() {
         })
         .catch((err) => console.error("Failed to load session history:", err))
         .finally(() => setIsLoading(false));
+    } else {
+      setSessionId(null);
+      setMessages([]);
     }
   }, [router.isReady, clientId, router.query.sessionId]);
 
@@ -364,7 +453,17 @@ export default function Chatbot() {
         throw new Error(data.error || "Failed to retrieve RAG response.");
       }
 
-      if (data.sessionId) setSessionId(data.sessionId);
+      if (data.sessionId) {
+        const isNew = data.sessionId !== sessionId;
+        setSessionId(data.sessionId);
+        if (isNew) {
+          router.replace({
+            pathname: router.pathname,
+            query: { ...router.query, sessionId: data.sessionId }
+          }, undefined, { shallow: true });
+        }
+        fetchSessions();
+      }
 
       // Add assistant response
       setMessages([
@@ -398,6 +497,10 @@ export default function Chatbot() {
     setUploadedFile(null);
     setFilePreview(null);
     setSessionId(null);
+    router.replace({
+      pathname: router.pathname,
+      query: { clientId: selectedClientId || undefined }
+    }, undefined, { shallow: true });
   };
 
   const hasMessages = messages.length > 0;
@@ -422,19 +525,77 @@ export default function Chatbot() {
             New chat
           </button>
 
+          {/* Chat History Search */}
+          <div className="sidebar-search">
+            <input
+              type="text"
+              placeholder="Search chat history..."
+              value={historySearchQuery}
+              onChange={(e) => setHistorySearchQuery(e.target.value)}
+              className="history-search-input"
+            />
+          </div>
+
           <nav className="sidebar-nav">
-            {hasMessages && (
-              <div className="chat-history-section">
-                <p className="history-label">Today</p>
-                <div className="history-item active">
-                  <span className="history-icon">💬</span>
-                  <span className="history-title">
-                    {messages[0]?.content?.slice(0, 30) || "New conversation"}
-                    {messages[0]?.content?.length > 30 ? "…" : ""}
-                  </span>
-                </div>
+            <div className="chat-history-section">
+              <p className="history-label">Recent Chats</p>
+              <div className="history-list-scrollable">
+                {(() => {
+                  const filteredSessions = sessionsList.filter(session => {
+                    const client = CLIENTS.find(c => c.id === session.clientId);
+                    const clientName = client ? client.name : "Global Search";
+                    const matchesClient = clientName.toLowerCase().includes(historySearchQuery.toLowerCase());
+                    const matchesMessage = session.messages?.some(msg => 
+                      msg.content?.toLowerCase().includes(historySearchQuery.toLowerCase())
+                    ) || false;
+                    return matchesClient || matchesMessage;
+                  });
+
+                  if (filteredSessions.length === 0) {
+                    return <div className="history-empty">No sessions found</div>;
+                  }
+
+                  return filteredSessions.map((session) => {
+                    const client = CLIENTS.find(c => c.id === session.clientId);
+                    const isActive = sessionId === session.id;
+                    const firstMessage = session.messages?.[0]?.content || "New conversation";
+                    const dateObj = new Date(session.updatedAt);
+                    const formattedDate = dateObj.toLocaleDateString(undefined, { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+
+                    return (
+                      <div
+                        key={session.id}
+                        className={`history-item ${isActive ? "active" : ""}`}
+                        onClick={() => loadSession(session.id, session.clientId)}
+                      >
+                        <div className="history-item-body">
+                          <span className="history-icon">{client ? "👤" : "🌐"}</span>
+                          <div className="history-text-container">
+                            <span className="history-title">
+                              {client ? client.name : "Global Search"}
+                            </span>
+                            <span className="history-snippet">{firstMessage}</span>
+                            <span className="history-date">{formattedDate}</span>
+                          </div>
+                        </div>
+                        <button
+                          className="history-delete-btn"
+                          onClick={(e) => deleteSessionHandler(e, session.id)}
+                          title="Delete chat session"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    );
+                  });
+                })()}
               </div>
-            )}
+            </div>
           </nav>
 
           <div className="sidebar-footer">
@@ -455,37 +616,87 @@ export default function Chatbot() {
                 <span className="model-chevron">▾</span>
               </div>
               
-              {clientId ? (() => {
-                const activeClient = CLIENTS.find((c) => c.id === clientId);
-                if (!activeClient) return null;
-                const isSelected = selectedClientId === activeClient.id;
+              {/* Searchable Context Selector Popover */}
+              {(() => {
+                const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
                 return (
-                  <div className="header-segment-control">
+                  <div className="context-selector-container" ref={contextSelectorRef}>
                     <button
-                      className={`header-segment-btn ${isSelected ? "active" : ""}`}
-                      onClick={() => {
-                        setSelectedClientId(activeClient.id);
-                        clearChat();
-                      }}
+                      className="context-trigger-btn"
+                      onClick={() => setShowContextList(!showContextList)}
                     >
-                      👤 {activeClient.name} Memory
+                      <span className="context-trigger-icon">
+                        {activeClient ? "👤" : "🌐"}
+                      </span>
+                      <span className="context-trigger-text">
+                        {activeClient ? activeClient.name : "Global Search (All Clients)"}
+                      </span>
+                      <span className="context-trigger-chevron">▾</span>
                     </button>
-                    <button
-                      className={`header-segment-btn ${!isSelected ? "active" : ""}`}
-                      onClick={() => {
-                        setSelectedClientId("");
-                        clearChat();
-                      }}
-                    >
-                      🌐 Global
-                    </button>
+
+                    {showContextList && (
+                      <div className="context-dropdown-popover">
+                        <div className="context-search-wrapper">
+                          <input
+                            type="text"
+                            placeholder="Search clients..."
+                            value={contextSearchQuery}
+                            onChange={(e) => setContextSearchQuery(e.target.value)}
+                            className="context-search-input"
+                            autoFocus
+                          />
+                        </div>
+                        
+                        <div className="context-options-list">
+                          <button
+                            className={`context-option-item ${!selectedClientId ? "active" : ""}`}
+                            onClick={() => {
+                              setSelectedClientId("");
+                              setShowContextList(false);
+                              setContextSearchQuery("");
+                              const { clientId: _, ...restQuery } = router.query;
+                              router.replace({
+                                pathname: router.pathname,
+                                query: restQuery
+                              }, undefined, { shallow: true });
+                              clearChat();
+                            }}
+                          >
+                            <span className="option-icon">🌐</span>
+                            <span className="option-label">Global Search (All Clients)</span>
+                          </button>
+
+                          <div className="context-divider">Clients</div>
+
+                          {CLIENTS.filter(c =>
+                            c.name.toLowerCase().includes(contextSearchQuery.toLowerCase())
+                          ).map(c => (
+                            <button
+                              key={c.id}
+                              className={`context-option-item ${selectedClientId === c.id ? "active" : ""}`}
+                              onClick={() => {
+                                setSelectedClientId(c.id);
+                                setShowContextList(false);
+                                setContextSearchQuery("");
+                                router.replace({
+                                  pathname: router.pathname,
+                                  query: { ...router.query, clientId: c.id }
+                                }, undefined, { shallow: true });
+                                clearChat();
+                              }}
+                            >
+                              <span className="option-avatar">
+                                {c.name.split(" ").map(n => n[0]).join("")}
+                              </span>
+                              <span className="option-label">{c.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
-              })() : (
-                <div className="header-global-badge">
-                  🌐 Global Search Active
-                </div>
-              )}
+              })()}
             </div>
             {hasMessages && (
               <button id="clear-chat-btn" className="clear-btn" onClick={clearChat} title="Clear conversation">
@@ -582,23 +793,39 @@ export default function Chatbot() {
                                     🔍 Retrieved {msg.sources.length} matching memories
                                   </summary>
                                   <div className="sources-list">
-                                    {msg.sources.map((src, sIdx) => (
-                                      <div key={sIdx} className="source-item">
-                                        <div className="source-item-header">
-                                          <div className="source-item-meta">
-                                            <span className="source-badge-client">{src.clientName}</span>
-                                            <span className="source-badge-type">{src.sourceType?.replace("_", " ")}</span>
-                                            {src.metadata?.date && <span className="source-item-date">{src.metadata.date}</span>}
+                                    {msg.sources.map((src, sIdx) => {
+                                      const repoSlug = clientIdToRepoId[src.clientId] || "AcmeCorp_estate-plan";
+                                      const tabParam = (src.sourceType === "document" || src.sourceType === "proposal") ? "photo" : "info";
+                                      const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
+                                      return (
+                                        <a
+                                          key={sIdx}
+                                          href={linkUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="source-item-link"
+                                        >
+                                          <div className="source-item">
+                                            <div className="source-item-header">
+                                              <div className="source-item-meta">
+                                                <span className="source-badge-client">{src.clientName}</span>
+                                                <span className="source-badge-type">{src.sourceType?.replace("_", " ")}</span>
+                                                {src.metadata?.date && <span className="source-item-date">{src.metadata.date}</span>}
+                                              </div>
+                                              <span className="source-badge-score">
+                                                {(src.score * 100).toFixed(1)}% match
+                                              </span>
+                                            </div>
+                                            <blockquote className="source-item-content">
+                                              &ldquo;{src.content}&rdquo;
+                                            </blockquote>
+                                            <div className="source-item-action-hint">
+                                              Go to Client Repo ({tabParam} tab) ↗
+                                            </div>
                                           </div>
-                                          <span className="source-badge-score">
-                                            {(src.score * 100).toFixed(1)}% match
-                                          </span>
-                                        </div>
-                                        <blockquote className="source-item-content">
-                                          &ldquo;{src.content}&rdquo;
-                                        </blockquote>
-                                      </div>
-                                    ))}
+                                        </a>
+                                      );
+                                    })}
                                   </div>
                                 </details>
                               </div>
@@ -607,17 +834,30 @@ export default function Chatbot() {
                             {/* Relevant clients found (ranking) */}
                             {msg.relevantClients && msg.relevantClients.length > 0 && (
                               <div className="relevant-clients-wrapper">
-                                <span className="relevant-title">👥 Top Relevant Clients</span>
+                                <span className="relevant-title">👥 Top Relevant Clients (Click to view Repo)</span>
                                 <div className="relevant-list">
-                                  {msg.relevantClients.map((rc, rIdx) => (
-                                    <div key={rIdx} className="relevant-item">
-                                      <span className="relevant-name">{rc.clientName}</span>
-                                      <div className="relevant-bar-container">
-                                        <div className="relevant-bar-fill" style={{ width: `${rc.maxScore * 100}%` }} />
-                                      </div>
-                                      <span className="relevant-score">{(rc.maxScore * 100).toFixed(0)}%</span>
-                                    </div>
-                                  ))}
+                                  {msg.relevantClients.map((rc, rIdx) => {
+                                    const repoSlug = clientIdToRepoId[rc.clientId] || "AcmeCorp_estate-plan";
+                                    const linkUrl = `/client/${repoSlug}`;
+                                    return (
+                                      <a
+                                        key={rIdx}
+                                        href={linkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="relevant-item-link"
+                                      >
+                                        <div className="relevant-item">
+                                          <span className="relevant-name">{rc.clientName}</span>
+                                          <div className="relevant-bar-container">
+                                            <div className="relevant-bar-fill" style={{ width: `${rc.maxScore * 100}%` }} />
+                                          </div>
+                                          <span className="relevant-score">{(rc.maxScore * 100).toFixed(0)}%</span>
+                                          <span className="relevant-arrow">↗</span>
+                                        </div>
+                                      </a>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -819,19 +1059,6 @@ export default function Chatbot() {
 
       <style jsx>{`
         /* ==============================
-           ROOT & LAYOUT
-        ============================== */
-        .chatbot-root {
-          display: flex;
-          height: 100vh;
-          width: 100%;
-          background: #ffffff;
-          color: #1a1a1a;
-          font-family: 'Inter', sans-serif;
-          overflow: hidden;
-        }
-
-        /* ==============================
            SIDEBAR
         ============================== */
         .sidebar {
@@ -843,6 +1070,333 @@ export default function Chatbot() {
           flex-direction: column;
           padding: 16px 12px;
           gap: 8px;
+        }
+
+        .sidebar-search {
+          padding: 0 4px;
+          margin-bottom: 4px;
+        }
+
+        .history-search-input {
+          width: 100%;
+          padding: 8px 12px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          font-size: 13px;
+          outline: none;
+          color: #1e293b;
+          font-family: inherit;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .history-search-input:focus {
+          border-color: #c97c3a99;
+          box-shadow: 0 0 0 2px rgba(201, 124, 58, 0.1);
+        }
+
+        .history-list-scrollable {
+          flex: 1;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          max-height: calc(100vh - 220px);
+          padding-right: 4px;
+        }
+
+        .history-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 10px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          position: relative;
+          background: transparent;
+        }
+
+        .history-item:hover {
+          background: rgba(0, 0, 0, 0.04);
+        }
+
+        .history-item.active {
+          background: rgba(201, 124, 58, 0.08);
+          border-left: 3px solid #c97c3a;
+          padding-left: 7px;
+        }
+
+        .history-item-body {
+          display: flex;
+          gap: 8px;
+          align-items: flex-start;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .history-icon {
+          font-size: 14px;
+          margin-top: 2px;
+        }
+
+        .history-text-container {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          flex: 1;
+        }
+
+        .history-title {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #1e293b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .history-snippet {
+          font-size: 11px;
+          color: #64748b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-top: 1px;
+        }
+
+        .history-date {
+          font-size: 9.5px;
+          color: #94a3b8;
+          margin-top: 3px;
+        }
+
+        .history-delete-btn {
+          background: transparent;
+          border: none;
+          color: #94a3b8;
+          font-size: 16px;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: 4px;
+          opacity: 0;
+          transition: all 0.15s ease;
+        }
+
+        .history-item:hover .history-delete-btn {
+          opacity: 1;
+        }
+
+        .history-delete-btn:hover {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.08);
+        }
+
+        .history-empty {
+          font-size: 12px;
+          color: #94a3b8;
+          text-align: center;
+          padding: 16px 0;
+        }
+
+        /* Context Selector Popover */
+        .context-selector-container {
+          position: relative;
+          z-index: 100;
+          margin-left: 12px;
+        }
+
+        .context-trigger-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          color: #334155;
+          transition: all 0.15s ease;
+          outline: none;
+        }
+
+        .context-trigger-btn:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+        }
+
+        .context-trigger-icon {
+          font-size: 14px;
+        }
+
+        .context-trigger-chevron {
+          font-size: 10px;
+          color: #64748b;
+        }
+
+        .context-dropdown-popover {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          width: 240px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          border-radius: 12px;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .context-search-wrapper {
+          padding: 8px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .context-search-input {
+          width: 100%;
+          padding: 6px 10px;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+          font-size: 12.5px;
+          outline: none;
+          font-family: inherit;
+        }
+
+        .context-search-input:focus {
+          border-color: #c97c3a;
+        }
+
+        .context-options-list {
+          max-height: 250px;
+          overflow-y: auto;
+          padding: 4px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .context-option-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 6px 8px;
+          border: none;
+          background: transparent;
+          border-radius: 6px;
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
+          font-size: 12.5px;
+          color: #475569;
+          transition: all 0.15s ease;
+        }
+
+        .context-option-item:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+
+        .context-option-item.active {
+          background: rgba(201, 124, 58, 0.08);
+          color: #c97c3a;
+          font-weight: 600;
+        }
+
+        .context-divider {
+          font-size: 10px;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+          padding: 6px 8px 4px;
+          letter-spacing: 0.5px;
+        }
+
+        .option-avatar {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #e2e8f0;
+          color: #475569;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 9px;
+          font-weight: 700;
+        }
+
+        .context-option-item.active .option-avatar {
+          background: #c97c3a;
+          color: white;
+        }
+
+        /* Deep Links on Outputs */
+        .source-item-link {
+          text-decoration: none;
+          color: inherit;
+          display: block;
+          transition: transform 0.15s ease;
+        }
+
+        .source-item-link:hover {
+          transform: translateY(-2px);
+        }
+
+        .source-item-link:hover .source-item {
+          border-color: #c97c3a88;
+          box-shadow: 0 4px 12px rgba(201, 124, 58, 0.05);
+        }
+
+        .source-item-action-hint {
+          font-size: 10px;
+          font-weight: 600;
+          color: #c97c3a;
+          margin-top: 6px;
+          text-align: right;
+          opacity: 0.7;
+          transition: opacity 0.15s;
+        }
+
+        .source-item-link:hover .source-item-action-hint {
+          opacity: 1;
+        }
+
+        .relevant-item-link {
+          text-decoration: none;
+          color: inherit;
+          display: block;
+        }
+
+        .relevant-item-link:hover .relevant-item {
+          background: rgba(201, 124, 58, 0.04);
+          border-color: #c97c3a44;
+        }
+
+        .relevant-item {
+          position: relative;
+          padding-right: 28px !important;
+          transition: all 0.15s ease;
+        }
+
+        .relevant-arrow {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 12px;
+          color: #94a3b8;
+          transition: color 0.15s, transform 0.15s;
+        }
+
+        .relevant-item-link:hover .relevant-arrow {
+          color: #c97c3a;
+          transform: translateY(-50%) translate(2px, -2px);
         }
 
         .sidebar-header {

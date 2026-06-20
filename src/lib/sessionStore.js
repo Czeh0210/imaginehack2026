@@ -70,13 +70,28 @@ export function appendToSession(sessionId, messages) {
 }
 
 /**
- * List all sessions (metadata only, no message content).
+ * List all sessions (with messages included for search and loading).
  * @returns {object[]}
  */
 export function listSessions() {
   const sessions = loadSessions();
-  return Object.values(sessions).map(({ messages, ...meta }) => ({
-    ...meta,
-    messageCount: messages.length,
+  return Object.values(sessions).map((session) => ({
+    ...session,
+    messageCount: session.messages.length,
   }));
+}
+
+/**
+ * Delete an existing session.
+ * @param {string} sessionId
+ * @returns {boolean}
+ */
+export function deleteSession(sessionId) {
+  const sessions = loadSessions();
+  if (sessions[sessionId]) {
+    delete sessions[sessionId];
+    saveSessions(sessions);
+    return true;
+  }
+  return false;
 }

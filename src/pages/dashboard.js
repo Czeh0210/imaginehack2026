@@ -9,6 +9,8 @@ export default function Dashboard() {
     { id: 2, name: "Globex/wealth-trust", type: "Public", lastActive: "5h ago" },
     { id: 3, name: "SmithFamily/will-draft", type: "Private", lastActive: "1d ago" },
     { id: 4, name: "WayneEnterprises/succession", type: "Private", lastActive: "2d ago" },
+    { id: 5, name: "AhmadRazif/education-plan", type: "Private", lastActive: "3d ago" },
+    { id: 6, name: "RosnahYusof/retirement-estate", type: "Private", lastActive: "4d ago" },
   ]);
 
   const [searchQuery, setSearchQuery] = useState("");

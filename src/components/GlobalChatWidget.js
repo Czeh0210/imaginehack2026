@@ -3,6 +3,15 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { CLIENTS } from "@/lib/mockData";
 
+const clientIdToRepoId = {
+  "c1-lim-wei-ming": "AcmeCorp_estate-plan",
+  "c2-sarah-tan": "Globex_wealth-trust",
+  "c3-ahmad-razif": "AhmadRazif_education-plan",
+  "c4-jennifer-koh": "SmithFamily_will-draft",
+  "c5-david-ng": "WayneEnterprises_succession",
+  "c6-rosnah-yusof": "RosnahYusof_retirement-estate"
+};
+
 // Simple markdown-like renderer (scoped inside widget)
 function renderMarkdown(text) {
   if (!text) return "";
@@ -43,6 +52,8 @@ export default function GlobalChatWidget() {
 
   const [activePageClient, setActivePageClient] = useState(null);
   const [searchScope, setSearchScope] = useState("global"); // "client" or "global"
+  const [showContextList, setShowContextList] = useState(false);
+  const [contextSearchQuery, setContextSearchQuery] = useState("");
 
   // Size states (anchored bottom-right, resizable top-left)
   const [width, setWidth] = useState(380);
@@ -53,6 +64,7 @@ export default function GlobalChatWidget() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const contextSelectorRef = useRef(null);
 
   const clearChat = useCallback(() => {
     setMessages([]);
@@ -60,6 +72,17 @@ export default function GlobalChatWidget() {
     setUploadedFile(null);
     setFilePreview(null);
     setSessionId(null);
+  }, []);
+
+  // Close context dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (contextSelectorRef.current && !contextSelectorRef.current.contains(event.target)) {
+        setShowContextList(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Sync active page client context based on router pathname
@@ -70,7 +93,9 @@ export default function GlobalChatWidget() {
       "AcmeCorp_estate-plan": "c1-lim-wei-ming",
       "Globex_wealth-trust": "c2-sarah-tan",
       "SmithFamily_will-draft": "c4-jennifer-koh",
-      "WayneEnterprises_succession": "c5-david-ng"
+      "WayneEnterprises_succession": "c5-david-ng",
+      "AhmadRazif_education-plan": "c3-ahmad-razif",
+      "RosnahYusof_retirement-estate": "c6-rosnah-yusof"
     };
 
     const isClientPage = router.pathname.startsWith("/client/");
@@ -352,36 +377,76 @@ export default function GlobalChatWidget() {
             </div>
           </header>
 
-          {/* Context Selector Toggle/Badge */}
-          <div className="widget-selector-bar">
-            {activePageClient ? (
-              <div className="widget-segment-control">
-                <button
-                  className={`widget-segment-btn ${searchScope === "client" ? "active" : ""}`}
-                  onClick={() => {
-                    setSearchScope("client");
-                    setSelectedClientId(activePageClient.id);
-                    clearChat();
-                  }}
-                >
-                  👤 {activePageClient.name.split(" ")[0]} Context
-                </button>
-                <button
-                  className={`widget-segment-btn ${searchScope === "global" ? "active" : ""}`}
-                  onClick={() => {
-                    setSearchScope("global");
-                    setSelectedClientId("");
-                    clearChat();
-                  }}
-                >
-                  🌐 Global Search
-                </button>
-              </div>
-            ) : (
-              <div className="widget-global-badge">
-                🌐 Global Search Active
-              </div>
-            )}
+          {/* Context Selector Popover */}
+          <div className="widget-selector-bar" ref={contextSelectorRef}>
+            {(() => {
+              const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
+              return (
+                <div className="widget-context-container">
+                  <button
+                    className="widget-context-trigger"
+                    onClick={() => setShowContextList(!showContextList)}
+                  >
+                    <span className="trigger-icon">{activeClient ? "👤" : "🌐"}</span>
+                    <span className="trigger-text">
+                      {activeClient ? activeClient.name.split(" ")[0] : "Global"}
+                    </span>
+                    <span className="trigger-chevron">▾</span>
+                  </button>
+
+                  {showContextList && (
+                    <div className="widget-context-popover">
+                      <div className="widget-popover-search">
+                        <input
+                          type="text"
+                          placeholder="Search..."
+                          value={contextSearchQuery}
+                          onChange={(e) => setContextSearchQuery(e.target.value)}
+                          className="widget-popover-search-input"
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="widget-popover-options">
+                        <button
+                          className={`widget-popover-option-item ${!selectedClientId ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedClientId("");
+                            setSearchScope("global");
+                            setShowContextList(false);
+                            setContextSearchQuery("");
+                            clearChat();
+                          }}
+                        >
+                          🌐 Global Search (Cross-client)
+                        </button>
+                        
+                        <div className="widget-popover-divider">Clients</div>
+                        
+                        {CLIENTS.filter(c =>
+                          c.name.toLowerCase().includes(contextSearchQuery.toLowerCase())
+                        ).map(c => (
+                          <button
+                            key={c.id}
+                            className={`widget-popover-option-item ${selectedClientId === c.id ? "active" : ""}`}
+                            onClick={() => {
+                              setSelectedClientId(c.id);
+                              setSearchScope("client");
+                              setShowContextList(false);
+                              setContextSearchQuery("");
+                              clearChat();
+                            }}
+                          >
+                            👤 {c.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {messages.length > 0 && (
               <button className="widget-clear-btn" onClick={clearChat} title="Reset chat">
                 🗑 Reset
@@ -440,32 +505,59 @@ export default function GlobalChatWidget() {
                                 🔍 {msg.sources.length} matching sources
                               </summary>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
-                                {msg.sources.map((s, sIdx) => (
-                                  <div key={sIdx} style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "6px", borderRadius: "6px", fontSize: "11px" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#64748b" }}>
-                                      <span>{s.clientName} ({s.sourceType})</span>
-                                      <span style={{ color: "#16a34a" }}>{(s.score * 100).toFixed(0)}%</span>
-                                    </div>
-                                    <span style={{ fontStyle: "italic", color: "#64748b" }}>"{s.content.slice(0, 80)}..."</span>
-                                  </div>
-                                ))}
+                                {msg.sources.map((s, sIdx) => {
+                                  const repoSlug = clientIdToRepoId[s.clientId] || "AcmeCorp_estate-plan";
+                                  const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
+                                  const linkUrl = `/client/${repoSlug}?tab=${tabParam}`;
+                                  return (
+                                    <a
+                                      key={sIdx}
+                                      href={linkUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                                    >
+                                      <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#64748b" }}>
+                                          <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
+                                          <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <div style={{ fontStyle: "italic", color: "#64748b", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
+                                        <div style={{ fontSize: "9px", color: "#c97c3a", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
+                                      </div>
+                                    </a>
+                                  );
+                                })}
                               </div>
                             </details>
                           )}
-
+                          
                           {/* Relevance Ranking */}
                           {msg.relevantClients && msg.relevantClients.length > 0 && (
                             <div style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
-                              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients:</span>
-                              {msg.relevantClients.map((rc, rIdx) => (
-                                <div key={rIdx} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "2px" }}>
-                                  <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{rc.clientName}</span>
-                                  <div style={{ flex: 1, height: "4px", background: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
-                                    <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
-                                  </div>
-                                  <span style={{ width: "24px", textAlign: "right" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
-                                </div>
-                              ))}
+                              <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
+                              {msg.relevantClients.map((rc, rIdx) => {
+                                const repoSlug = clientIdToRepoId[rc.clientId] || "AcmeCorp_estate-plan";
+                                const linkUrl = `/client/${repoSlug}`;
+                                return (
+                                  <a
+                                    key={rIdx}
+                                    href={linkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                                  >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "4px", cursor: "pointer", padding: "4px", borderRadius: "4px" }}>
+                                      <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550 }}>{rc.clientName}</span>
+                                      <div style={{ flex: 1, height: "4px", background: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
+                                        <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
+                                      </div>
+                                      <span style={{ width: "24px", textAlign: "right" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
+                                      <span style={{ color: "#94a3b8", fontSize: "10px" }}>↗</span>
+                                    </div>
+                                  </a>
+                                );
+                              })}
                             </div>
                           )}
                         </>
@@ -712,47 +804,112 @@ export default function GlobalChatWidget() {
           border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
 
-        .widget-segment-control {
-          display: flex;
-          background: rgba(0, 0, 0, 0.05);
-          border-radius: 8px;
-          padding: 2px;
-          gap: 2px;
-          flex: 1;
+        .widget-context-container {
+          position: relative;
+          z-index: 100;
         }
 
-        .widget-segment-btn {
-          flex: 1;
-          background: transparent;
-          border: none;
-          padding: 4px 8px;
+        .widget-context-trigger {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+          background: #ffffff;
+          cursor: pointer;
+          font-family: inherit;
           font-size: 11px;
           font-weight: 600;
-          color: #64748b;
-          border-radius: 6px;
-          cursor: pointer;
+          color: #475569;
           transition: all 0.15s ease;
+          outline: none;
+        }
+
+        .widget-context-trigger:hover {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+        }
+
+        .widget-context-trigger .trigger-icon {
+          font-size: 11px;
+        }
+
+        .widget-context-trigger .trigger-chevron {
+          font-size: 8.5px;
+          color: #94a3b8;
+        }
+
+        .widget-context-popover {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          width: 200px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .widget-popover-search {
+          padding: 6px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .widget-popover-search-input {
+          width: 100%;
+          padding: 4px 8px;
+          border-radius: 4px;
+          border: 1px solid #e2e8f0;
+          font-size: 11px;
           outline: none;
           font-family: inherit;
         }
 
-        .widget-segment-btn.active {
-          background: white;
-          color: #c97c3a;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        .widget-popover-options {
+          max-height: 180px;
+          overflow-y: auto;
+          padding: 3px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
-        .widget-global-badge {
+        .widget-popover-option-item {
+          width: 100%;
+          padding: 5px 8px;
+          border: none;
+          background: transparent;
+          border-radius: 4px;
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
           font-size: 11px;
-          font-weight: 600;
+          color: #475569;
+          transition: all 0.12s ease;
+        }
+
+        .widget-popover-option-item:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+        }
+
+        .widget-popover-option-item.active {
+          background: rgba(201, 124, 58, 0.08);
           color: #c97c3a;
-          background: #fff7ed;
-          border: 1px solid #ffedd5;
-          padding: 4px 10px;
-          border-radius: 20px;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
+          font-weight: 600;
+        }
+
+        .widget-popover-divider {
+          font-size: 9px;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+          padding: 4px 8px 2px;
+          letter-spacing: 0.3px;
         }
 
         .widget-clear-btn {

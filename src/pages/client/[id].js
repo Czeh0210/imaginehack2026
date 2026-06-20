@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function ClientRepo() {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, tab } = router.query;
   const displayId = id ? id.replace(/_/g, "/") : "Loading...";
   const [activeTab, setActiveTab] = useState("info");
+
+  // Sync activeTab with URL query parameter
+  useEffect(() => {
+    if (tab && (tab === "info" || tab === "partners" || tab === "photo")) {
+      setActiveTab(tab);
+    }
+  }, [tab]);
 
   // Mock data for partners
   const [partners, setPartners] = useState([
@@ -31,7 +38,9 @@ export default function ClientRepo() {
     "AcmeCorp_estate-plan": "c1-lim-wei-ming",
     "Globex_wealth-trust": "c2-sarah-tan",
     "SmithFamily_will-draft": "c4-jennifer-koh",
-    "WayneEnterprises_succession": "c5-david-ng"
+    "WayneEnterprises_succession": "c5-david-ng",
+    "AhmadRazif_education-plan": "c3-ahmad-razif",
+    "RosnahYusof_retirement-estate": "c6-rosnah-yusof"
   };
   const matchedClientId = repoToClientId[id] || "c1-lim-wei-ming";
 
