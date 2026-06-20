@@ -81,14 +81,14 @@ export default function ClientRepo() {
               href={`/chatbot?clientId=${matchedClientId}`}
               className="action-btn chat-btn"
               style={{
-                background: "linear-gradient(135deg, #c97c3a, #e8a55a)",
-                color: "#ffffff",
-                borderColor: "#c97c3a",
+                background: "var(--bgColor-accent-emphasis)",
+                color: "var(--fgColor-onEmphasis)",
+                borderColor: "var(--borderColor-accent)",
                 fontWeight: "600",
                 textDecoration: "none"
               }}
             >
-              💬 AI Memory Chat
+              💬 ImagineHack 2026 Chat
             </Link>
           </div>
         </div>

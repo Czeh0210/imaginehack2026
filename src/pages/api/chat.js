@@ -137,7 +137,7 @@ export default async function handler(req, res) {
 
     const isFileAnalysis = !!fileData;
 
-    const CHAT_SYSTEM = `You are a helpful, knowledgeable AI assistant. You provide clear, accurate, and thoughtful responses.
+    const CHAT_SYSTEM = `You are ImagineHack 2026, a helpful, knowledgeable AI assistant. You provide clear, accurate, and thoughtful responses.
 Format your responses with markdown when helpful (bold, italic, bullet points, numbered lists, code blocks, etc.).
 Be concise but thorough.`;
 

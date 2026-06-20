@@ -334,8 +334,8 @@ export default function GlobalChatWidget() {
       <button
         className={`floating-chat-bubble ${isOpen ? "chat-open" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
-        title="Open AI Memory Assistant"
-        aria-label="Toggle AI Assistant"
+        title="Open ImagineHack 2026"
+        aria-label="Toggle ImagineHack 2026"
       >
         {isOpen ? (
           <span className="close-bubble-icon">×</span>
@@ -359,7 +359,11 @@ export default function GlobalChatWidget() {
           <header className="widget-header" onDoubleClick={() => { setWidth(380); setHeight(500); }}>
             <div className="widget-header-title">
               <span className="header-icon">✦</span>
-              <span className="header-title">Memory Assistant</span>
+              <span className="header-title">
+                {selectedClientId && CLIENTS.find((c) => c.id === selectedClientId)
+                  ? CLIENTS.find((c) => c.id === selectedClientId).name
+                  : "ImagineHack 2026"}
+              </span>
             </div>
 
             <div className="widget-header-actions">
@@ -459,7 +463,7 @@ export default function GlobalChatWidget() {
             {messages.length === 0 ? (
               <div className="widget-welcome">
                 <span className="welcome-icon">✦</span>
-                <h5>Advisor RAG Co-Pilot</h5>
+                <h5>ImagineHack 2026</h5>
                 <p>
                   Search embedded client memories, check risk goals, or upload a proposal to analyze against client records.
                 </p>
@@ -644,27 +648,27 @@ export default function GlobalChatWidget() {
           right: 24px;
           width: 56px;
           height: 56px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #c97c3a, #e8a55a);
+          border-radius: var(--borderRadius-full);
+          background: var(--bgColor-accent-emphasis);
           border: none;
-          box-shadow: 0 4px 16px rgba(201, 124, 58, 0.4);
-          color: white;
+          box-shadow: var(--shadow-resting-medium);
+          color: var(--fgColor-onEmphasis);
           cursor: pointer;
           z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all var(--motion-transition-hover);
         }
 
         .floating-chat-bubble:hover {
           transform: scale(1.08) translateY(-2px);
-          box-shadow: 0 6px 20px rgba(201, 124, 58, 0.5);
+          box-shadow: var(--shadow-resting-large);
         }
 
         .floating-chat-bubble.chat-open {
-          background: #334155;
-          box-shadow: 0 4px 16px rgba(51, 65, 85, 0.4);
+          background: var(--bgColor-emphasis);
+          box-shadow: var(--shadow-resting-medium);
           transform: rotate(90deg);
         }
 
@@ -683,18 +687,18 @@ export default function GlobalChatWidget() {
           position: fixed;
           bottom: 84px;
           right: 24px;
-          background: rgba(255, 255, 255, 0.88);
+          background: var(--bgColor-default);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05);
-          border-radius: 16px;
+          border: var(--borderWidth-thin) solid var(--borderColor-default);
+          box-shadow: var(--shadow-floating-large);
+          border-radius: var(--borderRadius-large);
           display: flex;
           flex-direction: column;
           z-index: 1000;
           overflow: hidden;
-          font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-          animation: slideUpWidget 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+          font-family: var(--fontStack-system);
+          animation: slideUpWidget 0.25s var(--motion-easing-default);
         }
 
         @keyframes slideUpWidget {
@@ -738,8 +742,8 @@ export default function GlobalChatWidget() {
           justify-content: space-between;
           align-items: center;
           padding: 12px 14px;
-          background: rgba(255, 255, 255, 0.5);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          background: var(--bgColor-muted);
+          border-bottom: var(--borderWidth-thin) solid var(--borderColor-muted);
           cursor: move;
         }
 
@@ -750,14 +754,14 @@ export default function GlobalChatWidget() {
         }
 
         .header-icon {
-          color: #c97c3a;
+          color: var(--fgColor-accent);
           font-weight: 700;
         }
 
         .header-title {
           font-size: 13.5px;
           font-weight: 600;
-          color: #1e293b;
+          color: var(--fgColor-default);
         }
 
         .widget-header-actions {
@@ -768,14 +772,14 @@ export default function GlobalChatWidget() {
 
         .expand-page-link {
           text-decoration: none;
-          color: #64748b;
+          color: var(--fgColor-muted);
           font-size: 14px;
-          transition: color 0.15s;
+          transition: color var(--motion-duration-fast);
           padding: 2px;
         }
 
         .expand-page-link:hover {
-          color: #c97c3a;
+          color: var(--fgColor-accent);
         }
 
         .minimize-btn {
@@ -1018,16 +1022,16 @@ export default function GlobalChatWidget() {
         }
 
         .user .widget-msg-bubble {
-          background: #c97c3a;
-          color: white;
-          border-bottom-right-radius: 2px;
+          background: var(--bgColor-accent-emphasis);
+          color: var(--fgColor-onEmphasis);
+          border-bottom-right-radius: var(--borderRadius-small);
         }
 
         .assistant .widget-msg-bubble {
-          background: white;
-          border: 1px solid #e2e8f0;
-          color: #1e293b;
-          border-bottom-left-radius: 2px;
+          background: var(--bgColor-muted);
+          border: var(--borderWidth-thin) solid var(--borderColor-default);
+          color: var(--fgColor-default);
+          border-bottom-left-radius: var(--borderRadius-small);
         }
 
         /* Loading */

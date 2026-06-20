@@ -174,6 +174,7 @@ export default function Chatbot() {
   const { clientId } = router.query;
 
   const [selectedClientId, setSelectedClientId] = useState("");
+  const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -508,7 +509,7 @@ export default function Chatbot() {
   return (
     <>
       <Head>
-        <title>AI Assistant — ImagineHack 2026</title>
+        <title>{activeClient ? `ImagineHack 2026 — ${activeClient.name}` : "ImagineHack 2026"}</title>
         <meta name="description" content="Your intelligent AI assistant powered by Google Gemini. Chat, ask questions, and analyze documents." />
       </Head>
 
@@ -517,7 +518,7 @@ export default function Chatbot() {
         <aside className="sidebar">
           <div className="sidebar-header">
             <div className="logo-mark">✦</div>
-            <span className="logo-text">AI Assistant</span>
+            <span className="logo-text">ImagineHack 2026</span>
           </div>
 
           <button id="new-chat-btn" className="new-chat-btn" onClick={clearChat}>
@@ -711,7 +712,7 @@ export default function Chatbot() {
               <div className="welcome-screen">
                 <div className="welcome-logo">✦</div>
                 <h1 className="welcome-title">
-                  {greeting}, I&apos;m your AI
+                  {greeting}, I&apos;m {activeClient ? `your assistant for ${activeClient.name}` : "ImagineHack 2026"}
                 </h1>
                 <p className="welcome-subtitle">
                   Ask me anything, upload a document for analysis, or explore the suggestions below.
@@ -1064,8 +1065,8 @@ export default function Chatbot() {
         .sidebar {
           width: 260px;
           min-width: 260px;
-          background: #f7f7f8;
-          border-right: 1px solid #e5e5e8;
+          background: var(--bgColor-muted);
+          border-right: var(--borderWidth-thin) solid var(--borderColor-muted);
           display: flex;
           flex-direction: column;
           padding: 16px 12px;
@@ -1080,19 +1081,19 @@ export default function Chatbot() {
         .history-search-input {
           width: 100%;
           padding: 8px 12px;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-          background: #ffffff;
+          border-radius: var(--borderRadius-medium);
+          border: var(--borderWidth-thin) solid var(--borderColor-default);
+          background: var(--bgColor-default);
           font-size: 13px;
           outline: none;
-          color: #1e293b;
+          color: var(--fgColor-default);
           font-family: inherit;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+          transition: border-color var(--motion-duration-normal) var(--motion-easing-default), box-shadow var(--motion-duration-normal) var(--motion-easing-default);
         }
 
         .history-search-input:focus {
-          border-color: #c97c3a99;
-          box-shadow: 0 0 0 2px rgba(201, 124, 58, 0.1);
+          border-color: var(--borderColor-accent);
+          box-shadow: 0 0 0 2px var(--bgColor-accent-muted);
         }
 
         .history-list-scrollable {
@@ -1110,20 +1111,20 @@ export default function Chatbot() {
           align-items: center;
           justify-content: space-between;
           padding: 8px 10px;
-          border-radius: 8px;
+          border-radius: var(--borderRadius-medium);
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all var(--motion-duration-normal) var(--motion-easing-default);
           position: relative;
           background: transparent;
         }
 
         .history-item:hover {
-          background: rgba(0, 0, 0, 0.04);
+          background: var(--control-bgColor-hover);
         }
 
         .history-item.active {
-          background: rgba(201, 124, 58, 0.08);
-          border-left: 3px solid #c97c3a;
+          background: var(--bgColor-accent-muted);
+          border-left: 3px solid var(--borderColor-accent);
           padding-left: 7px;
         }
 
@@ -1721,13 +1722,13 @@ export default function Chatbot() {
           width: 32px;
           height: 32px;
           min-width: 32px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #c97c3a, #e8a55a);
+          border-radius: var(--borderRadius-full);
+          background: var(--bgColor-accent-emphasis);
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 14px;
-          color: white;
+          color: var(--fgColor-onEmphasis);
           flex-shrink: 0;
           margin-top: 4px;
         }
@@ -1735,22 +1736,22 @@ export default function Chatbot() {
         .message-bubble {
           max-width: 80%;
           padding: 14px 18px;
-          border-radius: 18px;
+          border-radius: var(--borderRadius-large);
           line-height: 1.65;
           font-size: 14.5px;
         }
 
         .user-bubble {
-          background: #c97c3a;
-          color: #fff;
-          border-bottom-right-radius: 4px;
+          background: var(--bgColor-accent-emphasis);
+          color: var(--fgColor-onEmphasis);
+          border-bottom-right-radius: var(--borderRadius-small);
         }
 
         .assistant-bubble {
-          background: #f7f7f8;
-          border: 1px solid #e5e5e8;
-          color: #1a1a1a;
-          border-bottom-left-radius: 4px;
+          background: var(--bgColor-muted);
+          border: var(--borderWidth-thin) solid var(--borderColor-default);
+          color: var(--fgColor-default);
+          border-bottom-left-radius: var(--borderRadius-small);
         }
 
         /* Full-width wrapper for PDF analysis messages */

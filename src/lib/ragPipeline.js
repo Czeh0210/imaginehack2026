@@ -18,7 +18,7 @@ import { searchMemories, findRelevantClients } from '@/lib/vectorStore.js';
 
 // ── System prompt ────────────────────────────────────────────────────────────
 
-const BASE_SYSTEM_PROMPT = `You are an expert AI assistant embedded inside a financial advisor's client management platform.
+const BASE_SYSTEM_PROMPT = `You are ImagineHack 2026, an expert AI assistant embedded inside a financial advisor's client management platform.
 Your job is to help the advisor deeply understand their clients by analysing retrieved memories from client interaction history.
 
 These memories come from CRM notes, meeting summaries, and call transcripts spanning multiple years.
