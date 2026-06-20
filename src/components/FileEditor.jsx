@@ -2,10 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react'
 
-/**
- * FileEditor — Markdown editor with save functionality.
- * Tracks dirty state and provides visual save feedback.
- */
 export default function FileEditor({ file, content, onSave }) {
   const [editContent, setEditContent] = useState(content || '')
   const [saving, setSaving] = useState(false)
@@ -23,7 +19,7 @@ export default function FileEditor({ file, content, onSave }) {
     try {
       await onSave(file.path, editContent)
       setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      setTimeout(() => setSaved(false), 2500)
     } catch (err) {
       console.error('Save failed:', err)
     } finally {
@@ -31,7 +27,7 @@ export default function FileEditor({ file, content, onSave }) {
     }
   }, [file, editContent, isDirty, onSave])
 
-  // Ctrl+S shortcut
+  // Ctrl/Cmd + S
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -45,11 +41,11 @@ export default function FileEditor({ file, content, onSave }) {
 
   if (!file) {
     return (
-      <div className="file-editor file-editor--empty">
-        <div className="file-editor__empty-state">
-          <span className="file-editor__empty-icon">✏️</span>
+      <div className="file-editor" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="workspace-empty">
+          <span className="workspace-empty__icon">✏️</span>
           <h3>No file selected</h3>
-          <p>Select a file to edit its contents.</p>
+          <p>Select a file to begin editing.</p>
         </div>
       </div>
     )
@@ -60,7 +56,7 @@ export default function FileEditor({ file, content, onSave }) {
       <div className="file-editor__toolbar">
         <span className="file-editor__filename">{file.name}</span>
         <div className="file-editor__actions">
-          {isDirty && <span className="file-editor__dirty-badge">Unsaved changes</span>}
+          {isDirty && <span className="file-editor__dirty-badge">Unsaved</span>}
           {saved && <span className="file-editor__saved-badge">✓ Saved</span>}
           <button
             className={`file-editor__save-btn ${isDirty ? 'file-editor__save-btn--active' : ''}`}
