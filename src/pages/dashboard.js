@@ -1,178 +1,68 @@
+import { useState, useCallback, useRef } from "react";
 import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
-import TopNav from "@/components/TopNav";
-import { ClientCardSection } from "@/components/ui/ClientCard";
-import {
-  Plus,
-  ChevronDown,
-  Book,
-  History,
-  MoreHorizontal,
-  User,
-  Search,
-  FileText,
-  AlertTriangle,
-  Calendar,
-  Users,
-  ArrowUp,
-  ExternalLink,
-} from "lucide-react";
 
-// ── Design tokens (from design.md) ──────────────────────────────────────────
-const TAG_STYLES = {
-  Risk:       { bg: "#fffbeb", text: "#d97706", border: "#fde68a" },
-  FIRE:       { bg: "#fffbeb", text: "#d97706", border: "#fde68a" },
-  Draft:      { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" },
-  Legal:      { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
-  Corporate:  { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" },
-  Portfolio:  { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
-  Estate:     { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe" },
-  Education:  { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
-  Planning:   { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
-  Retirement: { bg: "#ecfdf5", text: "#16a34a", border: "#bbf7d0" },
-  Insurance:  { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
-};
-const TAG_DEFAULT = { bg: "#f3f4f6", text: "#6b7280", border: "#e5e7eb" };
+export default function Dashboard() {
+  // Mock data for repositories/clients
+  const [repos, setRepos] = useState([
+    { id: 1, name: "AcmeCorp/estate-plan", type: "Private", lastActive: "2h ago" },
+    { id: 2, name: "Globex/wealth-trust", type: "Public", lastActive: "5h ago" },
+    { id: 3, name: "SmithFamily/will-draft", type: "Private", lastActive: "1d ago" },
+    { id: 4, name: "WayneEnterprises/succession", type: "Private", lastActive: "2d ago" },
+  ]);
 
-const AVATAR_PALETTE = [
-  { bg: "#dbeafe", text: "#1d4ed8" },
-  { bg: "#dcfce7", text: "#15803d" },
-  { bg: "#fef3c7", text: "#b45309" },
-  { bg: "#ede9fe", text: "#7c3aed" },
-  { bg: "#fce7f3", text: "#be185d" },
-  { bg: "#ffedd5", text: "#c2410c" },
-];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [newRepoName, setNewRepoName] = useState("");
 
-function avatarColor(name = "") {
-  return AVATAR_PALETTE[(name.charCodeAt(0) || 0) % AVATAR_PALETTE.length];
-}
+  const handleCreateRepo = (e) => {
+    e.preventDefault();
+    if (!newRepoName.trim()) return;
+    
+    setRepos([
+      {
+        id: Date.now(),
+        name: newRepoName.trim(),
+        type: "Private",
+        lastActive: "Just now",
+      },
+      ...repos,
+    ]);
+    setNewRepoName("");
+    setIsCreatingNew(false);
+  };
 
-function clientInitial(actor = "") {
-  return actor.split("/")[1]?.[0]?.toUpperCase() ?? "?";
-}
+  const filteredRepos = repos.filter((r) =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-// ── Data ────────────────────────────────────────────────────────────────────
-const TOP_REPOSITORIES = [
-  { id: 1,  name: "005511/LimWeiMing" },
-  { id: 2,  name: "005512/SarahTan" },
-  { id: 3,  name: "005513/AhmadRazif" },
-  { id: 4,  name: "005514/JenniferKoh" },
-  { id: 5,  name: "005515/DavidNg" },
-  { id: 6,  name: "005516/RosnahYusof" },
-  { id: 7,  name: "005517/NurulAin" },
-  { id: 8,  name: "005518/TanCheeKong" },
-  { id: 9,  name: "005519/PriyaKrishnan" },
-  { id: 10, name: "005520/MohdFaizal" },
-  { id: 11, name: "005521/ChanSiewLing" },
-  { id: 12, name: "005522/RajendraMuthu" },
-  { id: 13, name: "005523/NorhaizumMahmud" },
-  { id: 14, name: "005524/YapKokWai" },
-  { id: 15, name: "005525/SitiNorhaliza" },
-  { id: 16, name: "005526/LeeChongWei" },
-  { id: 17, name: "005527/FatimaZahraOmar" },
-  { id: 18, name: "005528/VijayaratnamPillai" },
-  { id: 19, name: "005529/NgBoonHuat" },
-  { id: 20, name: "005530/ZulaikhaBakar" },
-];
+  // Mock data for feed
+  const feedItems = [
+    {
+      id: 1,
+      repo: "AcmeCorp/estate-plan",
+      title: "Updated Living Trust Document",
+      description: "Added new clauses regarding digital assets and cryptocurrency holdings.",
+      time: "2 hours ago",
+      tags: ["Draft", "Legal"],
+    },
+    {
+      id: 2,
+      repo: "WayneEnterprises/succession",
+      title: "Board Meeting Notes Uploaded",
+      description: "Summary of succession planning decisions from Q3 board meeting.",
+      time: "Yesterday",
+      tags: ["Corporate"],
+    },
+  ];
 
-const INITIAL_VISIBLE = 6;
-
-const ADVISOR_ACTIVITY = [
-  {
-    id: 1,
-    actor: "005511/LimWeiMing",
-    title: "Living Trust Document Updated",
-    description: "Added new clauses on digital assets and cryptocurrency holdings. Pending legal sign-off.",
-    tags: ["Draft", "Legal"],
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    actor: "005515/DavidNg",
-    title: "Board Meeting Notes Uploaded",
-    description: "Summary of succession planning decisions from Q3 board meeting. Next review: Dec 2026.",
-    tags: ["Corporate"],
-    time: "5 hours ago",
-  },
-  {
-    id: 3,
-    actor: "005512/SarahTan",
-    title: "Portfolio Risk Profile Revised",
-    description: "Equity allocation increased from 60% to 75% following RM 2.4M liquidity event from tech exit.",
-    tags: ["Portfolio", "Risk"],
-    time: "Yesterday",
-  },
-  {
-    id: 4,
-    actor: "005514/JenniferKoh",
-    title: "Children's Trust Fund Executed",
-    description: "Trust deed signed for two beneficiaries (ages 8 and 11). Initial contribution of RM 500,000.",
-    tags: ["Legal", "Estate"],
-    time: "2 days ago",
-  },
-  {
-    id: 5,
-    actor: "005513/AhmadRazif",
-    title: "Education Fund Shortfall Identified",
-    description: "Revised university projections for 2027 and 2029 intakes. Funding gap of RM 80,000 flagged for top-up.",
-    tags: ["Education", "Planning"],
-    time: "3 days ago",
-  },
-  {
-    id: 6,
-    actor: "005516/RosnahYusof",
-    title: "Retirement Income Strategy Drafted",
-    description: "EPF drawdown schedule combined with dividend income targeting RM 8,000/month post-retirement.",
-    tags: ["Retirement", "Draft"],
-    time: "4 days ago",
-  },
-  {
-    id: 7,
-    actor: "005511/LimWeiMing",
-    title: "Annual Policy Review Completed",
-    description: "Term life and critical illness coverage reviewed. Recommended increasing CI sum assured to RM 1M.",
-    tags: ["Insurance"],
-    time: "5 days ago",
-  },
-  {
-    id: 8,
-    actor: "005515/DavidNg",
-    title: "FIRE Strategy Projection Updated",
-    description: "Monte Carlo simulation run at 4% withdrawal rate. 92% success probability over 30-year horizon.",
-    tags: ["FIRE", "Portfolio"],
-    time: "6 days ago",
-  },
-];
-
-const SCHEDULE = [
-  { time: "10:00 AM", title: "FIRE Strategy Review",  client: "005515/DavidNg",     type: "ZOOM"      },
-  { time: "01:30 PM", title: "Trust Fund Signing",    client: "005514/JenniferKoh", type: "IN-PERSON" },
-  { time: "04:00 PM", title: "Estate Exit Update",    client: "005511/LimWeiMing",  type: "TEAMS"     },
-];
-
-const SCOPE_OPTIONS = [
-  { value: "all",    label: "All clients" },
-  { value: "005511", label: "005511 / LimWeiMing" },
-  { value: "005512", label: "005512 / SarahTan" },
-  { value: "005513", label: "005513 / AhmadRazif" },
-  { value: "005514", label: "005514 / JenniferKoh" },
-  { value: "005515", label: "005515 / DavidNg" },
-  { value: "005516", label: "005516 / RosnahYusof" },
-];
-
-const TYPE_STYLES = {
-  ZOOM:        { bg: "#ddf4ff", text: "#0969da", border: "#b6e3ff", dot: "#0969da" },
-  "IN-PERSON": { bg: "#dafbe1", text: "#1a7f37", border: "#aceebb", dot: "#1a7f37" },
-  TEAMS:       { bg: "#fff8c5", text: "#9a6700", border: "#f0d800", dot: "#9a6700" },
-};
-
-// ── LeftSidebar ──────────────────────────────────────────────────────────────
-function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsCreatingNew, newRepoName, setNewRepoName, onCreateRepo }) {
-  const [showAll, setShowAll] = useState(false);
-  const isSearching = searchQuery.trim().length > 0;
-  const visibleRepos = isSearching || showAll ? repos : repos.slice(0, INITIAL_VISIBLE);
-  const hasMore = !isSearching && repos.length > INITIAL_VISIBLE;
+  // Mock data for calendar meetings
+  const meetings = [
+    { id: 1, time: "10:00 AM", client: "Bruce Wayne", title: "Succession Review", type: "Zoom" },
+    { id: 2, time: "01:30 PM", client: "John Smith", title: "Will Signing", type: "In-person" },
+    { id: 3, time: "04:00 PM", client: "Acme Corp Board", title: "Quarterly Estate Update", type: "Teams" },
+  ];
 
   return (
     <aside className="hidden md:block w-[280px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pb-8 text-sm bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
@@ -488,20 +378,14 @@ function Feed({ activity }) {
                 <Plus size={15} />
               </button>
             </div>
-
-            {/* Send */}
-            <button
-              onClick={() => sendMessage()}
-              disabled={!canSend}
-              className="flex items-center justify-center rounded-lg p-1.5 transition-colors"
-              style={{
-                background: canSend ? "#24292f" : "#e5e7eb",
-                color: canSend ? "#ffffff" : "#9ca3af",
-                cursor: canSend ? "pointer" : "not-allowed",
-              }}
-            >
-              <ArrowUp size={16} />
-            </button>
+            
+            <div className="quick-actions">
+              <button className="quick-btn">🤖 Agent</button>
+              <button className="quick-btn">⊙ Create issue</button>
+              <button className="quick-btn">✨ Spark</button>
+              <button className="quick-btn">🌿 Git ▾</button>
+              <button className="quick-btn">⑂ Pull requests ▾</button>
+            </div>
           </div>
 
           {/* Quick action chips */}
@@ -526,160 +410,560 @@ function Feed({ activity }) {
         </div>
       </div>
 
-      {/* ── Feed header ── */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-gray-900">Feed</h2>
-          <span className="flex items-center gap-1 text-gray-400 text-[13px]">
-            <History size={13} />
-            Recent activity
-          </span>
-        </div>
-        <button className="flex items-center gap-1 bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors" style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04)" }}>
-          <MoreHorizontal size={14} /> Filter
-        </button>
-      </div>
-
-      <div className="flex flex-col gap-3 pb-8">
-        {activity.map((item) => (
-          <ActivityCard key={item.id} item={item} />
-        ))}
-      </div>
-    </main>
-  );
-}
-
-// ── RightSidebar ─────────────────────────────────────────────────────────────
-function RightSidebar({ schedule }) {
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-
-  return (
-    <aside className="hidden lg:flex flex-col gap-4 w-[300px] shrink-0 sticky top-[45px] h-[calc(100vh-45px)] overflow-y-auto pl-2 text-sm">
-
-      {/* Today's Schedule */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-gray-900 font-semibold text-[14px]">Today&apos;s Schedule</h2>
-          <span className="text-gray-400 text-[12px] font-medium">{today}</span>
-        </div>
-
-        <div className="relative">
-          {/* Timeline line */}
-          <div style={{ position: "absolute", left: "7px", top: "10px", bottom: "10px", width: "1.5px", background: "#e5e7eb", borderRadius: "2px" }} />
-
-          <div className="flex flex-col gap-5">
-            {schedule.map((item, idx) => {
-              const s = TYPE_STYLES[item.type] ?? TYPE_STYLES.ZOOM;
-              const av = avatarColor(item.client);
-              return (
-                <div key={idx} className="flex gap-3.5 relative">
-                  {/* Dot */}
-                  <div style={{
-                    flexShrink: 0,
-                    width: 16,
-                    height: 16,
-                    borderRadius: "50%",
-                    background: "#fff",
-                    border: `2.5px solid ${s.dot}`,
-                    boxShadow: `0 0 0 3px ${s.bg}`,
-                    marginTop: "2px",
-                    zIndex: 1,
-                  }} />
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[11px] text-gray-400 font-medium mb-1">{item.time}</div>
-                    <div className="font-semibold text-gray-900 text-[13.5px] mb-1 leading-snug">{item.title}</div>
-                    <div className="flex items-center gap-1 text-gray-400 text-[12px] mb-2">
-                      <User size={11} className="flex-shrink-0" />
-                      <span className="truncate">{item.client}</span>
+            <div className="feed-list">
+              <div className="feed-category-title">
+                📈 Recent client activity
+              </div>
+              
+              {feedItems.map((item) => {
+                const urlSafeName = item.repo.replace("/", "_");
+                return (
+                  <div key={item.id} className="feed-card">
+                    <div className="feed-card-header">
+                      <div className="repo-avatar small"></div>
+                      <Link href={`/client/${urlSafeName}`} className="feed-repo-name">
+                        {item.repo}
+                      </Link>
                     </div>
-                    <span
-                      className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}`, letterSpacing: "0.04em" }}
-                    >
-                      {item.type}
-                    </span>
+                    <p className="feed-card-title">{item.title}</p>
+                    <p className="feed-card-desc">{item.description}</p>
+                    <div className="feed-card-footer">
+                      <div className="feed-tags">
+                        {item.tags.map(t => <span key={t} className="feed-tag">{t}</span>)}
+                      </div>
+                      <span className="feed-time">{item.time}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </main>
+
+        {/* ── RIGHT SIDEBAR (CALENDAR) ── */}
+        <aside className="sidebar-right">
+          <div className="calendar-widget">
+            <div className="calendar-header">
+              <h3 className="calendar-title">Today's Schedule</h3>
+              <span className="current-date">
+                {new Date().toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+            </div>
+
+            <div className="meeting-list">
+              {meetings.map((m) => (
+                <div key={m.id} className="meeting-item">
+                  <div className="meeting-time">
+                    <span className="time-text">{m.time.split(" ")[0]}</span>
+                    <span className="time-ampm">{m.time.split(" ")[1]}</span>
+                  </div>
+                  <div className="meeting-details">
+                    <p className="meeting-title">{m.title}</p>
+                    <p className="meeting-client">👤 {m.client}</p>
+                    <span className="meeting-type">{m.type}</span>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+            
+            <button className="view-calendar-btn">Open full calendar</button>
           </div>
-        </div>
 
-        <button className="w-full mt-5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 rounded-md px-4 py-2 text-[13px] font-medium transition-colors text-left flex items-center justify-between">
-          Open full calendar
-          <ExternalLink size={13} className="text-gray-400" />
-        </button>
+          <div className="promo-card">
+            <h4>Client Portal Analytics</h4>
+            <p>3 clients viewed their estate plans today.</p>
+            <a href="#">View report →</a>
+          </div>
+        </aside>
       </div>
 
-      {/* Client Portal Analytics */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)" }}>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-gray-900 font-semibold text-[14px]">Portal Analytics</h2>
-          <span
-            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: "#ecfdf5", color: "#16a34a", border: "1px solid #bbf7d0" }}
-          >
-            Live
-          </span>
-        </div>
-        <p className="text-gray-500 text-[13px] mb-3 leading-relaxed">
-          3 clients viewed their estate plans today.
-        </p>
-        <a href="#" className="text-blue-600 hover:text-blue-700 text-[13px] font-medium flex items-center gap-1 transition-colors">
-          View report <ChevronDown size={13} className="-rotate-90" />
-        </a>
-      </div>
-    </aside>
-  );
-}
+      <style jsx>{`
+        .dashboard-root {
+          min-height: 100vh;
+          background-color: #f6f8fa;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+          color: #1F2328;
+        }
 
-// ── Dashboard page ───────────────────────────────────────────────────────────
-export default function Dashboard() {
-  const [repos, setRepos] = useState(TOP_REPOSITORIES);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [newRepoName, setNewRepoName] = useState("");
+        .dashboard-container {
+          max-width: 1400px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: 296px 1fr 320px;
+          gap: 24px;
+          padding: 24px;
+        }
 
-  const handleCreateRepo = (e) => {
-    e.preventDefault();
-    if (!newRepoName.trim()) return;
-    setRepos([{ id: Date.now(), name: newRepoName.trim() }, ...repos]);
-    setNewRepoName("");
-    setIsCreatingNew(false);
-  };
+        /* BUTTONS & INPUTS */
+        .btn-primary {
+          background-color: #1f883d;
+          color: #ffffff;
+          border: 1px solid rgba(31, 35, 40, 0.15);
+          border-radius: 6px;
+          padding: 5px 12px;
+          font-size: 14px;
+          font-weight: 600;
+          line-height: 20px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 1px 0 rgba(27, 31, 36, 0.1);
+        }
+        .btn-primary:hover {
+          background-color: #1a7f37;
+        }
 
-  const filteredRepos = repos.filter((r) =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+        .btn-secondary {
+          background-color: #f6f8fa;
+          color: #24292f;
+          border: 1px solid rgba(31, 35, 40, 0.15);
+          border-radius: 6px;
+          padding: 5px 12px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .btn-secondary:hover {
+          background-color: #f3f4f6;
+        }
 
-  return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
-      <Head>
-        <title>Dashboard — AdvisorOS</title>
-      </Head>
+        .btn-small {
+          padding: 3px 8px;
+          font-size: 12px;
+        }
 
-      <TopNav />
+        /* ── LEFT SIDEBAR ── */
+        .sidebar-left {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        
+        .repo-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .repo-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0;
+        }
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-8 pt-6 flex justify-center gap-6 lg:gap-8">
-        <LeftSidebar
-          repos={filteredRepos}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isCreatingNew={isCreatingNew}
-          setIsCreatingNew={setIsCreatingNew}
-          newRepoName={newRepoName}
-          setNewRepoName={setNewRepoName}
-          onCreateRepo={handleCreateRepo}
-        />
-        <Feed activity={ADVISOR_ACTIVITY} />
-        <RightSidebar schedule={SCHEDULE} />
-      </div>
+        .repo-search-input, .new-repo-input {
+          width: 100%;
+          padding: 5px 12px;
+          font-size: 14px;
+          line-height: 20px;
+          color: #1f2328;
+          background-color: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          box-shadow: inset 0 1px 0 rgba(208, 215, 222, 0.2);
+        }
+        .repo-search-input:focus, .new-repo-input:focus {
+          border-color: #0969da;
+          outline: none;
+          box-shadow: inset 0 0 0 1px #0969da;
+        }
+
+        .new-repo-form {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 12px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+        }
+        .new-repo-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .repo-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .repo-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .repo-avatar {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background-color: #d0d7de;
+        }
+        .repo-avatar.small {
+          width: 14px;
+          height: 14px;
+        }
+        
+        .repo-link {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2328;
+          text-decoration: none;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .repo-link:hover {
+          color: #0969da;
+          text-decoration: underline;
+        }
+
+        .show-more-btn {
+          background: none;
+          border: none;
+          color: #656d76;
+          font-size: 12px;
+          text-align: left;
+          padding: 0;
+          cursor: pointer;
+        }
+        .show-more-btn:hover {
+          color: #0969da;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .main-content {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        
+        .page-title {
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .copilot-input-box {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          box-shadow: 0 1px 3px rgba(31,35,40,0.04);
+        }
+
+        .copilot-input {
+          width: 100%;
+          border: none;
+          font-size: 16px;
+          padding: 8px;
+          color: #1f2328;
+          outline: none;
+        }
+        .copilot-input::placeholder {
+          color: #656d76;
+        }
+
+        .input-actions {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 4px;
+        }
+        .action-group {
+          display: flex;
+          gap: 6px;
+          align-items: center;
+        }
+        .action-btn {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          color: #24292f;
+          padding: 4px 10px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 20px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .action-btn:hover {
+          background: #f3f4f6;
+        }
+        .action-btn.icon-only {
+          padding: 4px 8px;
+          border-radius: 50%;
+        }
+
+        .submit-btn {
+          background: transparent;
+          border: none;
+          font-size: 16px;
+          cursor: pointer;
+          color: #656d76;
+        }
+
+        .quick-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 4px;
+          padding: 0 4px 4px;
+          flex-wrap: wrap;
+        }
+        .quick-btn {
+          background: #f6f8fa;
+          border: 1px solid transparent;
+          color: #24292f;
+          padding: 4px 12px;
+          font-size: 13px;
+          font-weight: 500;
+          border-radius: 20px;
+          cursor: pointer;
+        }
+        .quick-btn:hover {
+          background: #eaeef2;
+        }
+
+        .feed-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .feed-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0;
+        }
+        .filter-btn {
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 4px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .feed-category-title {
+          font-size: 14px;
+          color: #656d76;
+          margin-bottom: 12px;
+        }
+
+        .feed-card {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 16px;
+          margin-bottom: 16px;
+        }
+        .feed-card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        .feed-repo-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #656d76;
+          text-decoration: none;
+        }
+        .feed-card-title {
+          font-size: 16px;
+          font-weight: 600;
+          margin: 0 0 4px;
+        }
+        .feed-card-desc {
+          font-size: 14px;
+          color: #1f2328;
+          margin: 0 0 16px;
+        }
+        .feed-card-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .feed-tags {
+          display: flex;
+          gap: 8px;
+        }
+        .feed-tag {
+          font-size: 12px;
+          color: #656d76;
+          background: #f6f8fa;
+          padding: 2px 8px;
+          border-radius: 12px;
+          border: 1px solid #d0d7de;
+        }
+        .feed-time {
+          font-size: 12px;
+          color: #656d76;
+        }
+
+        /* ── RIGHT SIDEBAR (CALENDAR) ── */
+        .sidebar-right {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .calendar-widget {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 16px;
+          box-shadow: 0 1px 3px rgba(31,35,40,0.04);
+        }
+        .calendar-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 16px;
+          border-bottom: 1px solid #eaeef2;
+          padding-bottom: 12px;
+        }
+        .calendar-title {
+          font-size: 14px;
+          font-weight: 600;
+          margin: 0;
+        }
+        .current-date {
+          font-size: 12px;
+          color: #656d76;
+          font-weight: 500;
+        }
+
+        .meeting-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .meeting-item {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .meeting-time {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          min-width: 55px;
+        }
+        .time-text {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2328;
+        }
+        .time-ampm {
+          font-size: 11px;
+          color: #656d76;
+          font-weight: 500;
+        }
+
+        .meeting-details {
+          flex: 1;
+          background: #f6f8fa;
+          padding: 10px 12px;
+          border-radius: 6px;
+          border-left: 3px solid #0969da;
+        }
+        .meeting-title {
+          font-size: 14px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          color: #1f2328;
+        }
+        .meeting-client {
+          font-size: 12px;
+          color: #656d76;
+          margin: 0 0 6px;
+        }
+        .meeting-type {
+          display: inline-block;
+          font-size: 10px;
+          font-weight: 600;
+          padding: 2px 6px;
+          border-radius: 12px;
+          background: #ddf4ff;
+          color: #0969da;
+          text-transform: uppercase;
+        }
+
+        .view-calendar-btn {
+          width: 100%;
+          margin-top: 16px;
+          background: transparent;
+          border: 1px solid #d0d7de;
+          color: #24292f;
+          padding: 6px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .view-calendar-btn:hover {
+          background: #f3f4f6;
+        }
+
+        .promo-card {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 16px;
+          box-shadow: 0 1px 3px rgba(31,35,40,0.04);
+        }
+        .promo-card h4 {
+          margin: 0 0 8px;
+          font-size: 14px;
+        }
+        .promo-card p {
+          font-size: 12px;
+          color: #656d76;
+          margin: 0 0 12px;
+        }
+        .promo-card a {
+          font-size: 12px;
+          color: #0969da;
+          text-decoration: none;
+          font-weight: 500;
+        }
+        .promo-card a:hover {
+          text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+          .dashboard-container {
+            grid-template-columns: 240px 1fr;
+          }
+          .sidebar-right {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .dashboard-container {
+            grid-template-columns: 1fr;
+          }
+          .sidebar-left, .sidebar-right {
+            display: none; /* simple mobile hide for now */
+          }
+        }
+      `}</style>
     </div>
   );
 }
