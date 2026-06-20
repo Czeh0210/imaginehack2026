@@ -1,15 +1,31 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Head from "next/head";
-import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/router";
+import { 
+  Paperclip, ArrowUp, Plus, Home, Users, MessageSquare, ChevronLeft, Landmark, 
+  Coins, FileClock, ShieldAlert, PanelLeftClose, PanelLeftOpen, Search, 
+  FolderKanban, Sparkles, Code, Sliders, SlidersHorizontal 
+} from "lucide-react";
 import { CLIENTS } from "@/lib/mockData";
-import Layout from '@/components/Layout';
+import TopNav from "@/components/TopNav";
+import UserMessage from "@/components/ui/UserMessage";
 
-// Dynamically import PDF viewer 
-const PdfAnalysisViewer = dynamic(
-  () => import("../components/PdfAnalysisViewer"),
-  { ssr: false, loading: () => <div style={{padding:"24px",color:"var(--color-fg-muted)",fontSize:"var(--text-sm)"}}>Loading PDF viewer…</div> }
-);
+const clientIdToRepoId = {
+  "005511": "005511_LimWeiMing",
+  "005512": "005512_SarahTan",
+  "005513": "005513_AhmadRazif",
+  "005514": "005514_JenniferKoh",
+  "005515": "005515_DavidNg",
+  "005516": "005516_RosnahYusof",
+};
+
+const QUICK_ACTIONS = [
+  { icon: ShieldAlert, label: "Analyze client risk profile" },
+  { icon: Landmark, label: "Review retirement timeline" },
+  { icon: Coins, label: "Identify tax saving strategies" },
+  { icon: FileClock, label: "Verify policy coverage details" },
+];
 
 function renderMarkdown(text) {
   if (!text) return "";
@@ -17,23 +33,23 @@ function renderMarkdown(text) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:var(--color-bg-inset);padding:var(--space-3);border-radius:var(--radius-md);font-size:var(--text-code);overflow-x:auto;color:var(--color-fg-default);margin:var(--space-2) 0;"><code>${code.trim()}</code></pre>`)
-    .replace(/`([^`]+)`/g, '<code style="background:var(--color-bg-inset);padding:2px 4px;border-radius:4px;font-size:var(--text-code-inline);color:var(--color-fg-accent);"> $1 </code>')
-    .replace(/\*\*([^*]+)\*\*/g, "<strong style='font-weight:var(--weight-semibold)'>$1</strong>")
+    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#f0f2f4;padding:12px;border-radius:8px;font-size:13px;overflow-x:auto;color:#24292f;margin:8px 0;border:1px solid #d0d7de;"><code>${code.trim()}</code></pre>`)
+    .replace(/`([^`]+)`/g, '<code style="background:#eaecef;padding:2px 5px;border-radius:4px;font-size:13px;color:#c97c3a;">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/^### (.+)$/gm, '<h3 style="font-size:var(--text-lg);margin:var(--space-3) 0 var(--space-2);font-weight:var(--weight-semibold);color:var(--color-fg-default);">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 style="font-size:var(--text-xl);margin:var(--space-4) 0 var(--space-2);font-weight:var(--weight-semibold);color:var(--color-fg-default);">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 style="font-size:var(--text-2xl);margin:var(--space-5) 0 var(--space-3);font-weight:var(--weight-semibold);color:var(--color-fg-default);">$1</h1>')
-    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:var(--space-4);font-size:var(--text-md);">$1</li>')
-    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:var(--space-4);font-size:var(--text-md);">$1</li>')
+    .replace(/^### (.+)$/gm, '<h3 style="font-size:14px;margin:10px 0 5px;font-weight:600;color:#24292f;">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="font-size:16px;margin:12px 0 6px;font-weight:600;color:#24292f;">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="font-size:18px;margin:14px 0 8px;font-weight:700;color:#1c2128;">$1</h1>')
+    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#24292f;margin-bottom:3px;">$1</li>')
+    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:16px;font-size:14px;color:#24292f;margin-bottom:3px;">$1</li>')
     .replace(/\n\n/g, "</p><p>")
     .replace(/\n/g, "<br/>");
-  return `<p style="margin:0 0 var(--space-2);">${html}</p>`;
+  return `<p style="margin:0 0 10px;color:#24292f;line-height:1.65;">${html}</p>`;
 }
 
 export default function ChatbotPage() {
   const router = useRouter();
-  const { c: clientParam } = router.query;
+
   const [selectedClientId, setSelectedClientId] = useState("");
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -41,180 +57,188 @@ export default function ChatbotPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
-  const [isDragOver, setIsDragOver] = useState(false);
+  const [error, setError] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [showContextList, setShowContextList] = useState(false);
+  const [contextSearchQuery, setContextSearchQuery] = useState("");
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("chatbot_sidebar_collapsed");
+    if (saved === "true") setIsSidebarCollapsed(true);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("chatbot_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
+
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+  const contextSelectorRef = useRef(null);
 
-  // Session history
-  const [sessions, setSessions] = useState([]);
-  const [activeSessionId, setActiveSessionId] = useState(null);
+  const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
+  const hasMessages = messages.length > 0;
 
-  useEffect(() => {
-    if (router.isReady && clientParam) {
-      setSelectedClientId(clientParam);
-    }
-  }, [router.isReady, clientParam]);
-
-  useEffect(() => {
-    if (router.isReady) {
-      const { sessionId, clientId } = router.query;
-      if (sessionId) {
-        setActiveSessionId(sessionId);
-        setSessionId(sessionId);
-        selectSessionById(sessionId);
-      }
-      if (clientId) setSelectedClientId(clientId);
-    }
-  }, [router.isReady]);
-
-  useEffect(() => {
-    fetchSessions();
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setSessionId(null);
+    setActiveSessionId(null);
+    setError(null);
   }, []);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
-      const res = await fetch('/api/chat/session');
+      const res = await fetch("/api/chat/session");
       const data = await res.json();
       setSessions(data.sessions || []);
-    } catch (e) {
-      console.error('Failed to fetch sessions', e);
-    }
-  };
+    } catch {}
+  }, []);
 
-  const selectSessionById = async (id) => {
+  const selectSession = useCallback(async (id) => {
+    setActiveSessionId(id);
+    setSessionId(id);
     try {
       const res = await fetch(`/api/chat/session?sessionId=${id}`);
       const data = await res.json();
-      if (data.session) {
-        setMessages(data.session.messages || []);
-      }
-    } catch (e) {
-      console.error('Failed to load session', e);
-    }
-  };
+      if (data.session) setMessages(data.session.messages || []);
+    } catch {}
+  }, []);
 
-  const createNewSession = async () => {
+  const createNewSession = useCallback(async () => {
     try {
-      const res = await fetch('/api/chat/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/chat/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clientId: selectedClientId || undefined }),
       });
       const data = await res.json();
       setSessionId(data.sessionId);
       setActiveSessionId(data.sessionId);
       setMessages([]);
+      setError(null);
       fetchSessions();
-    } catch (e) {
-      console.error('Failed to create session', e);
+    } catch {}
+  }, [selectedClientId, fetchSessions]);
+
+  // Load session from URL params (coming from widget maximize)
+  useEffect(() => {
+    if (!router.isReady) return;
+    const { sessionId: sid, clientId: cid } = router.query;
+    if (cid) setSelectedClientId(cid);
+    if (sid) {
+      setSessionId(sid);
+      setActiveSessionId(sid);
+      fetch(`/api/chat/session?sessionId=${sid}`)
+        .then((r) => r.json())
+        .then((d) => { if (d.session) setMessages(d.session.messages || []); })
+        .catch(() => {});
     }
-  };
+  }, [router.isReady]);
 
-  const deleteSession = async (id) => {
-    try {
-      await fetch(`/api/chat/session?sessionId=${id}`, { method: 'DELETE' });
-      if (activeSessionId === id) {
-        setSessionId(null);
-        setActiveSessionId(null);
-        setMessages([]);
-      }
-      fetchSessions();
-    } catch (e) {
-      console.error('Failed to delete session', e);
-    }
-  };
+  useEffect(() => { fetchSessions(); }, [fetchSessions]);
 
-  const selectSession = async (id) => {
-    setActiveSessionId(id);
-    setSessionId(id);
-    await selectSessionById(id);
-  };
-
-  const scrollToBottom = () => {
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "28px";
+    el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
+  }, [input]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (contextSelectorRef.current && !contextSelectorRef.current.contains(e.target)) {
+        setShowContextList(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleFileUpload = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setUploadedFile(file);
+      setFilePreview({ name: file.name, dataUrl: e.target.result });
+    };
+    reader.readAsDataURL(file);
   };
 
-  useEffect(() => scrollToBottom(), [messages]);
+  const sendMessage = useCallback(async (overrideInput) => {
+    const text = (typeof overrideInput === "string" ? overrideInput : input).trim();
+    if (!text && !uploadedFile) return;
+    if (isLoading) return;
 
-  const resizeTextarea = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-    }
-  };
-
-  useEffect(() => { resizeTextarea(); }, [input]);
-
-  const sendMessage = async (e) => {
-    if (e) e.preventDefault();
-    if ((!input.trim() && !uploadedFile) || isLoading) return;
-
-    const userMsgText = input.trim();
-    const currentInput = userMsgText;
-    const currentFile = uploadedFile;
-    const currentPreview = filePreview;
-    
+    const userMsg = { 
+      role: "user", 
+      content: text, 
+      file: (uploadedFile && filePreview) ? { 
+        name: uploadedFile.name,
+        type: uploadedFile.type,
+        dataUrl: filePreview.dataUrl
+      } : null 
+    };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    const fileToSend = uploadedFile;
+    const previewToSend = filePreview;
     setUploadedFile(null);
     setFilePreview(null);
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
-
-    const userMessage = {
-      role: "user",
-      content: currentInput,
-      filePreview: currentPreview,
-      fileName: currentFile?.name
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+    setError(null);
 
     try {
-      let fileBase64 = null;
-      let mimeType = null;
-      
-      if (currentFile) {
-        fileBase64 = currentPreview.split(",")[1];
-        mimeType = currentFile.type;
+      let filePayload = null;
+      if (fileToSend && previewToSend) {
+        filePayload = { data: previewToSend.dataUrl.split(",")[1], mimeType: fileToSend.type };
       }
-
-      const response = await fetch("/api/chat", {
+      const res = await fetch("/api/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: currentInput,
-          clientId: selectedClientId || null,
+          message: text,
           sessionId,
-          searchScope: "global",
-          file: fileBase64 ? { data: fileBase64, mimeType } : null
+          clientId: selectedClientId || undefined,
+          topK: 5,
+          threshold: 0.3,
+          file: filePayload,
         }),
       });
-
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
-      const data = await response.json();
-      
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
       if (!sessionId && data.sessionId) {
         setSessionId(data.sessionId);
+        setActiveSessionId(data.sessionId);
+        fetchSessions();
       }
-
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: data.reply,
-        sources: data.sources || [],
-        clientRanking: data.clientRanking || []
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.reply,
+          sources: data.sources,
+          relevantClients: data.relevantClients,
+        },
+      ]);
     } catch (err) {
-      console.error(err);
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Error: Could not connect to AI. Please ensure API keys are set."
-      }]);
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [input, uploadedFile, filePreview, isLoading, sessionId, selectedClientId, fetchSessions]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -223,248 +247,1272 @@ export default function ChatbotPage() {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => setFilePreview(e.target.result);
-      reader.readAsDataURL(file);
-    }
-  };
+  // Minimize: go back to dashboard, tell widget to re-open with the current session
+  const handleMinimize = useCallback(() => {
+    const params = new URLSearchParams({ openChat: "1" });
+    if (sessionId) params.set("sessionId", sessionId);
+    if (selectedClientId) params.set("clientId", selectedClientId);
+    router.push(`/dashboard?${params.toString()}`);
+  }, [router, sessionId, selectedClientId]);
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => setFilePreview(e.target.result);
-      reader.readAsDataURL(file);
-    }
-  };
+  // ── Shared input card ──────────────────────────────────────
+  const InputCard = (
+    <div className="input-card">
+      {filePreview && (
+        <div className="file-bar">
+          <span 
+            className="file-preview-name-clickable" 
+            onClick={() => setPreviewFile({ name: filePreview.name, dataUrl: filePreview.dataUrl, type: uploadedFile?.type })}
+            title="Click to preview file"
+          >
+            📄 {filePreview.name} (Preview)
+          </span>
+          <button onClick={() => { setUploadedFile(null); setFilePreview(null); }}>✕</button>
+        </div>
+      )}
 
-  return (
-    <Layout>
-      <Head>
-        <title>Copilot Chat - Workspace</title>
-      </Head>
+      <textarea
+        ref={textareaRef}
+        className="chat-textarea"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="How can I help you today?"
+        disabled={isLoading}
+        rows={1}
+      />
 
-      <div style={{
-        display: "flex",
-        width: "100%",
-        maxWidth: "1000px",
-        margin: "0 auto",
-        height: "calc(100vh - 100px)",
-        border: "var(--border-thin) solid var(--color-border-default)",
-        borderRadius: "var(--radius-lg)",
-        overflow: "hidden",
-        backgroundColor: "var(--color-bg-default)"
-      }}>
-        
-        {/* Left Sidebar - Session History */}
-        <aside style={{
-          width: "240px",
-          flexShrink: 0,
-          borderRight: "var(--border-thin) solid var(--color-border-default)",
-          backgroundColor: "var(--color-bg-muted)",
-          display: "flex",
-          flexDirection: "column",
-          height: "100%"
-        }}>
-          <div style={{
-            padding: "var(--space-3)",
-            borderBottom: "var(--border-thin) solid var(--color-border-default)",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}>
-            <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--color-fg-default)" }}>Chat History</span>
+      <div className="input-toolbar">
+        {/* Left */}
+        <div className="toolbar-left">
+          <button className="toolbar-icon-btn" onClick={() => fileInputRef.current?.click()} disabled={isLoading} title="Upload proposal file">
+            <Paperclip size={16} />
+          </button>
+          <input ref={fileInputRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={(e) => handleFileUpload(e.target.files[0])} />
+          {process.env.NODE_ENV === "development" && (
             <button
-              onClick={createNewSession}
-              style={{
-                background: "var(--color-bg-accent-emphasis)",
-                color: "var(--color-fg-on-emphasis)",
-                border: "none",
-                borderRadius: "var(--radius-md)",
-                padding: "var(--space-1) var(--space-2)",
-                fontSize: "var(--text-xs)",
-                cursor: "pointer",
-                fontWeight: 500,
-                lineHeight: 1.4
+              id="mock-upload-btn"
+              onClick={() => {
+                const mockContent = `Client Proposal\nPrepared for: Sarah Tan\nAdvisor: Chloe Lee\n\nExecutive Summary:\nWe propose reallocating 15% of the current equity portfolio to high-yield fixed-income instruments. This adjustment aims to minimize downside risk while maintaining a yield of 4.8% annually, aligning with the client's conservative risk profile for the upcoming retirement transition in 5 years.\n\nKey Details:\n1. Increase bond allocation from 20% to 35%.\n2. Reduce tech sector exposure.\n3. Optimize tax-loss harvesting by year-end.`;
+                const base64 = btoa(unescape(encodeURIComponent(mockContent)));
+                const dataUrl = `data:text/plain;base64,${base64}`;
+                setUploadedFile({ name: "test_proposal.txt", type: "text/plain" });
+                setFilePreview({ name: "test_proposal.txt", dataUrl });
               }}
+              style={{
+                fontSize: "10px",
+                padding: "2px 6px",
+                background: "#f6f8fa",
+                border: "1px solid #d0d7de",
+                borderRadius: "4px",
+                cursor: "pointer",
+                color: "#57606a",
+                marginLeft: "4px"
+              }}
+              title="Developer Mock Upload"
             >
-              + New
+              Mock Upload
             </button>
-          </div>
-          <div style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "var(--space-2)"
-          }}>
-            {sessions.length === 0 ? (
-              <div style={{
-                textAlign: "center",
-                color: "var(--color-fg-muted)",
-                fontSize: "var(--text-sm)",
-                padding: "var(--space-4)"
-              }}>
-                No sessions yet
-              </div>
-            ) : (
-              [...sessions].reverse().map(s => (
-                <div
-                  key={s.id}
-                  onClick={() => selectSession(s.id)}
-                  style={{
-                    padding: "var(--space-2) var(--space-3)",
-                    borderRadius: "var(--radius-md)",
-                    cursor: "pointer",
-                    marginBottom: "var(--space-1)",
-                    backgroundColor: activeSessionId === s.id ? "var(--color-bg-accent-muted)" : "transparent",
-                    border: activeSessionId === s.id ? "1px solid var(--color-border-accent)" : "1px solid transparent",
-                    transition: "background-color 0.15s"
-                  }}
-                  onMouseOver={e => { if (activeSessionId !== s.id) e.currentTarget.style.backgroundColor = "var(--color-bg-neutral-muted)"; }}
-                  onMouseOut={e => { if (activeSessionId !== s.id) e.currentTarget.style.backgroundColor = "transparent"; }}
-                >
-                  <div style={{
-                    fontSize: "var(--text-sm)",
-                    color: "var(--color-fg-default)",
-                    fontWeight: activeSessionId === s.id ? 600 : 400,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    marginBottom: "2px"
-                  }}>
-                    {s.messages?.[0]?.content?.slice(0, 30) || "Empty chat"}
-                  </div>
-                  <div style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--color-fg-muted)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}>
-                    <span>{s.messageCount || 0} msgs</span>
-                    <span>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ""}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
-
-        {/* Main Chat Area */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
-          <header style={{ 
-            padding: "var(--space-3) var(--space-4)", 
-            borderBottom: "var(--border-thin) solid var(--color-border-default)",
-            backgroundColor: "var(--color-bg-muted)",
-            display: "flex", justifyContent: "space-between", alignItems: "center"
-          }}>
-            <strong style={{ fontSize: "var(--text-md)", color: "var(--color-fg-default)" }}>ImagineHack 2026 Chat</strong>
-            {activeSessionId && (
-              <button
-                onClick={() => deleteSession(activeSessionId)}
-                style={{
-                  background: "none",
-                  border: "1px solid var(--color-border-danger)",
-                  color: "var(--color-fg-danger)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "var(--space-1) var(--space-2)",
-                  fontSize: "var(--text-xs)",
-                  cursor: "pointer"
-                }}
-              >
-                Delete session
-              </button>
-            )}
-          </header>
-
-          <div style={{ flex: 1, overflowY: "auto", padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
-            {messages.length === 0 ? (
-              <div style={{ textAlign: "center", color: "var(--color-fg-muted)", marginTop: "auto", marginBottom: "auto" }}>
-                <p>Welcome! Ask anything or upload a file to get started.</p>
-              </div>
-            ) : (
-              messages.map((m, idx) => (
-                <div key={idx} style={{ 
-                  display: "flex", 
-                  flexDirection: m.role === "user" ? "row-reverse" : "row",
-                  gap: "var(--space-3)" 
-                }}>
-                  <div style={{ 
-                    maxWidth: "80%",
-                    padding: "var(--space-3)",
-                    borderRadius: "var(--radius-md)",
-                    backgroundColor: m.role === "user" ? "var(--color-bg-neutral)" : "transparent",
-                    border: m.role === "assistant" ? "none" : "1px solid var(--color-border-default)",
-                    color: "var(--color-fg-default)",
-                    fontSize: "var(--text-md)"
-                  }}>
-                    {m.filePreview && <p style={{fontSize: "var(--text-sm)", color: "var(--color-fg-muted)", marginBottom: "var(--space-2)"}}>📎 {m.fileName}</p>}
-                    <div dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} />
-                  </div>
-                </div>
-              ))
-            )}
-            {isLoading && <div style={{ color: "var(--color-fg-muted)", fontSize: "var(--text-sm)" }}>Thinking...</div>}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input Area */}
-          <div style={{ padding: "var(--space-4)", borderTop: "var(--border-thin) solid var(--color-border-default)" }}>
-            <form onSubmit={sendMessage} style={{ 
-              display: "flex", gap: "var(--space-2)", 
-              border: "var(--border-thin) solid var(--color-border-default)", 
-              borderRadius: "var(--radius-md)", 
-              padding: "var(--space-2)",
-              backgroundColor: "var(--color-bg-default)",
-              alignItems: "flex-end"
-            }}>
-              <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: "none" }} />
-              <button type="button" onClick={() => fileInputRef.current.click()} style={{
-                background: "none", border: "none", cursor: "pointer", padding: "var(--space-2)", alignSelf: "center", fontSize: "16px"
-              }}>
-                📎
-              </button>
-              
-              <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                {filePreview && (
-                  <div style={{ fontSize: "var(--text-sm)", color: "var(--color-fg-accent)", marginBottom: "var(--space-2)" }}>
-                    {uploadedFile.name} <button type="button" onClick={() => setFilePreview(null)} style={{background:"none",border:"none",color:"var(--color-fg-danger)",cursor:"pointer"}}>x</button>
-                  </div>
-                )}
-                <textarea 
-                  ref={textareaRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask anything or search..."
-                  style={{
-                    width: "100%", border: "none", outline: "none", resize: "none",
-                    maxHeight: "150px", fontSize: "var(--text-md)", backgroundColor: "transparent",
-                    color: "var(--color-fg-default)", fontFamily: "inherit"
-                  }}
-                  rows={1}
-                />
-              </div>
-
-              <button type="submit" disabled={isLoading} style={{
-                backgroundColor: "var(--color-bg-primary)", color: "var(--color-fg-on-emphasis)",
-                border: "none", borderRadius: "var(--radius-md)", padding: "var(--space-1) var(--space-3)", cursor: "pointer", fontWeight: "var(--weight-medium)",
-                alignSelf: "center"
-              }}>
-                Send
-              </button>
-            </form>
-          </div>
+          )}
         </div>
 
+        {/* Right */}
+        <div className="toolbar-right" ref={contextSelectorRef}>
+          {hasMessages && (
+            <button className="reset-btn" onClick={clearChat}>
+              Reset
+            </button>
+          )}
+
+          <div className="scope-pill-container">
+            <button className={`context-btn ${activeClient ? "selected" : ""}`} onClick={() => setShowContextList(!showContextList)}>
+              <Plus size={14} />
+              <span>{activeClient ? `Client: ${activeClient.name.split("/")[1] || activeClient.name}` : "Client"}</span>
+            </button>
+
+            {showContextList && (
+              <div className="scope-popover">
+                <div className="sp-search">
+                  <input type="text" placeholder="Search clients..." value={contextSearchQuery} onChange={(e) => setContextSearchQuery(e.target.value)} autoFocus className="sp-input" />
+                </div>
+                <div className="sp-options">
+                  <button className={`sp-item ${!selectedClientId ? "active" : ""}`} onClick={() => { setSelectedClientId(""); setShowContextList(false); setContextSearchQuery(""); clearChat(); }}>
+                    🌐 Global Search
+                  </button>
+                  <div className="sp-divider">Clients</div>
+                  {CLIENTS.filter((c) => c.name.toLowerCase().includes(contextSearchQuery.toLowerCase())).map((c) => (
+                    <button key={c.id} className={`sp-item ${selectedClientId === c.id ? "active" : ""}`} onClick={() => { setSelectedClientId(c.id); setShowContextList(false); setContextSearchQuery(""); clearChat(); }}>
+                      👤 {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            className={`send-btn ${(input.trim() || uploadedFile) ? "active" : ""}`}
+            disabled={(!input.trim() && !uploadedFile) || isLoading}
+            onClick={() => sendMessage()}
+          >
+            <ArrowUp size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <Head><title>IntelliBot — AdvisorOS</title></Head>
+      <TopNav />
+
+      <div className="workspace">
+        {/* ── SIDEBAR (Claude-style collapsible) ── */}
+        <aside className={`sidebar ${isSidebarCollapsed ? "collapsed" : ""}`}>
+          {isSidebarCollapsed ? (
+            /* Collapsed Sidebar Content */
+            <div className="sidebar-collapsed-content">
+              <button className="collapsed-toggle-btn" onClick={toggleSidebar} title="Expand sidebar">
+                <PanelLeftOpen size={18} />
+              </button>
+              
+              <button className="collapsed-new-chat-btn" onClick={createNewSession} title="New chat">
+                <Plus size={18} />
+              </button>
+
+              <div className="collapsed-nav-items">
+                <button className="collapsed-nav-btn active" onClick={createNewSession} title="Chats">
+                  <MessageSquare size={18} />
+                </button>
+                <button className="collapsed-nav-btn" title="Projects">
+                  <FolderKanban size={18} />
+                </button>
+                <button className="collapsed-nav-btn" title="Artifacts">
+                  <Sparkles size={18} />
+                </button>
+                <button className="collapsed-nav-btn" title="Code">
+                  <Code size={18} />
+                </button>
+                <button className="collapsed-nav-btn" title="Customize">
+                  <Sliders size={18} />
+                </button>
+              </div>
+
+              <div className="collapsed-bottom">
+                <button className="collapsed-nav-btn" onClick={handleMinimize} title="Back to widget">
+                  <ChevronLeft size={18} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Expanded Sidebar Content */
+            <div className="sidebar-expanded-content">
+              {/* Brand Header */}
+              <div className="sb-header">
+                <span className="sb-brand-name">IntelliBot</span>
+                <div className="sb-header-actions">
+                  <button className="sb-header-btn" title="Search chats">
+                    <Search size={16} />
+                  </button>
+                  <button className="sb-header-btn" onClick={toggleSidebar} title="Collapse sidebar">
+                    <PanelLeftClose size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* New chat */}
+              <button className="new-chat-btn" onClick={createNewSession}>
+                <Plus size={16} strokeWidth={2.2} />
+                New chat
+              </button>
+
+              {/* Main Navigation */}
+              <nav className="sb-main-nav">
+                <button className="sb-nav-link active" onClick={createNewSession}>
+                  <MessageSquare size={16} />
+                  <span>Chats</span>
+                </button>
+                <button className="sb-nav-link">
+                  <FolderKanban size={16} />
+                  <span>Projects</span>
+                </button>
+                <button className="sb-nav-link">
+                  <Sparkles size={16} />
+                  <span>Artifacts</span>
+                </button>
+                <button className="sb-nav-link">
+                  <Code size={16} />
+                  <span>Code</span>
+                  <span className="upgrade-badge">Upgrade</span>
+                </button>
+                <button className="sb-nav-link">
+                  <Sliders size={16} />
+                  <span>Customize</span>
+                </button>
+              </nav>
+
+              {/* Recents Section */}
+              <div className="sb-recents">
+                <div className="sb-recents-header">
+                  <span className="sb-recents-label">Recents</span>
+                  <button className="sb-recents-config-btn" title="Recents options">
+                    <SlidersHorizontal size={12} />
+                  </button>
+                </div>
+                <div className="sb-recents-list">
+                  {sessions.length === 0 ? (
+                    <div className="sb-recents-empty">No sessions yet</div>
+                  ) : (
+                    [...sessions].reverse().map((s) => (
+                      <button
+                        key={s.id}
+                        className={`sb-session-item ${activeSessionId === s.id ? "active" : ""}`}
+                        onClick={() => selectSession(s.id)}
+                      >
+                        {s.messages?.[0]?.content?.slice(0, 38) || "Empty chat"}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom */}
+              <div className="sb-bottom">
+                <button className="sb-minimize-btn" onClick={handleMinimize}>
+                  <ChevronLeft size={15} />
+                  Back to widget
+                </button>
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* ── MAIN CONTENT ── */}
+        <main className="main">
+          {!hasMessages ? (
+            /* ── WELCOME VIEW ── */
+            <div className="welcome-view">
+              <div className="welcome-center">
+                <h1 className="welcome-heading">What can I help you check?</h1>
+                <p className="welcome-sub">
+                  Search client memories, check risk goals, or upload a proposal to analyse against client records.
+                </p>
+
+                <div className="welcome-input-wrap">
+                  {InputCard}
+                </div>
+
+                {/* Action pills */}
+                <div className="action-pills">
+                  {QUICK_ACTIONS.map((a) => {
+                    const IconComponent = a.icon;
+                    return (
+                      <button key={a.label} className="action-pill" onClick={() => sendMessage(a.label)}>
+                        <IconComponent size={14} />
+                        <span>{a.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ── CHAT VIEW ── */
+            <>
+              <div className="messages-area">
+                <div className="messages-inner">
+                  {messages.map((msg, idx) => {
+                    if (msg.role === "user") {
+                      return (
+                        <UserMessage
+                          key={idx}
+                          content={msg.content}
+                          file={msg.file}
+                          onFileClick={(f) => {
+                            if (f.dataUrl) setPreviewFile(f);
+                          }}
+                        />
+                      );
+                    }
+
+                    return (
+                      <div key={idx} className="msg-row assistant">
+                        <div className="ai-avatar">✦</div>
+
+                        <div className="bubble assistant">
+                          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+
+                          {msg.sources && msg.sources.length > 0 && (
+                            <details style={{ marginTop: "10px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "8px" }}>
+                              <summary style={{ fontSize: "12px", color: "#c97c3a", cursor: "pointer", fontWeight: 600, outline: "none" }}>
+                                🔍 {msg.sources.length} matching sources
+                              </summary>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
+                                {msg.sources.map((s, sIdx) => {
+                                  const repoSlug = clientIdToRepoId[s.clientId] || "005511_LimWeiMing";
+                                  const tabParam = (s.sourceType === "document" || s.sourceType === "proposal") ? "photo" : "info";
+                                  return (
+                                    <a key={sIdx} href={`/client/${repoSlug}?tab=${tabParam}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
+                                      <div style={{ background: "#f6f8fa", border: "1px solid #d0d7de", padding: "8px 10px", borderRadius: "8px", fontSize: "12px" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: 600, color: "#57606a" }}>
+                                          <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
+                                          <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
+                                        </div>
+                                        <div style={{ fontStyle: "italic", color: "#57606a", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 100)}...&rdquo;</div>
+                                        <div style={{ fontSize: "10px", color: "#c97c3a", textAlign: "right", fontWeight: 600 }}>View Repo ({tabParam} tab) ↗</div>
+                                      </div>
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </details>
+                          )}
+
+                          {msg.relevantClients && msg.relevantClients.length > 0 && (
+                            <div style={{ marginTop: "10px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "8px" }}>
+                              <span style={{ fontSize: "12px", fontWeight: 600, color: "#57606a", display: "block", marginBottom: "6px" }}>👥 Matching Clients:</span>
+                              {msg.relevantClients.map((rc, rIdx) => {
+                                const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
+                                return (
+                                  <a key={rIdx} href={`/client/${repoSlug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", marginBottom: "5px", padding: "4px", borderRadius: "5px" }}>
+                                      <span style={{ width: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500, color: "#24292f" }}>{rc.clientName}</span>
+                                      <div style={{ flex: 1, height: "4px", background: "#e5e7eb", borderRadius: "3px", overflow: "hidden" }}>
+                                        <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
+                                      </div>
+                                      <span style={{ width: "30px", textAlign: "right", color: "#57606a", fontSize: "11px" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
+                                      <span style={{ color: "#57606a" }}>↗</span>
+                                    </div>
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {isLoading && (
+                    <div className="msg-row assistant">
+                      <div className="ai-avatar">✦</div>
+                      <div className="bubble assistant loading-bubble">
+                        <span className="dot" /><span className="dot" /><span className="dot" />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="error-bar">
+                  <span>⚠️ {error}</span>
+                  <button onClick={() => setError(null)}>✕</button>
+                </div>
+              )}
+
+              {/* Input pinned at bottom in chat view */}
+              <div className="chat-input-wrap">
+                {InputCard}
+              </div>
+            </>
+          )}
+        </main>
       </div>
 
-    </Layout>
+      {/* File Preview Modal */}
+      {previewFile && (
+        <div className="preview-modal-overlay" onClick={() => setPreviewFile(null)}>
+          <div className="preview-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="preview-modal-header">
+              <span className="preview-modal-title">File Preview: {previewFile.name}</span>
+              <button className="preview-modal-close" onClick={() => setPreviewFile(null)}>✕</button>
+            </div>
+            <div className="preview-modal-body">
+              {previewFile.type === "application/pdf" || previewFile.name.endsWith(".pdf") ? (
+                <iframe src={previewFile.dataUrl} className="preview-iframe" title="PDF Preview" />
+              ) : (
+                <pre className="preview-text-block">
+                  {(() => {
+                    try {
+                      const base64Data = previewFile.dataUrl.split(",")[1];
+                      return decodeURIComponent(escape(atob(base64Data)));
+                    } catch (err) {
+                      return "Could not decode text file contents.";
+                    }
+                  })()}
+                </pre>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        /* Root workspace below TopNav */
+        .workspace {
+          display: flex;
+          height: calc(100vh - 56px);
+          overflow: hidden;
+          background: #ffffff;
+        }
+
+        /* ── Sidebar (Claude-style collapsible) ── */
+        .sidebar {
+          width: 256px;
+          flex-shrink: 0;
+          background: #f7f7f8;
+          border-right: 1px solid #e5e5e8;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          transition: width 0.2s ease-in-out;
+        }
+
+        .sidebar.collapsed {
+          width: 64px;
+        }
+
+        /* Sidebar Expanded Content */
+        .sidebar-expanded-content {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 256px;
+          padding: 0;
+        }
+
+        .sb-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 18px 16px 12px;
+          flex-shrink: 0;
+        }
+
+        .sb-brand-name {
+          font-size: 16px;
+          font-weight: 700;
+          color: #191919;
+          font-family: serif;
+          letter-spacing: -0.2px;
+        }
+
+        .sb-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .sb-header-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #6e6e73;
+          padding: 4px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.12s, color 0.12s;
+        }
+
+        .sb-header-btn:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #191919;
+        }
+
+        .new-chat-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 12px 14px;
+          padding: 8px 12px;
+          background: #ffffff;
+          border: 1px solid #e5e5e8;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #191919;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.12s, border-color 0.12s;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .new-chat-btn:hover {
+          background: #f4f4f5;
+          border-color: #d1d1d6;
+        }
+
+        .sb-main-nav {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          padding: 0 12px;
+          flex-shrink: 0;
+        }
+
+        .sb-nav-link {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 7px 10px;
+          border-radius: 8px;
+          font-size: 14px;
+          color: #6e6e73;
+          text-decoration: none;
+          border: none;
+          background: none;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          transition: background 0.1s, color 0.1s;
+          width: 100%;
+          position: relative;
+        }
+
+        .sb-nav-link:hover {
+          background: rgba(0, 0, 0, 0.04);
+          color: #191919;
+        }
+
+        .sb-nav-link.active {
+          background: rgba(0, 0, 0, 0.06);
+          color: #191919;
+          font-weight: 500;
+        }
+
+        .upgrade-badge {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 10px;
+          font-weight: 600;
+          color: #0969da;
+          background: #ddf4ff;
+          border: 1px solid #54aeff;
+          padding: 1px 6px;
+          border-radius: 10px;
+        }
+
+        .sb-recents {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          margin-top: 14px;
+          padding: 0 12px;
+          border-top: 1px solid #e5e5e8;
+        }
+
+        .sb-recents-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 10px 6px;
+          flex-shrink: 0;
+        }
+
+        .sb-recents-label {
+          font-size: 11px;
+          font-weight: 600;
+          color: #8e8e93;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .sb-recents-config-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #8e8e93;
+          padding: 2px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .sb-recents-config-btn:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #191919;
+        }
+
+        .sb-recents-list {
+          flex: 1;
+          overflow-y: auto;
+          padding-bottom: 12px;
+        }
+
+        .sb-recents-list::-webkit-scrollbar { width: 3px; }
+        .sb-recents-list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 2px; }
+
+        .sb-recents-empty {
+          padding: 12px 10px;
+          font-size: 12.5px;
+          color: #8e8e93;
+        }
+
+        .sb-session-item {
+          display: block;
+          width: 100%;
+          padding: 7px 10px;
+          border-radius: 8px;
+          font-size: 13px;
+          color: #191919;
+          border: none;
+          background: none;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          transition: background 0.1s;
+          margin-bottom: 1px;
+        }
+
+        .sb-session-item:hover { background: rgba(0, 0, 0, 0.04); }
+        .sb-session-item.active { background: rgba(0, 0, 0, 0.06); font-weight: 500; }
+
+        .sb-bottom {
+          padding: 10px 12px 14px;
+          flex-shrink: 0;
+        }
+
+        .sb-minimize-btn {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          width: 100%;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 13.5px;
+          font-weight: 500;
+          color: #6e6e73;
+          border: 1px solid #e5e5e8;
+          background: #ffffff;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.12s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .sb-minimize-btn:hover { background: #f4f4f5; color: #191919; border-color: #d1d1d6; }
+
+        /* Sidebar Collapsed Content */
+        .sidebar-collapsed-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+          width: 64px;
+          padding: 14px 0;
+        }
+
+        .collapsed-toggle-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #6e6e73;
+          padding: 6px;
+          border-radius: 6px;
+          margin-bottom: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.12s, color 0.12s;
+        }
+
+        .collapsed-toggle-btn:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #191919;
+        }
+
+        .collapsed-new-chat-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 38px;
+          height: 38px;
+          background: #ffffff;
+          border: 1px solid #e5e5e8;
+          border-radius: 50%;
+          color: #191919;
+          cursor: pointer;
+          transition: all 0.12s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+          margin-bottom: 24px;
+        }
+
+        .collapsed-new-chat-btn:hover {
+          background: #f4f4f5;
+          border-color: #d1d1d6;
+          transform: scale(1.05);
+        }
+
+        .collapsed-nav-items {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+          flex: 1;
+          width: 100%;
+        }
+
+        .collapsed-nav-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #6e6e73;
+          width: 38px;
+          height: 38px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.12s, color 0.12s;
+        }
+
+        .collapsed-nav-btn:hover {
+          background-color: rgba(0, 0, 0, 0.04);
+          color: #191919;
+        }
+
+        .collapsed-nav-btn.active {
+          background-color: rgba(0, 0, 0, 0.06);
+          color: #191919;
+        }
+
+        .collapsed-bottom {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+        }
+
+        /* ── Main content ── */
+        .main {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          background: #ffffff;
+          min-width: 0;
+        }
+
+        /* Welcome view */
+        .welcome-view {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow-y: auto;
+          padding: 40px 24px 32px;
+        }
+
+        .welcome-center {
+          width: 100%;
+          max-width: 680px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .welcome-heading {
+          font-size: 36px;
+          font-weight: 700;
+          color: #24292f;
+          margin: 0 0 12px;
+          letter-spacing: -0.6px;
+          text-align: center;
+        }
+
+        .welcome-sub {
+          font-size: 15px;
+          color: #57606a;
+          text-align: center;
+          max-width: 480px;
+          line-height: 1.6;
+          margin: 0 0 28px;
+        }
+
+        .welcome-input-wrap { width: 100%; margin-bottom: 18px; }
+
+        /* Action pills (GitHub Light style) */
+        .action-pills {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .action-pill {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          border-radius: 9999px;
+          font-size: 13.5px;
+          color: #24292f;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.12s ease-in-out;
+          white-space: nowrap;
+        }
+
+        .action-pill:hover {
+          border-color: #8c959f;
+          background: #eaecef;
+          color: #24292f;
+        }
+
+        /* Messages area */
+        .messages-area {
+          flex: 1;
+          overflow-y: auto;
+          background: #ffffff;
+        }
+
+        .messages-area::-webkit-scrollbar { width: 4px; }
+        .messages-area::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 2px; }
+
+        .messages-inner {
+          max-width: 720px;
+          margin: 0 auto;
+          padding: 28px 20px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        /* Message rows */
+        .msg-row { display: flex; align-items: flex-start; gap: 12px; }
+        .msg-row.user { flex-direction: row-reverse; }
+
+        .ai-avatar {
+          width: 30px;
+          height: 30px;
+          flex-shrink: 0;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          color: #24292f;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 700;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .bubble {
+          max-width: 75%;
+          padding: 12px 16px;
+          border-radius: 16px;
+          font-size: 14.5px;
+          line-height: 1.6;
+        }
+
+        .bubble.user {
+          background: #0969da;
+          color: white;
+          border-bottom-right-radius: 4px;
+        }
+
+        .bubble.assistant {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          color: #24292f;
+          border-bottom-left-radius: 4px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .loading-bubble {
+          display: flex;
+          gap: 5px;
+          align-items: center;
+          padding: 14px 18px;
+        }
+
+        .dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #d0d7de;
+          animation: dotAnim 1.2s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotAnim {
+          0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+          40% { transform: scale(1.15); opacity: 1; background: #0969da; }
+        }
+
+        /* Error */
+        .error-bar {
+          max-width: 720px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 8px 20px;
+          background: rgba(207,34,46,0.06);
+          border-top: 1px solid rgba(207,34,46,0.2);
+          font-size: 13px;
+          color: #cf222e;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-shrink: 0;
+        }
+
+        .error-bar button { border: none; background: none; color: #cf222e; cursor: pointer; font-size: 16px; }
+
+        /* Input wrapper in chat mode */
+        .chat-input-wrap {
+          flex-shrink: 0;
+          padding: 12px 20px 20px;
+          max-width: 720px;
+          width: 100%;
+          margin: 0 auto;
+          align-self: center;
+          box-sizing: border-box;
+        }
+
+        /* ── Shared input card (GitHub Light Theme) ── */
+        :global(.input-card) {
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 14px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          overflow: visible;
+          transition: border-color 0.12s, box-shadow 0.12s;
+        }
+
+        :global(.input-card:focus-within) {
+          border-color: #0969da;
+          box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+        }
+
+        :global(.file-bar) {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 14px;
+          background: #f6f8fa;
+          border-bottom: 1px solid #d0d7de;
+          font-size: 12.5px;
+          color: #24292f;
+          border-radius: 14px 14px 0 0;
+        }
+
+        :global(.file-preview-name-clickable) {
+          cursor: pointer;
+          color: #0969da;
+          font-weight: 500;
+        }
+
+        :global(.file-preview-name-clickable:hover) {
+          text-decoration: underline;
+        }
+
+        :global(.file-bar button) { border: none; background: none; color: #cf222e; cursor: pointer; font-weight: bold; }
+
+        :global(.chat-textarea) {
+          display: block;
+          width: 100%;
+          min-height: 28px;
+          max-height: 180px;
+          padding: 14px 16px 6px;
+          border: none;
+          outline: none;
+          resize: none;
+          font-size: 15px;
+          font-family: inherit;
+          color: #24292f;
+          background: transparent;
+          box-sizing: border-box;
+          line-height: 1.6;
+          overflow-y: auto;
+        }
+
+        :global(.chat-textarea::placeholder) { color: #57606a; }
+
+        :global(.input-toolbar) {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 10px 10px;
+          gap: 8px;
+        }
+
+        :global(.toolbar-left) {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        :global(.toolbar-right) {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          position: relative;
+        }
+
+        :global(.toolbar-icon-btn) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          background: none;
+          color: #57606a;
+          cursor: pointer;
+          padding: 6px;
+          border-radius: 7px;
+          transition: color 0.12s, background-color 0.12s;
+        }
+
+        :global(.toolbar-icon-btn:hover:not(:disabled)) { color: #24292f; background-color: #f6f8fa; }
+        :global(.toolbar-icon-btn:disabled) { opacity: 0.3; cursor: not-allowed; }
+
+        /* Scope/Client Button */
+        :global(.scope-pill-container) { position: relative; }
+
+        :global(.context-btn) {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px dashed #d0d7de;
+          background: #f6f8fa;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 12.5px;
+          font-weight: 500;
+          color: #24292f;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+
+        :global(.context-btn:hover) {
+          background-color: #eaecef;
+          color: #24292f;
+          border-color: #8c959f;
+        }
+
+        :global(.context-btn.selected) {
+          border: 1px solid #d0d7de;
+          background: #eaecef;
+          color: #24292f;
+        }
+
+        /* Scope popover (GitHub Style) */
+        :global(.scope-popover) {
+          position: absolute;
+          bottom: calc(100% + 8px);
+          right: 0;
+          width: 240px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          z-index: 200;
+        }
+
+        :global(.sp-search) { padding: 8px; border-bottom: 1px solid #d0d7de; }
+
+        :global(.sp-input) {
+          width: 100%;
+          padding: 6px 10px;
+          border-radius: 6px;
+          border: 1px solid #d0d7de;
+          font-size: 12.5px;
+          outline: none;
+          font-family: inherit;
+          color: #24292f;
+          background: #ffffff;
+          box-sizing: border-box;
+        }
+
+        :global(.sp-input:focus) {
+          border-color: #0969da;
+          box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
+        }
+
+        :global(.sp-options) { max-height: 200px; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 2px; }
+        :global(.sp-options::-webkit-scrollbar) { width: 3px; }
+        :global(.sp-options::-webkit-scrollbar-thumb) { background: #d0d7de; border-radius: 2px; }
+
+        :global(.sp-item) {
+          width: 100%;
+          padding: 7px 12px;
+          border: none;
+          background: transparent;
+          border-radius: 6px;
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
+          font-size: 13px;
+          color: #24292f;
+          transition: background 0.1s, color 0.1s;
+        }
+
+        :global(.sp-item:hover) { background: #f6f8fa; }
+        :global(.sp-item.active) { background: #0969da; color: #ffffff; font-weight: 600; }
+
+        :global(.sp-divider) { font-size: 10px; font-weight: 600; color: #57606a; text-transform: uppercase; padding: 5px 12px 3px; letter-spacing: 0.4px; }
+
+        /* Reset Button */
+        :global(.reset-btn) {
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-size: 12.5px;
+          color: #57606a;
+          font-weight: 500;
+          padding: 6px 8px;
+          font-family: inherit;
+          transition: color 0.12s;
+        }
+
+        :global(.reset-btn:hover) { color: #cf222e; }
+
+        /* Send button (GitHub Green Theme) */
+        :global(.send-btn) {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border: none;
+          background: #eaecef;
+          color: #8c959f;
+          cursor: not-allowed;
+          transition: all 0.12s ease-in-out;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+
+        :global(.send-btn.active) {
+          background: #2da44e;
+          color: #ffffff;
+          cursor: pointer;
+          box-shadow: 0 1px 0 rgba(27,31,36,0.1);
+        }
+
+        :global(.send-btn.active:hover) { background: #2c974b; transform: scale(1.04); }
+
+        /* ── File Preview Modal overlay ── */
+        .preview-modal-overlay {
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(27, 31, 36, 0.4);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(1px);
+        }
+
+        .preview-modal-container {
+          background: #ffffff;
+          border-radius: 12px;
+          border: 1px solid #d0d7de;
+          box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+          width: 80%;
+          max-width: 800px;
+          height: 80%;
+          max-height: 600px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: modalAppear 0.15s ease-out;
+        }
+
+        @keyframes modalAppear {
+          from { opacity: 0; transform: scale(0.97); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        .preview-modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 18px;
+          border-bottom: 1px solid #d0d7de;
+          background: #f6f8fa;
+        }
+
+        .preview-modal-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #24292f;
+        }
+
+        .preview-modal-close {
+          background: none;
+          border: none;
+          font-size: 18px;
+          cursor: pointer;
+          color: #57606a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 6px;
+        }
+
+        .preview-modal-close:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: #cf222e;
+        }
+
+        .preview-modal-body {
+          flex: 1;
+          overflow: hidden;
+          padding: 16px;
+          background: #f6f8fa;
+        }
+
+        .preview-iframe {
+          width: 100%;
+          height: 100%;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          background: #ffffff;
+        }
+
+        .preview-text-block {
+          white-space: pre-wrap;
+          word-break: break-word;
+          font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+          font-size: 13px;
+          color: #24292f;
+          background: #ffffff;
+          padding: 16px;
+          border-radius: 6px;
+          border: 1px solid #d0d7de;
+          overflow: auto;
+          margin: 0;
+          height: 100%;
+          box-sizing: border-box;
+        }
+      `}</style>
+    </>
   );
 }

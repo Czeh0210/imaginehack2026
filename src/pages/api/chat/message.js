@@ -24,6 +24,10 @@
  * }
  */
 
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { parseDocument } from '@/lib/docParser.js';
 import { runRAG } from '@/lib/ragPipeline.js';
 import { getSession, appendToSession, createSession } from '@/lib/sessionStore.js';
 
@@ -36,9 +40,10 @@ export default async function handler(req, res) {
     message,
     sessionId,
     clientId,
-    proposalText,
+    proposalText: initialProposalText,
     topK = 5,
     threshold = 0.3,
+    file,
   } = req.body ?? {};
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -46,6 +51,26 @@ export default async function handler(req, res) {
   }
 
   try {
+    let proposalText = initialProposalText;
+
+    // ── Parse uploaded file if present ─────────────────────────────────────
+    if (file && file.data) {
+      const tempDir = os.tmpdir();
+      const tempFilename = `upload_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const tempFilePath = path.join(tempDir, tempFilename);
+      fs.writeFileSync(tempFilePath, Buffer.from(file.data, 'base64'));
+      try {
+        proposalText = await parseDocument(tempFilePath, file.mimeType, file.name);
+      } catch (err) {
+        console.error('[chat/message] Error parsing uploaded file:', err);
+        throw new Error(`Failed to parse file: ${err.message}`);
+      } finally {
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch {}
+      }
+    }
+
     // ── Load or create session ─────────────────────────────────────────────
     let sid = sessionId;
     let sessionMessages = [];

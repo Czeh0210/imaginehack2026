@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { Paperclip, Clock, Maximize2 } from "lucide-react";
 import { CLIENTS } from "@/lib/mockData";
 
 const clientIdToRepoId = {
@@ -19,26 +20,24 @@ function renderMarkdown(text) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#f1f5f9;padding:8px;border-radius:6px;font-size:12px;overflow-x:auto;color:#0f172a;margin:6px 0;"><code>${code.trim()}</code></pre>`)
-    .replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:2px 4px;border-radius:4px;font-size:12px;color:#c97c3a;">$1</code>')
+    .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#f0f2f4;padding:8px;border-radius:6px;font-size:12px;overflow-x:auto;color:#24292f;margin:6px 0;border:1px solid #d0d7de;"><code>${code.trim()}</code></pre>`)
+    .replace(/`([^`]+)`/g, '<code style="background:#eaecef;padding:2px 4px;border-radius:4px;font-size:12px;color:#c97c3a;">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/^### (.+)$/gm, '<h3 style="font-size:13px;margin:8px 0 4px;font-weight:600;color:#111;">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 style="font-size:14px;margin:10px 0 6px;font-weight:600;color:#111;">$1</h2>')
-    .replace(/^# (.+)$/gm, '<h1 style="font-size:15px;margin:12px 0 8px;font-weight:700;color:#111;">$1</h1>')
-    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:14px;font-size:13px;">$1</li>')
-    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:14px;font-size:13px;">$1</li>')
+    .replace(/^### (.+)$/gm, '<h3 style="font-size:13px;margin:8px 0 4px;font-weight:600;color:#24292f;">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="font-size:14px;margin:10px 0 6px;font-weight:600;color:#24292f;">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="font-size:15px;margin:12px 0 8px;font-weight:700;color:#1c2128;">$1</h1>')
+    .replace(/^\d+\. (.+)$/gm, '<li style="margin-left:14px;font-size:13px;color:#24292f;">$1</li>')
+    .replace(/^[-*] (.+)$/gm, '<li style="margin-left:14px;font-size:13px;color:#24292f;">$1</li>')
     .replace(/\n\n/g, "</p><p>")
     .replace(/\n/g, "<br/>");
-  return `<p style="margin:0 0 8px;">${html}</p>`;
+  return `<p style="margin:0 0 8px;color:#24292f;">${html}</p>`;
 }
 
 export default function GlobalChatWidget() {
   const router = useRouter();
 
-  // Do not show widget on the full chatbot workspace page
-  if (router.pathname === "/chatbot") return null;
-
+  // All hooks must be called unconditionally before any early return
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState("");
   const [sessionId, setSessionId] = useState(null);
@@ -58,6 +57,9 @@ export default function GlobalChatWidget() {
   const [searchScope, setSearchScope] = useState("global"); // "client" or "global"
   const [showContextList, setShowContextList] = useState(false);
   const [contextSearchQuery, setContextSearchQuery] = useState("");
+
+  // History sidebar toggle — hidden by default
+  const [showHistory, setShowHistory] = useState(false);
 
   // Size states (anchored bottom-right, resizable top-left)
   const COMPACT_W = 400;
@@ -186,6 +188,29 @@ export default function GlobalChatWidget() {
     if (isOpen) fetchSessions();
   }, [isOpen]);
 
+  // Auto-open and restore session when navigating back from /chatbot
+  useEffect(() => {
+    if (!router.isReady) return;
+    if (router.query.openChat !== "1") return;
+
+    setIsOpen(true);
+
+    const sid = router.query.sessionId;
+    const cid = router.query.clientId;
+    if (cid) setSelectedClientId(cid);
+    if (sid) {
+      setSessionId(sid);
+      setActiveSessionId(sid);
+      fetch(`/api/chat/session?sessionId=${sid}`)
+        .then((r) => r.json())
+        .then((d) => { if (d.session) setMessages(d.session.messages || []); })
+        .catch(() => {});
+    }
+
+    // Strip the helper params from the URL cleanly
+    router.replace(router.pathname, undefined, { shallow: true });
+  }, [router.isReady, router.query.openChat]);
+
   // Adjust textarea height inside widget
   const adjustTextarea = useCallback(() => {
     const ta = textareaRef.current;
@@ -209,7 +234,7 @@ export default function GlobalChatWidget() {
       // Pinned bottom position: window.innerHeight - bottomOffset
       // New Width = window.innerWidth - mouseX - rightOffset
       // New Height = window.innerHeight - mouseY - bottomOffset
-      
+
       const minW = 300;
       const maxW = window.innerWidth * 0.9;
       const minH = 380;
@@ -398,23 +423,31 @@ export default function GlobalChatWidget() {
     }
   };
 
+  const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
+
+  // Widget is hidden on the dedicated chatbot workspace page
+  if (router.pathname === "/chatbot") return null;
+
   return (
     <>
-      {/* 💬 FLOATING TOGGLE BUTTON */}
+      {/* Pulsing ring behind the button */}
+      <span className="chat-bubble-pulse" aria-hidden="true" />
+
+      {/* FLOATING TOGGLE BUTTON */}
       <button
         className={`floating-chat-bubble ${isOpen ? "chat-open" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
-        title="Open ImagineHack 2026"
-        aria-label="Toggle ImagineHack 2026"
+        title="Open IntelliBot"
+        aria-label="Toggle IntelliBot"
       >
         {isOpen ? (
-          <span className="close-bubble-icon">×</span>
+          <span className="close-bubble-icon">✕</span>
         ) : (
           <span className="chat-bubble-icon">✦</span>
         )}
       </button>
 
-      {/* 💻 RESIZABLE CHATBOX WIDGET */}
+      {/* RESIZABLE CHATBOX WIDGET */}
       {isOpen && (
         <div
           className="widget-chatbox-container"
@@ -425,22 +458,28 @@ export default function GlobalChatWidget() {
           <div className="resize-handle handle-top" onMouseDown={(e) => startResize("top", e)} />
           <div className="resize-handle handle-corner" onMouseDown={(e) => startResize("both", e)} />
 
-          {/* Header */}
+          {/* Header — always shows ImagineHack 2026 */}
           <header className="widget-header" onDoubleClick={() => { setWidth(COMPACT_W); setHeight(COMPACT_H); }}>
             <div className="widget-header-title">
               <span className="header-icon">✦</span>
-              <span className="header-title">
-                {selectedClientId && CLIENTS.find((c) => c.id === selectedClientId)
-                  ? CLIENTS.find((c) => c.id === selectedClientId).name
-                  : "ImagineHack 2026"}
-              </span>
+              <span className="header-title">IntelliBot</span>
+              <span className="header-online-dot" title="Online" />
             </div>
 
             <div className="widget-header-actions">
+              {/* History sidebar toggle */}
+              <button
+                className={`header-action-btn ${showHistory ? "header-action-btn--active" : ""}`}
+                onClick={() => setShowHistory((v) => !v)}
+                title={showHistory ? "Hide history" : "Show history"}
+              >
+                <Clock size={14} />
+              </button>
+
               {/* Collapse to default size — only visible when resized larger */}
               {(width > COMPACT_W || height > COMPACT_H) && (
                 <button
-                  className="collapse-size-btn"
+                  className="header-action-btn"
                   onClick={() => { setWidth(COMPACT_W); setHeight(COMPACT_H); }}
                   title="Collapse to default size"
                 >
@@ -450,144 +489,79 @@ export default function GlobalChatWidget() {
               {/* Expand to full workspace */}
               <Link
                 href={`/chatbot?clientId=${selectedClientId || ""}${sessionId ? `&sessionId=${sessionId}` : ""}`}
-                className="expand-page-link"
-                title="Expand to dedicated workspace"
+                className="header-action-btn header-maximize-btn"
+                title="Open full workspace"
               >
-                ↗
+                <Maximize2 size={13} />
               </Link>
-              <button className="minimize-btn" onClick={() => setIsOpen(false)} title="Minimize">
-                ×
+              <button className="header-close-btn" onClick={() => setIsOpen(false)} title="Minimize">
+                ✕
               </button>
             </div>
           </header>
 
-          {/* Context Selector Popover */}
-          <div className="widget-selector-bar" ref={contextSelectorRef}>
-            {(() => {
-              const activeClient = CLIENTS.find((c) => c.id === selectedClientId);
-              return (
-                <div className="widget-context-container">
-                  <button
-                    className="widget-context-trigger"
-                    onClick={() => setShowContextList(!showContextList)}
-                  >
-                    <span className="trigger-icon">{activeClient ? "👤" : "🌐"}</span>
-                    <span className="trigger-text">
-                      {activeClient ? activeClient.name : "Global"}
-                    </span>
-                    <span className="trigger-chevron">▾</span>
-                  </button>
+          {/* Main Content Area — history view XOR chat view */}
+          <div className="widget-main-content">
 
-                  {showContextList && (
-                    <div className="widget-context-popover">
-                      <div className="widget-popover-search">
-                        <input
-                          type="text"
-                          placeholder="Search..."
-                          value={contextSearchQuery}
-                          onChange={(e) => setContextSearchQuery(e.target.value)}
-                          className="widget-popover-search-input"
-                          autoFocus
-                        />
+            {/* ── HISTORY VIEW (full panel) ── */}
+            {showHistory ? (
+              <div className="widget-history-full">
+                <div className="widget-sidebar-header">
+                  <span className="widget-sidebar-title">HISTORY</span>
+                  <button
+                    className="widget-sidebar-new-btn"
+                    onClick={() => { createNewSession(); setShowHistory(false); }}
+                  >
+                    + New chat
+                  </button>
+                </div>
+                <div className="widget-sidebar-list">
+                  {sessions.length === 0 ? (
+                    <div className="widget-sidebar-empty">No sessions yet.<br/>Start a conversation to save history.</div>
+                  ) : (
+                    [...sessions].reverse().map(s => (
+                      <div
+                        key={s.id}
+                        className={`widget-sidebar-item ${activeSessionId === s.id ? "active" : ""}`}
+                        onClick={() => { selectSession(s.id); setShowHistory(false); }}
+                      >
+                        <div className="widget-sidebar-item-title">
+                          {s.messages?.[0]?.content?.slice(0, 30) || "Empty chat"}
+                        </div>
+                        <div className="widget-sidebar-item-meta">
+                          <span>{s.messageCount || 0} msgs</span>
+                          <span>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ""}</span>
+                        </div>
                       </div>
-                      
-                      <div className="widget-popover-options">
-                        <button
-                          className={`widget-popover-option-item ${!selectedClientId ? "active" : ""}`}
-                          onClick={() => {
-                            setSelectedClientId("");
-                            setSearchScope("global");
-                            setShowContextList(false);
-                            setContextSearchQuery("");
-                            clearChat();
-                          }}
-                        >
-                          🌐 Global Search (Cross-client)
-                        </button>
-                        
-                        <div className="widget-popover-divider">Clients</div>
-                        
-                        {CLIENTS.filter(c =>
-                          c.name.toLowerCase().includes(contextSearchQuery.toLowerCase())
-                        ).map(c => (
-                          <button
-                            key={c.id}
-                            className={`widget-popover-option-item ${selectedClientId === c.id ? "active" : ""}`}
-                            onClick={() => {
-                              setSelectedClientId(c.id);
-                              setSearchScope("client");
-                              setShowContextList(false);
-                              setContextSearchQuery("");
-                              clearChat();
-                            }}
-                          >
-                            👤 {c.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    ))
                   )}
                 </div>
-              );
-            })()}
-
-            {messages.length > 0 && (
-              <button className="widget-clear-btn" onClick={clearChat} title="Reset chat">
-                🗑 Reset
-              </button>
-            )}
-          </div>
-
-          {/* Main Content Area */}
-          <div className="widget-main-content">
-            {/* Session Sidebar */}
-            <div className="widget-sidebar">
-              <div className="widget-sidebar-header">
-                <span className="widget-sidebar-title">History</span>
-                <button className="widget-sidebar-new-btn" onClick={createNewSession}>
-                  + New
-                </button>
               </div>
-              <div className="widget-sidebar-list">
-                {sessions.length === 0 ? (
-                  <div className="widget-sidebar-empty">No sessions yet</div>
-                ) : (
-                  [...sessions].reverse().map(s => (
-                    <div
-                      key={s.id}
-                      className={`widget-sidebar-item ${activeSessionId === s.id ? "active" : ""}`}
-                      onClick={() => selectSession(s.id)}
-                    >
-                      <div className="widget-sidebar-item-title">
-                        {s.messages?.[0]?.content?.slice(0, 22) || "Empty chat"}
-                      </div>
-                      <div className="widget-sidebar-item-meta">
-                        <span>{s.messageCount || 0} msgs</span>
-                        <span>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ""}</span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+            ) : (
 
-            {/* Chat Column */}
+            /* ── CHAT VIEW (full panel) ── */
             <div className="widget-chat-column">
               {/* Messages Area */}
               <div className="widget-body">
                 {messages.length === 0 ? (
                   <div className="widget-welcome">
                     <span className="welcome-icon">✦</span>
-                    <h5>ImagineHack 2026</h5>
-                    <p>
+                    <h5 className="welcome-heading">IntelliBot</h5>
+                    <p className="welcome-subtitle">
                       Search embedded client memories, check risk goals, or upload a proposal to analyze against client records.
                     </p>
                     <div className="widget-pills">
                       <button className="widget-pill" onClick={() => setInput("What are their retirement concerns?")}>
-                        👵 Retirement concerns?
+                        Retirement concerns?
                       </button>
-                      <button className="widget-pill" onClick={() => setInput("Summarize passive income streams")}>
-                        📈 Passive income?
+                      <button className="widget-pill" onClick={() => setInput("Summarise passive income streams")}>
+                        Summarise passive income
+                      </button>
+                      <button className="widget-pill" onClick={() => setInput("Which clients have pending policy reviews?")}>
+                        Pending policy reviews
+                      </button>
+                      <button className="widget-pill" onClick={() => setInput("Which clients have high financial risk exposure?")}>
+                        High risk clients
                       </button>
                     </div>
                   </div>
@@ -600,26 +574,26 @@ export default function GlobalChatWidget() {
                       >
                         <div className="widget-msg-bubble">
                           {msg.file && (
-                            <div style={{ fontSize: "11px", background: "rgba(0,0,0,0.05)", padding: "4px 8px", borderRadius: "4px", marginBottom: "4px" }}>
+                            <div style={{ fontSize: "11px", background: "rgba(255,255,255,0.25)", padding: "4px 8px", borderRadius: "4px", marginBottom: "4px", color: "rgba(255,255,255,0.85)" }}>
                               📄 {msg.file.name}
                             </div>
                           )}
                           {msg.systemNotice && (
-                            <div style={{ fontSize: "11px", background: "#f0fdf4", color: "#16a34a", padding: "4px 8px", borderRadius: "4px", marginBottom: "6px", fontWeight: 500 }}>
+                            <div style={{ fontSize: "11px", background: "rgba(22,163,74,0.1)", color: "#16a34a", padding: "4px 8px", borderRadius: "4px", marginBottom: "6px", fontWeight: 500, border: "1px solid rgba(22,163,74,0.25)" }}>
                               💾 {msg.systemNotice}
                             </div>
                           )}
-                          
+
                           {msg.role === "assistant" ? (
                             <>
                               <div
                                 className="widget-markdown-content"
                                 dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                               />
-                              
+
                               {/* Collapsible sources list */}
                               {msg.sources && msg.sources.length > 0 && (
-                                <details style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
+                                <details style={{ marginTop: "8px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "6px" }}>
                                   <summary style={{ fontSize: "11px", color: "#c97c3a", cursor: "pointer", fontWeight: "600", outline: "none" }}>
                                     🔍 {msg.sources.length} matching sources
                                   </summary>
@@ -636,12 +610,12 @@ export default function GlobalChatWidget() {
                                           rel="noopener noreferrer"
                                           style={{ textDecoration: "none", color: "inherit", display: "block" }}
                                         >
-                                          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#64748b" }}>
+                                          <div style={{ background: "#f6f8fa", border: "1px solid #d0d7de", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#57606a" }}>
                                               <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
                                               <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
                                             </div>
-                                            <div style={{ fontStyle: "italic", color: "#64748b", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
+                                            <div style={{ fontStyle: "italic", color: "#57606a", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
                                             <div style={{ fontSize: "9px", color: "#c97c3a", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
                                           </div>
                                         </a>
@@ -650,11 +624,11 @@ export default function GlobalChatWidget() {
                                   </div>
                                 </details>
                               )}
-                              
+
                               {/* Relevance Ranking */}
                               {msg.relevantClients && msg.relevantClients.length > 0 && (
-                                <div style={{ marginTop: "8px", borderTop: "1px dashed #e2e8f0", paddingTop: "6px" }}>
-                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#64748b", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
+                                <div style={{ marginTop: "8px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "6px" }}>
+                                  <span style={{ fontSize: "11px", fontWeight: "600", color: "#57606a", display: "block", marginBottom: "4px" }}>👥 Matching Clients (Click to view Repo):</span>
                                   {msg.relevantClients.map((rc, rIdx) => {
                                     const repoSlug = clientIdToRepoId[rc.clientId] || "005511_LimWeiMing";
                                     const linkUrl = `/client/${repoSlug}`;
@@ -667,12 +641,12 @@ export default function GlobalChatWidget() {
                                         style={{ textDecoration: "none", color: "inherit", display: "block" }}
                                       >
                                         <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", marginBottom: "4px", cursor: "pointer", padding: "4px", borderRadius: "4px" }}>
-                                          <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550 }}>{rc.clientName}</span>
-                                          <div style={{ flex: 1, height: "4px", background: "#e2e8f0", borderRadius: "2px", overflow: "hidden" }}>
+                                          <span style={{ width: "90px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 550, color: "#24292f" }}>{rc.clientName}</span>
+                                          <div style={{ flex: 1, height: "4px", background: "#e5e7eb", borderRadius: "2px", overflow: "hidden" }}>
                                             <div style={{ height: "100%", background: "#c97c3a", width: `${rc.maxScore * 100}%` }} />
                                           </div>
-                                          <span style={{ width: "24px", textAlign: "right" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
-                                          <span style={{ color: "#94a3b8", fontSize: "10px" }}>↗</span>
+                                          <span style={{ width: "24px", textAlign: "right", color: "#57606a" }}>{(rc.maxScore * 100).toFixed(0)}%</span>
+                                          <span style={{ color: "#57606a", fontSize: "10px" }}>↗</span>
                                         </div>
                                       </a>
                                     );
@@ -681,7 +655,7 @@ export default function GlobalChatWidget() {
                               )}
                             </>
                           ) : (
-                            <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{msg.content}</p>
+                            <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "white" }}>{msg.content}</p>
                           )}
                         </div>
                       </div>
@@ -704,117 +678,217 @@ export default function GlobalChatWidget() {
               {error && (
                 <div className="widget-error-banner">
                   <span>⚠️ {error}</span>
-                  <button onClick={() => setError(null)}>×</button>
+                  <button onClick={() => setError(null)}>✕</button>
                 </div>
               )}
 
               {/* Footer Input */}
               <div className="widget-input-area">
+                {/* File preview bar */}
                 {filePreview && (
-                  <div style={{ padding: "4px 8px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: "6px", fontSize: "11px", marginBottom: "4px" }}>
+                  <div style={{ padding: "4px 8px", background: "rgba(0,0,0,0.03)", border: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: "6px", fontSize: "11px", marginBottom: "6px", color: "#57606a" }}>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "200px" }}>📄 {filePreview.name}</span>
-                    <button style={{ border: "none", background: "none", color: "#ef4444", cursor: "pointer", fontWeight: "bold" }} onClick={() => { setUploadedFile(null); setFilePreview(null); }}>×</button>
+                    <button style={{ border: "none", background: "none", color: "#cf222e", cursor: "pointer", fontWeight: "bold" }} onClick={() => { setUploadedFile(null); setFilePreview(null); }}>✕</button>
                   </div>
                 )}
+
+                {/* Textarea */}
+                <textarea
+                  ref={textareaRef}
+                  className="widget-textarea"
+                  rows={1}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask anything about clients…"
+                  disabled={isLoading}
+                />
+
+                {/* Bottom toolbar row */}
                 <div className="widget-input-row">
-                  <button
-                    className="widget-act-btn"
-                    title={selectedClientId ? "Upload proposal PDF" : "Select client context first"}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isLoading || !selectedClientId}
-                  >
-                    📎
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.txt"
-                    style={{ display: "none" }}
-                    onChange={(e) => handleFileUpload(e.target.files[0])}
-                  />
-                  <textarea
-                    ref={textareaRef}
-                    className="widget-textarea"
-                    rows={1}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask anything about clients…"
-                    disabled={isLoading}
-                  />
-                  <button
-                    className={`widget-send-btn ${input.trim() || uploadedFile ? "active" : ""}`}
-                    disabled={(!input.trim() && !uploadedFile) || isLoading}
-                    onClick={() => sendMessage()}
-                  >
-                    ➤
-                  </button>
+                  {/* Left: scope pill + reset */}
+                  <div className="widget-input-left" ref={contextSelectorRef}>
+                    <div className="scope-pill-container">
+                      <button
+                        className="scope-pill"
+                        onClick={() => setShowContextList(!showContextList)}
+                      >
+                        <span className="scope-pill-icon">{activeClient ? "👤" : "🌐"}</span>
+                        <span className="scope-pill-text">
+                          {activeClient
+                            ? activeClient.name.length > 12
+                              ? activeClient.name.slice(0, 12) + "…"
+                              : activeClient.name
+                            : "Global"}
+                        </span>
+                        <span className="scope-pill-chevron">▾</span>
+                      </button>
+
+                      {showContextList && (
+                        <div className="scope-popover">
+                          <div className="scope-popover-search">
+                            <input
+                              type="text"
+                              placeholder="Search..."
+                              value={contextSearchQuery}
+                              onChange={(e) => setContextSearchQuery(e.target.value)}
+                              className="scope-popover-input"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="scope-popover-options">
+                            <button
+                              className={`scope-popover-item ${!selectedClientId ? "active" : ""}`}
+                              onClick={() => {
+                                setSelectedClientId("");
+                                setSearchScope("global");
+                                setShowContextList(false);
+                                setContextSearchQuery("");
+                                clearChat();
+                              }}
+                            >
+                              🌐 Global Search (Cross-client)
+                            </button>
+                            <div className="scope-popover-divider">Clients</div>
+                            {CLIENTS.filter(c =>
+                              c.name.toLowerCase().includes(contextSearchQuery.toLowerCase())
+                            ).map(c => (
+                              <button
+                                key={c.id}
+                                className={`scope-popover-item ${selectedClientId === c.id ? "active" : ""}`}
+                                onClick={() => {
+                                  setSelectedClientId(c.id);
+                                  setSearchScope("client");
+                                  setShowContextList(false);
+                                  setContextSearchQuery("");
+                                  clearChat();
+                                }}
+                              >
+                                👤 {c.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {messages.length > 0 && (
+                      <button className="reset-btn" onClick={clearChat} title="Reset chat">
+                        Reset
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Right: paperclip + send */}
+                  <div className="widget-input-right">
+                    <button
+                      className="widget-act-btn"
+                      title={selectedClientId ? "Upload proposal PDF" : "Select client context first"}
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading || !selectedClientId}
+                    >
+                      <Paperclip size={15} />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.txt"
+                      style={{ display: "none" }}
+                      onChange={(e) => handleFileUpload(e.target.files[0])}
+                    />
+                    <button
+                      className={`widget-send-btn ${input.trim() || uploadedFile ? "active" : ""}`}
+                      disabled={(!input.trim() && !uploadedFile) || isLoading}
+                      onClick={() => sendMessage()}
+                    >
+                      ➤
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+            )} {/* end showHistory ternary */}
           </div>
         </div>
       )}
 
       {/* Styled JSX (scoped to widget) */}
       <style jsx>{`
-        /* Bubble Button */
+        /* Pulse ring — GitHub dark subtle */
+        .chat-bubble-pulse {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: rgba(36, 41, 47, 0.18);
+          z-index: 999;
+          pointer-events: none;
+          animation: githubPulse 2.6s ease-out infinite;
+        }
+
+        @keyframes githubPulse {
+          0% { transform: scale(1); opacity: 0.7; }
+          70% { transform: scale(1.6); opacity: 0; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        /* Floating button — GitHub dark */
         .floating-chat-bubble {
           position: fixed;
           bottom: 24px;
           right: 24px;
           width: 56px;
           height: 56px;
-          border-radius: var(--radius-full);
-          background: var(--color-surface);
-          border: var(--border-thin) solid var(--color-border);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-          color: var(--color-on-surface);
+          border-radius: 50%;
+          background: #24292f;
+          border: none;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+          color: white;
           cursor: pointer;
           z-index: 1000;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s ease;
+          transition: transform 0.2s ease, background 0.15s ease, box-shadow 0.2s ease;
         }
 
         .floating-chat-bubble:hover {
-          transform: scale(1.05) translateY(-2px);
-          background: var(--color-primary);
-          border-color: var(--color-primary-hover);
+          transform: scale(1.07) translateY(-2px);
+          background: #32383f;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         .floating-chat-bubble.chat-open {
-          background: var(--color-surface);
-          border-color: var(--color-border);
-          transform: rotate(90deg);
+          background: #32383f;
         }
 
         .chat-bubble-icon {
-          font-size: 24px;
+          font-size: 20px;
           line-height: 1;
         }
 
         .close-bubble-icon {
-          font-size: 28px;
+          font-size: 16px;
           line-height: 1;
         }
 
-        /* Resizable Chat Container */
+        /* Widget container — light mode */
         .widget-chatbox-container {
           position: fixed;
           bottom: 84px;
           right: 24px;
           background: #ffffff;
-          border: var(--border-thin) solid var(--color-border);
-          box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
-          border-radius: var(--radius-lg);
+          border: 1px solid #d0d7de;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+          border-radius: 12px;
           display: flex;
           flex-direction: column;
           z-index: 1000;
           overflow: hidden;
-          font-family: var(--font-sans);
-          animation: slideUpWidget 0.2s ease-out;
+          font-family: var(--font-sans, system-ui, sans-serif);
+          animation: slideUpWidget 0.22s ease-out;
         }
 
         @keyframes slideUpWidget {
@@ -822,251 +896,103 @@ export default function GlobalChatWidget() {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Resizers */
-        .resize-handle {
-          position: absolute;
-          z-index: 1001;
-        }
+        /* Resize handles */
+        .resize-handle { position: absolute; z-index: 1001; }
+        .handle-left { left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+        .handle-top { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+        .handle-corner { top: 0; left: 0; width: 12px; height: 12px; cursor: nwse-resize; }
 
-        .handle-left {
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 6px;
-          cursor: ew-resize;
-        }
-
-        .handle-top {
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 6px;
-          cursor: ns-resize;
-        }
-
-        .handle-corner {
-          top: 0;
-          left: 0;
-          width: 12px;
-          height: 12px;
-          cursor: nwse-resize;
-        }
-
-        /* Header */
+        /* Header — GitHub light */
         .widget-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 14px;
-          background: var(--color-surface);
-          border-bottom: var(--border-thin) solid var(--color-border);
+          padding: 10px 14px;
+          background: #f6f8fa;
+          border-bottom: 1px solid #d0d7de;
           cursor: move;
+          flex-shrink: 0;
         }
 
-        .widget-header-title {
-          display: flex;
-          align-items: center;
-          gap: 6px;
+        .widget-header-title { display: flex; align-items: center; gap: 7px; }
+
+        .header-icon { color: #c97c3a; font-weight: 700; font-size: 14px; }
+
+        .header-title { font-size: 13px; font-weight: 600; color: #24292f; }
+
+        .header-online-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #1a7f37;
+          box-shadow: 0 0 4px rgba(26, 127, 55, 0.5);
+          animation: onlinePulse 2s ease-in-out infinite;
+          flex-shrink: 0;
         }
 
-        .header-icon {
-          color: var(--color-primary);
-          font-weight: 700;
+        @keyframes onlinePulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.55; }
         }
 
-        .header-title {
-          font-size: var(--text-sm);
-          font-weight: 600;
-          color: var(--color-on-surface);
-        }
+        .widget-header-actions { display: flex; align-items: center; gap: 2px; }
 
-        .widget-header-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .expand-page-link {
-          text-decoration: none;
-          color: var(--color-muted);
+        .header-action-btn {
+          background: none;
+          border: none;
+          color: #57606a;
           font-size: 14px;
-          transition: color 0.15s;
-          padding: 2px;
-        }
-
-        .expand-page-link:hover {
-          color: var(--color-tertiary);
-        }
-
-        .collapse-size-btn {
-          background: none;
-          border: none;
-          color: var(--color-muted);
-          font-size: 16px;
           cursor: pointer;
           line-height: 1;
-          padding: 2px 4px;
-          transition: color 0.15s;
-          border-radius: 4px;
-        }
-
-        .collapse-size-btn:hover {
-          color: var(--color-primary);
-          background: rgba(0, 0, 0, 0.05);
-        }
-
-        .minimize-btn {
-          background: none;
-          border: none;
-          color: var(--color-muted);
-          font-size: 20px;
-          cursor: pointer;
-          line-height: 1;
-          padding: 2px;
-          transition: color 0.15s;
-        }
-
-        .minimize-btn:hover {
-          color: var(--color-error);
-        }
-
-        /* Selector Bar */
-        .widget-selector-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 8px;
-          padding: 8px 12px;
-          background: rgba(0, 0, 0, 0.02);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .widget-context-container {
-          position: relative;
-          z-index: 100;
-        }
-
-        .widget-context-trigger {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 4px 10px;
+          padding: 5px 6px;
+          transition: color 0.15s, background 0.15s;
           border-radius: 6px;
-          border: 1px solid #e2e8f0;
-          background: #ffffff;
-          cursor: pointer;
-          font-family: inherit;
-          font-size: 11px;
-          font-weight: 600;
-          color: #475569;
-          transition: all 0.15s ease;
-          outline: none;
-        }
-
-        .widget-context-trigger:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
-        }
-
-        .widget-context-trigger .trigger-icon {
-          font-size: 11px;
-        }
-
-        .widget-context-trigger .trigger-chevron {
-          font-size: 8.5px;
-          color: #94a3b8;
-        }
-
-        .widget-context-popover {
-          position: absolute;
-          top: calc(100% + 4px);
-          left: 0;
-          width: 200px;
-          background: #ffffff;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-          overflow: hidden;
           display: flex;
-          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-decoration: none;
         }
 
-        .widget-popover-search {
-          padding: 6px;
-          border-bottom: 1px solid #f1f5f9;
+        .header-action-btn:hover {
+          color: #24292f;
+          background: rgba(0, 0, 0, 0.06);
         }
 
-        .widget-popover-search-input {
-          width: 100%;
-          padding: 4px 8px;
-          border-radius: 4px;
-          border: 1px solid #e2e8f0;
-          font-size: 11px;
-          outline: none;
-          font-family: inherit;
-        }
-
-        .widget-popover-options {
-          max-height: 180px;
-          overflow-y: auto;
-          padding: 3px;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .widget-popover-option-item {
-          width: 100%;
-          padding: 5px 8px;
-          border: none;
-          background: transparent;
-          border-radius: 4px;
-          cursor: pointer;
-          text-align: left;
-          font-family: inherit;
-          font-size: 11px;
-          color: #475569;
-          transition: all 0.12s ease;
-        }
-
-        .widget-popover-option-item:hover {
-          background: #f1f5f9;
-          color: #1e293b;
-        }
-
-        .widget-popover-option-item.active {
-          background: rgba(201, 124, 58, 0.08);
+        .header-action-btn--active {
           color: #c97c3a;
-          font-weight: 600;
+          background: rgba(201, 124, 58, 0.1);
         }
 
-        .widget-popover-divider {
-          font-size: 9px;
-          font-weight: 700;
-          color: #94a3b8;
-          text-transform: uppercase;
-          padding: 4px 8px 2px;
-          letter-spacing: 0.3px;
+        .header-action-btn--active:hover {
+          color: #c97c3a;
+          background: rgba(201, 124, 58, 0.16);
         }
 
-        .widget-clear-btn {
-          border: none;
+        .header-maximize-btn {
+          color: #57606a;
+        }
+
+        .header-close-btn {
           background: none;
+          border: none;
+          color: #57606a;
+          font-size: 14px;
           cursor: pointer;
-          font-size: 11.5px;
-          color: #ef4444;
-          font-weight: 500;
-          padding: 4px 8px;
+          line-height: 1;
+          padding: 5px 6px;
           border-radius: 6px;
-          background: rgba(239, 68, 68, 0.08);
-          transition: all 0.15s;
+          transition: color 0.15s, background 0.15s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .widget-clear-btn:hover {
-          background: rgba(239, 68, 68, 0.15);
+        .header-close-btn:hover {
+          color: #cf222e;
+          background: rgba(207, 34, 46, 0.08);
         }
 
-        /* Main Content Layout (sidebar + chat column) */
+        /* Main layout */
         .widget-main-content {
           display: flex;
           flex-direction: row;
@@ -1075,12 +1001,21 @@ export default function GlobalChatWidget() {
           overflow: hidden;
         }
 
-        /* Sidebar */
+        /* Full-width history panel */
+        .widget-history-full {
+          width: 100%;
+          flex: 1;
+          background: #f6f8fa;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
         .widget-sidebar {
           width: 190px;
           flex-shrink: 0;
-          border-right: 1px solid #e2e8f0;
-          background: rgba(0,0,0,0.01);
+          border-right: 1px solid #d0d7de;
+          background: #f6f8fa;
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -1090,102 +1025,107 @@ export default function GlobalChatWidget() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 8px 10px;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 8px 12px;
+          border-bottom: 1px solid #d0d7de;
+          flex-shrink: 0;
         }
 
         .widget-sidebar-title {
-          font-size: 11px;
-          font-weight: 700;
-          color: #64748b;
+          font-size: 10px;
+          font-weight: 600;
+          color: #57606a;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.5px;
         }
 
         .widget-sidebar-new-btn {
-          border: none;
-          background: #c97c3a;
-          color: white;
-          border-radius: 4px;
-          padding: 2px 8px;
-          font-size: 10px;
-          font-weight: 600;
+          border: 1px solid #d0d7de;
+          background: #ffffff;
+          color: #24292f;
+          border-radius: 6px;
+          padding: 3px 10px;
+          font-size: 11px;
+          font-weight: 500;
           cursor: pointer;
           font-family: inherit;
-          transition: background 0.15s;
+          transition: background 0.12s, border-color 0.12s;
         }
 
         .widget-sidebar-new-btn:hover {
-          background: #b06d32;
+          background: #f3f4f6;
+          border-color: #c97c3a;
+          color: #c97c3a;
         }
 
         .widget-sidebar-list {
           flex: 1;
           overflow-y: auto;
-          padding: 4px;
+          padding: 6px;
         }
+
+        .widget-sidebar-list::-webkit-scrollbar { width: 3px; }
+        .widget-sidebar-list::-webkit-scrollbar-track { background: transparent; }
+        .widget-sidebar-list::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 2px; }
 
         .widget-sidebar-empty {
           text-align: center;
-          padding: 16px 8px;
+          padding: 20px 10px;
           font-size: 11px;
-          color: #94a3b8;
+          color: #57606a;
+          line-height: 1.5;
         }
 
         .widget-sidebar-item {
-          padding: 6px 8px;
-          border-radius: 4px;
+          padding: 7px 10px;
+          border-radius: 6px;
           cursor: pointer;
           margin-bottom: 2px;
           transition: background 0.12s;
-          border: 1px solid transparent;
+          border-left: 2px solid transparent;
         }
 
-        .widget-sidebar-item:hover {
-          background: #f1f5f9;
-        }
+        .widget-sidebar-item:hover { background: #eaecef; }
 
         .widget-sidebar-item.active {
           background: rgba(201, 124, 58, 0.08);
-          border-color: rgba(201, 124, 58, 0.25);
+          border-left-color: #c97c3a;
         }
 
         .widget-sidebar-item-title {
-          font-size: 11px;
-          font-weight: 600;
-          color: #334155;
+          font-size: 11.5px;
+          font-weight: 500;
+          color: #24292f;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          margin-bottom: 1px;
+          margin-bottom: 2px;
         }
 
-        .widget-sidebar-item.active .widget-sidebar-item-title {
-          color: #c97c3a;
-        }
+        .widget-sidebar-item.active .widget-sidebar-item-title { color: #c97c3a; }
 
         .widget-sidebar-item-meta {
           font-size: 9px;
-          color: #94a3b8;
+          color: #57606a;
           display: flex;
           justify-content: space-between;
         }
 
-        /* Chat Column (right panel) */
+        /* Chat column */
         .widget-chat-column {
           display: flex;
           flex-direction: column;
           flex: 1;
           min-width: 0;
+          background: #ffffff;
         }
 
-        /* Body & Welcome */
-        .widget-body {
-          flex: 1;
-          overflow-y: auto;
-          padding: 12px;
-        }
+        /* Body */
+        .widget-body { flex: 1; overflow-y: auto; padding: 12px; }
+        .widget-body::-webkit-scrollbar { width: 3px; }
+        .widget-body::-webkit-scrollbar-track { background: transparent; }
+        .widget-body::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 2px; }
 
+        /* Welcome screen */
         .widget-welcome {
           display: flex;
           flex-direction: column;
@@ -1198,39 +1138,34 @@ export default function GlobalChatWidget() {
         }
 
         .welcome-icon {
-          font-size: 32px;
+          font-size: 30px;
           color: #c97c3a;
           margin-bottom: 10px;
         }
 
-        .widget-welcome h5 {
+        .welcome-heading {
           margin: 0 0 6px;
-          font-size: 14px;
-          font-weight: 600;
-          color: #1e293b;
+          font-size: 15px;
+          font-weight: 700;
+          color: #24292f;
         }
 
-        .widget-welcome p {
-          margin: 0 0 16px;
+        .welcome-subtitle {
+          margin: 0 0 18px;
           font-size: 12px;
-          color: #64748b;
-          line-height: 1.5;
+          color: #57606a;
+          line-height: 1.55;
         }
 
-        .widget-pills {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          width: 100%;
-        }
+        .widget-pills { display: flex; flex-direction: column; gap: 5px; width: 100%; }
 
         .widget-pill {
-          background: white;
-          border: 1px solid #e2e8f0;
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
           border-radius: 8px;
-          padding: 8px 10px;
+          padding: 8px 12px;
           font-size: 11.5px;
-          color: #475569;
+          color: #57606a;
           cursor: pointer;
           text-align: left;
           font-family: inherit;
@@ -1238,61 +1173,47 @@ export default function GlobalChatWidget() {
         }
 
         .widget-pill:hover {
-          background: #f8fafc;
-          border-color: #c97c3a55;
+          background: rgba(201, 124, 58, 0.06);
+          border-color: rgba(201, 124, 58, 0.4);
           color: #c97c3a;
         }
 
-        /* Message List */
-        .widget-msg-list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .widget-msg-wrapper {
-          display: flex;
-          width: 100%;
-        }
-
-        .widget-msg-wrapper.user {
-          justify-content: flex-end;
-        }
+        /* Messages */
+        .widget-msg-list { display: flex; flex-direction: column; gap: 10px; }
+        .widget-msg-wrapper { display: flex; width: 100%; }
+        .widget-msg-wrapper.user { justify-content: flex-end; }
 
         .widget-msg-bubble {
           max-width: 85%;
-          padding: 10px 12px;
+          padding: 9px 12px;
           border-radius: 12px;
           font-size: 12.5px;
-          line-height: 1.5;
+          line-height: 1.55;
         }
 
         .user .widget-msg-bubble {
-          background: var(--bgColor-accent-emphasis);
-          color: var(--fgColor-onEmphasis);
-          border-bottom-right-radius: var(--borderRadius-small);
+          background: #c97c3a;
+          color: white;
+          border-bottom-right-radius: 4px;
         }
 
         .assistant .widget-msg-bubble {
-          background: var(--bgColor-muted);
-          border: var(--borderWidth-thin) solid var(--borderColor-default);
-          color: var(--fgColor-default);
-          border-bottom-left-radius: var(--borderRadius-small);
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          color: #24292f;
+          border-bottom-left-radius: 4px;
         }
 
-        /* Loading */
-        .widget-msg-bubble.loading {
-          display: flex;
-          gap: 4px;
-          align-items: center;
-          padding: 10px 14px;
-        }
+        .widget-markdown-content { color: #24292f; }
+
+        /* Loading dots */
+        .widget-msg-bubble.loading { display: flex; gap: 5px; align-items: center; padding: 12px 16px; }
 
         .widget-msg-bubble.loading .dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #cbd5e1;
+          background: #d0d7de;
           animation: loadingDot 1.2s infinite ease-in-out;
         }
 
@@ -1304,92 +1225,245 @@ export default function GlobalChatWidget() {
           40% { transform: scale(1.2); opacity: 1; background: #c97c3a; }
         }
 
-        /* Error */
+        /* Error banner */
         .widget-error-banner {
-          background: #fef2f2;
-          border-top: 1px solid #fca5a5;
+          background: rgba(207, 34, 46, 0.06);
+          border-top: 1px solid rgba(207, 34, 46, 0.2);
           padding: 8px 12px;
           font-size: 11.5px;
-          color: #ef4444;
+          color: #cf222e;
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-shrink: 0;
         }
 
         .widget-error-banner button {
           border: none;
           background: none;
-          color: #ef4444;
+          color: #cf222e;
           font-size: 14px;
           cursor: pointer;
+          padding: 0 2px;
+          opacity: 0.7;
+          transition: opacity 0.15s;
         }
 
-        /* Input Area */
+        .widget-error-banner button:hover { opacity: 1; }
+
+        /* Input area */
         .widget-input-area {
           padding: 10px 12px;
-          background: rgba(255, 255, 255, 0.9);
-          border-top: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .widget-input-row {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .widget-act-btn {
-          border: none;
-          background: none;
-          font-size: 16px;
-          cursor: pointer;
-          opacity: 0.5;
-          transition: opacity 0.15s;
-          padding: 4px;
-        }
-
-        .widget-act-btn:hover:not(:disabled) {
-          opacity: 1;
-        }
-
-        .widget-act-btn:disabled {
-          opacity: 0.2;
-          cursor: not-allowed;
+          background: #f6f8fa;
+          border-top: 1px solid #d0d7de;
+          flex-shrink: 0;
         }
 
         .widget-textarea {
-          flex: 1;
-          border: 1px solid #e2e8f0;
+          width: 100%;
+          border: 1px solid #d0d7de;
           border-radius: 8px;
-          padding: 6px 10px;
+          padding: 8px 12px;
           font-size: 12.5px;
           font-family: inherit;
           resize: none;
           outline: none;
           max-height: 120px;
-          background: white;
-          color: #334155;
+          background: #ffffff;
+          color: #24292f;
+          box-sizing: border-box;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          margin-bottom: 8px;
         }
+
+        .widget-textarea::placeholder { color: #8c959f; }
 
         .widget-textarea:focus {
-          border-color: #c97c3a99;
+          border-color: #c97c3a;
+          box-shadow: 0 0 0 3px rgba(201, 124, 58, 0.12);
         }
 
-        .widget-send-btn {
+        /* Bottom toolbar */
+        .widget-input-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+        }
+
+        .widget-input-left {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          position: relative;
+          z-index: 100;
+        }
+
+        .widget-input-right { display: flex; align-items: center; gap: 4px; }
+
+        /* Scope pill */
+        .scope-pill-container { position: relative; }
+
+        .scope-pill {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 9px;
+          border-radius: 20px;
+          border: 1px solid #d0d7de;
+          background: #ffffff;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 11px;
+          font-weight: 500;
+          color: #57606a;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+
+        .scope-pill:hover {
+          border-color: #c97c3a;
+          color: #c97c3a;
+          background: rgba(201, 124, 58, 0.06);
+        }
+
+        .scope-pill-icon { font-size: 11px; }
+        .scope-pill-text { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+        .scope-pill-chevron { font-size: 8px; color: #8c959f; }
+
+        /* Scope popover */
+        .scope-popover {
+          position: absolute;
+          bottom: calc(100% + 6px);
+          left: 0;
+          width: 210px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 10px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .scope-popover-search { padding: 6px; border-bottom: 1px solid #eaecef; }
+
+        .scope-popover-input {
+          width: 100%;
+          padding: 5px 8px;
+          border-radius: 6px;
+          border: 1px solid #d0d7de;
+          font-size: 11px;
+          outline: none;
+          font-family: inherit;
+          color: #24292f;
+          background: #ffffff;
+          box-sizing: border-box;
+        }
+
+        .scope-popover-options {
+          max-height: 180px;
+          overflow-y: auto;
+          padding: 4px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .scope-popover-item {
+          width: 100%;
+          padding: 6px 10px;
+          border: none;
+          background: transparent;
+          border-radius: 6px;
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
+          font-size: 11.5px;
+          color: #24292f;
+          transition: all 0.12s;
+        }
+
+        .scope-popover-item:hover { background: #f6f8fa; }
+
+        .scope-popover-item.active {
+          background: rgba(201, 124, 58, 0.08);
+          color: #c97c3a;
+          font-weight: 600;
+        }
+
+        .scope-popover-divider {
+          font-size: 9px;
+          font-weight: 600;
+          color: #57606a;
+          text-transform: uppercase;
+          padding: 5px 10px 2px;
+          letter-spacing: 0.4px;
+        }
+
+        /* Reset button */
+        .reset-btn {
+          border: 1px solid rgba(207, 34, 46, 0.3);
+          background: rgba(207, 34, 46, 0.06);
+          cursor: pointer;
+          font-size: 11px;
+          color: #cf222e;
+          font-weight: 500;
+          padding: 4px 9px;
+          border-radius: 20px;
+          font-family: inherit;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+
+        .reset-btn:hover {
+          background: rgba(207, 34, 46, 0.1);
+          border-color: rgba(207, 34, 46, 0.5);
+        }
+
+        /* Paperclip */
+        .widget-act-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           border: none;
           background: none;
-          font-size: 16px;
-          color: #cbd5e1;
+          color: #57606a;
           cursor: pointer;
-          transition: color 0.15s, transform 0.15s;
-          padding: 4px;
+          opacity: 0.8;
+          transition: opacity 0.15s, color 0.15s;
+          padding: 5px;
+          border-radius: 6px;
+        }
+
+        .widget-act-btn:hover:not(:disabled) { opacity: 1; color: #c97c3a; }
+        .widget-act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* Send button */
+        .widget-send-btn {
+          border: none;
+          background: #eaecef;
+          font-size: 14px;
+          color: #8c959f;
+          cursor: not-allowed;
+          transition: all 0.15s;
+          padding: 6px 10px;
+          border-radius: 8px;
+          line-height: 1;
+          opacity: 0.6;
         }
 
         .widget-send-btn.active {
-          color: #c97c3a;
+          background: #24292f;
+          color: white;
+          cursor: pointer;
+          opacity: 1;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
         }
 
         .widget-send-btn.active:hover {
-          transform: scale(1.1);
+          background: #32383f;
+          transform: scale(1.05);
         }
       `}</style>
     </>
