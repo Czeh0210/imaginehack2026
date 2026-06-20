@@ -22,7 +22,7 @@ function renderMarkdown(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:#f0f2f4;padding:8px;border-radius:6px;font-size:12px;overflow-x:auto;color:#24292f;margin:6px 0;border:1px solid #d0d7de;"><code>${code.trim()}</code></pre>`)
-    .replace(/`([^`]+)`/g, '<code style="background:#eaecef;padding:2px 4px;border-radius:4px;font-size:12px;color:#c97c3a;">$1</code>')
+    .replace(/`([^`]+)`/g, '<code style="background:#E4EBE6;padding:2px 4px;border-radius:4px;font-size:12px;color:#0FBF3E;">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/^### (.+)$/gm, '<h3 style="font-size:13px;margin:8px 0 4px;font-weight:600;color:#24292f;">$1</h3>')
@@ -595,7 +595,7 @@ export default function GlobalChatWidget() {
                               {/* Collapsible sources list */}
                               {msg.sources && msg.sources.length > 0 && (
                                 <details style={{ marginTop: "8px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "6px" }}>
-                                  <summary style={{ fontSize: "11px", color: "#c97c3a", cursor: "pointer", fontWeight: "600", outline: "none" }}>
+                                  <summary style={{ fontSize: "11px", color: "#0FBF3E", cursor: "pointer", fontWeight: "600", outline: "none" }}>
                                     🔍 {msg.sources.length} memory sources
                                   </summary>
                                   <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "6px" }}>
@@ -614,10 +614,10 @@ export default function GlobalChatWidget() {
                                           <div style={{ background: "#f6f8fa", border: "1px solid #d0d7de", padding: "6px", borderRadius: "6px", fontSize: "11px", cursor: "pointer" }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: "600", color: "#57606a" }}>
                                               <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
-                                              <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
+                                              <span style={{ color: "#0FBF3E" }}>{(s.score * 100).toFixed(0)}%</span>
                                             </div>
                                             <div style={{ fontStyle: "italic", color: "#57606a", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 80)}...&rdquo;</div>
-                                            <div style={{ fontSize: "9px", color: "#c97c3a", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
+                                            <div style={{ fontSize: "9px", color: "#0FBF3E", textAlign: "right", fontWeight: "600" }}>View Repo ({tabParam} tab) ↗</div>
                                           </div>
                                         </a>
                                       );
@@ -896,7 +896,7 @@ export default function GlobalChatWidget() {
 
         .widget-header-title { display: flex; align-items: center; gap: 7px; }
 
-        .header-icon { color: #c97c3a; font-weight: 700; font-size: 14px; }
+        .header-icon { color: #0FBF3E; font-weight: 700; font-size: 14px; }
 
         .header-title { font-size: 13px; font-weight: 600; color: #24292f; }
 
@@ -939,12 +939,12 @@ export default function GlobalChatWidget() {
         }
 
         .header-action-btn--active {
-          color: #c97c3a;
+          color: #0FBF3E;
           background: rgba(201, 124, 58, 0.1);
         }
 
         .header-action-btn--active:hover {
-          color: #c97c3a;
+          color: #0FBF3E;
           background: rgba(201, 124, 58, 0.16);
         }
 
@@ -1033,8 +1033,8 @@ export default function GlobalChatWidget() {
 
         .widget-sidebar-new-btn:hover {
           background: #f3f4f6;
-          border-color: #c97c3a;
-          color: #c97c3a;
+          border-color: #0FBF3E;
+          color: #0FBF3E;
         }
 
         .widget-sidebar-list {
@@ -1068,7 +1068,7 @@ export default function GlobalChatWidget() {
 
         .widget-sidebar-item.active {
           background: rgba(201, 124, 58, 0.08);
-          border-left-color: #c97c3a;
+          border-left-color: #0FBF3E;
         }
 
         .widget-sidebar-item-title {
@@ -1081,7 +1081,7 @@ export default function GlobalChatWidget() {
           margin-bottom: 2px;
         }
 
-        .widget-sidebar-item.active .widget-sidebar-item-title { color: #c97c3a; }
+        .widget-sidebar-item.active .widget-sidebar-item-title { color: #0FBF3E; }
 
         .widget-sidebar-item-meta {
           font-size: 9px;
@@ -1119,7 +1119,7 @@ export default function GlobalChatWidget() {
 
         .welcome-icon {
           font-size: 30px;
-          color: #c97c3a;
+          color: #0FBF3E;
           margin-bottom: 10px;
         }
 
@@ -1155,7 +1155,7 @@ export default function GlobalChatWidget() {
         .widget-pill:hover {
           background: rgba(201, 124, 58, 0.06);
           border-color: rgba(201, 124, 58, 0.4);
-          color: #c97c3a;
+          color: #0FBF3E;
         }
 
         /* Messages */
@@ -1172,7 +1172,7 @@ export default function GlobalChatWidget() {
         }
 
         .user .widget-msg-bubble {
-          background: #c97c3a;
+          background: #0FBF3E;
           color: white;
           border-bottom-right-radius: 4px;
         }
@@ -1202,7 +1202,7 @@ export default function GlobalChatWidget() {
 
         @keyframes loadingDot {
           0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-          40% { transform: scale(1.2); opacity: 1; background: #c97c3a; }
+          40% { transform: scale(1.2); opacity: 1; background: #0FBF3E; }
         }
 
         /* Error banner */
@@ -1259,7 +1259,7 @@ export default function GlobalChatWidget() {
         .widget-textarea::placeholder { color: #8c959f; }
 
         .widget-textarea:focus {
-          border-color: #c97c3a;
+          border-color: #0FBF3E;
           box-shadow: 0 0 0 3px rgba(201, 124, 58, 0.12);
         }
 
@@ -1302,8 +1302,8 @@ export default function GlobalChatWidget() {
         }
 
         .scope-pill:hover {
-          border-color: #c97c3a;
-          color: #c97c3a;
+          border-color: #0FBF3E;
+          color: #0FBF3E;
           background: rgba(201, 124, 58, 0.06);
         }
 
@@ -1368,7 +1368,7 @@ export default function GlobalChatWidget() {
 
         .scope-popover-item.active {
           background: rgba(201, 124, 58, 0.08);
-          color: #c97c3a;
+          color: #0FBF3E;
           font-weight: 600;
         }
 
@@ -1416,7 +1416,7 @@ export default function GlobalChatWidget() {
           border-radius: 6px;
         }
 
-        .widget-act-btn:hover:not(:disabled) { opacity: 1; color: #c97c3a; }
+        .widget-act-btn:hover:not(:disabled) { opacity: 1; color: #0FBF3E; }
         .widget-act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         /* Send button */

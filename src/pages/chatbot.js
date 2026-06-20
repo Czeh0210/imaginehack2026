@@ -522,7 +522,7 @@ export default function ChatbotPage() {
                           {/* Raw sources collapsible (keep for power users) */}
                           {msg.sources && msg.sources.length > 0 && (
                             <details style={{ marginTop: "10px", borderTop: "1px dashed rgba(0,0,0,0.1)", paddingTop: "8px" }}>
-                              <summary style={{ fontSize: "12px", color: "#c97c3a", cursor: "pointer", fontWeight: 600, outline: "none" }}>
+                              <summary style={{ fontSize: "12px", color: "#0FBF3E", cursor: "pointer", fontWeight: 600, outline: "none" }}>
                                 🔍 {msg.sources.length} matching memory sources
                               </summary>
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "8px" }}>
@@ -534,10 +534,10 @@ export default function ChatbotPage() {
                                       <div style={{ background: "#f6f8fa", border: "1px solid #d0d7de", padding: "8px 10px", borderRadius: "8px", fontSize: "12px" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px", fontWeight: 600, color: "#57606a" }}>
                                           <span>{s.clientName} ({s.sourceType?.replace("_", " ")})</span>
-                                          <span style={{ color: "#c97c3a" }}>{(s.score * 100).toFixed(0)}%</span>
+                                          <span style={{ color: "#0FBF3E" }}>{(s.score * 100).toFixed(0)}%</span>
                                         </div>
                                         <div style={{ fontStyle: "italic", color: "#57606a", marginBottom: "3px" }}>&ldquo;{s.content.slice(0, 100)}...&rdquo;</div>
-                                        <div style={{ fontSize: "10px", color: "#c97c3a", textAlign: "right", fontWeight: 600 }}>View Repo ({tabParam} tab) ↗</div>
+                                        <div style={{ fontSize: "10px", color: "#0FBF3E", textAlign: "right", fontWeight: 600 }}>View Repo ({tabParam} tab) ↗</div>
                                       </div>
                                     </a>
                                   );

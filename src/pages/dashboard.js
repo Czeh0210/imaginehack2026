@@ -481,6 +481,12 @@ function Feed({ activity }) {
   );
 }
 
+const TYPE_STYLES = {
+  ZOOM:        { bg: "#ddf4ff", text: "#0969da", border: "#b6e3ff", dot: "#0969da" },
+  "IN-PERSON": { bg: "#dafbe1", text: "#1a7f37", border: "#aceebb", dot: "#1a7f37" },
+  TEAMS:       { bg: "#fff8c5", text: "#9a6700", border: "#f0d800", dot: "#9a6700" },
+};
+
 function RightSidebar({ schedule }) {
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "short",
@@ -490,35 +496,69 @@ function RightSidebar({ schedule }) {
 
   return (
     <aside className="hidden lg:flex flex-col gap-6 w-[320px] shrink-0 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pl-4 text-sm">
-      {/* Today's Schedule */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-gray-900 font-semibold">Today&apos;s Schedule</h2>
-          <span className="text-gray-500 text-sm">{today}</span>
+      {/* Today's Schedule — vertical timeline */}
+      <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-gray-900 font-semibold text-base">Today&apos;s Schedule</h2>
+          <span className="text-gray-500 text-xs font-medium">{today}</span>
         </div>
-        <div className="flex flex-col gap-4 relative">
-          <div className="absolute left-[71px] top-2 bottom-2 w-0.5 bg-blue-100 z-0"></div>
 
-          {schedule.map((item, idx) => (
-            <div key={idx} className="flex gap-4 relative z-10">
-              <div className="w-[60px] text-right text-gray-500 font-medium pt-1">
-                {item.time}
-              </div>
-              <div className="flex-1 bg-blue-50 border border-blue-100 rounded-lg p-3 shadow-sm relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
-                <h3 className="text-gray-900 font-semibold mb-1 pl-2">{item.title}</h3>
-                <div className="flex items-center gap-1 text-gray-600 text-sm mb-2 pl-2">
-                  <User size={14} /> {item.client}
+        <div className="relative">
+          {/* Continuous vertical line */}
+          <div style={{ position: "absolute", left: "7px", top: "8px", bottom: "8px", width: "2px", background: "#e4ebe6", borderRadius: "2px" }} />
+
+          <div className="flex flex-col gap-5">
+            {schedule.map((item, idx) => {
+              const s = TYPE_STYLES[item.type] || TYPE_STYLES["ZOOM"];
+              return (
+                <div key={idx} style={{ display: "flex", gap: "14px", position: "relative" }}>
+                  {/* Dot */}
+                  <div style={{
+                    flexShrink: 0,
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    border: `2.5px solid ${s.dot}`,
+                    boxShadow: `0 0 0 3px ${s.bg}`,
+                    marginTop: "2px",
+                    zIndex: 1,
+                  }} />
+
+                  {/* Content */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: "11px", color: "#57606a", fontWeight: 500, marginBottom: "3px" }}>
+                      {item.time}
+                    </div>
+                    <div style={{ fontWeight: 600, color: "#1c2128", fontSize: "13.5px", marginBottom: "4px", lineHeight: 1.35 }}>
+                      {item.title}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#57606a", fontSize: "12px", marginBottom: "7px" }}>
+                      <User size={12} style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.client}</span>
+                    </div>
+                    <span style={{
+                      display: "inline-block",
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
+                      padding: "2px 9px",
+                      borderRadius: "20px",
+                      background: s.bg,
+                      color: s.text,
+                      border: `1px solid ${s.border}`,
+                    }}>
+                      {item.type}
+                    </span>
+                  </div>
                 </div>
-                <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                  {item.type}
-                </span>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
-        <button className="w-full mt-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-md px-4 py-2 text-sm font-medium transition-colors shadow-sm">
-          Open full calendar
+
+        <button className="w-full mt-5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-md px-4 py-2 text-sm font-medium transition-colors">
+          Open full calendar →
         </button>
       </div>
 
@@ -533,6 +573,7 @@ function RightSidebar({ schedule }) {
     </aside>
   );
 }
+
 
 export default function Dashboard() {
   const [repos, setRepos] = useState(TOP_REPOSITORIES);
