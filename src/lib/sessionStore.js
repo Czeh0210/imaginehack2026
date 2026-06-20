@@ -8,9 +8,34 @@
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 
-const SESSIONS_PATH = path.join(process.cwd(), 'data', 'sessions.json');
+let SESSIONS_PATH = path.join(process.cwd(), 'data', 'sessions.json');
+
+// Check if we are running in a read-only serverless environment
+const isServerless =
+  process.env.VERCEL ||
+  process.env.LAMBDA_TASK_ROOT ||
+  process.env.NETLIFY ||
+  (process.cwd() && process.cwd().startsWith('/var/task'));
+
+if (isServerless) {
+  SESSIONS_PATH = path.join(os.tmpdir(), 'sessions.json');
+} else {
+  // Try writing to the data directory, if it fails, fallback to temp directory
+  try {
+    const dir = path.dirname(SESSIONS_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const testFile = path.join(dir, '.test-write');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+  } catch {
+    SESSIONS_PATH = path.join(os.tmpdir(), 'sessions.json');
+  }
+}
 
 function loadSessions() {
   try {

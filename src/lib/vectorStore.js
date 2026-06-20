@@ -15,9 +15,35 @@
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 
-const STORE_PATH = path.join(process.cwd(), 'data', 'vectors.json');
+let STORE_PATH = path.join(process.cwd(), 'data', 'vectors.json');
+
+// Check if we are running in a read-only serverless environment
+const isServerless =
+  process.env.VERCEL ||
+  process.env.LAMBDA_TASK_ROOT ||
+  process.env.NETLIFY ||
+  (process.cwd() && process.cwd().startsWith('/var/task'));
+
+if (isServerless) {
+  STORE_PATH = path.join(os.tmpdir(), 'vectors.json');
+} else {
+  // Try writing to the data directory, if it fails, fallback to temp directory
+  try {
+    const dir = path.dirname(STORE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const testFile = path.join(dir, '.test-write');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+  } catch {
+    STORE_PATH = path.join(os.tmpdir(), 'vectors.json');
+  }
+}
+
 const USE_SUPABASE = process.env.VECTOR_STORE_MODE === 'supabase';
 
 // ── Cosine similarity ────────────────────────────────────────────────────────
