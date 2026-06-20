@@ -1,13 +1,106 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker } from "@react-google-maps/api";
 
 export default function ClientRepo() {
   const router = useRouter();
   const { id } = router.query;
   const displayId = id ? id.replace(/_/g, "/") : "Loading...";
   const [activeTab, setActiveTab] = useState("info");
+
+  // ── GOOGLE MAPS STATE ──
+  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const { isLoaded: mapsLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: ["places"],
+  });
+
+  // Selangor stops — real addresses in Selangor, Malaysia
+  const stops = [
+    {
+      id: 1,
+      label: "Stop 1",
+      name: "Ara Damansara Medical Centre",
+      address: "Jalan Lapangan Terbang Subang, Ara Damansara, 47820 Petaling Jaya, Selangor",
+      lat: 3.1132,
+      lng: 101.5744,
+      color: "#0969da",
+    },
+    {
+      id: 2,
+      label: "Stop 2",
+      name: "IOI City Mall",
+      address: "IOI Resort City, 62502 Putrajaya, Selangor",
+      lat: 2.9723,
+      lng: 101.7229,
+      color: "#1f883d",
+    },
+    {
+      id: 3,
+      label: "Stop 3",
+      name: "Shah Alam Convention Centre (SACC)",
+      address: "Persiaran Perbandaran, Seksyen 14, 40000 Shah Alam, Selangor",
+      lat: 3.0778,
+      lng: 101.5183,
+      color: "#9a3412",
+    },
+  ];
+
+  // Advisor starting point (Kuala Lumpur City Centre)
+  const advisorOrigin = {
+    name: "Advisor Office (KLCC)",
+    address: "Kuala Lumpur City Centre, 50088 Kuala Lumpur",
+    lat: 3.1578,
+    lng: 101.7123,
+  };
+
+  const [directionsResult, setDirectionsResult] = useState(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState("");
+  const [selectedStop, setSelectedStop] = useState(null);
+  const mapRef = useRef(null);
+
+  const onMapLoad = useCallback((map) => {
+    mapRef.current = map;
+  }, []);
+
+  const mapCenter = { lat: 3.0738, lng: 101.6010 };
+
+  const handleShowRoute = useCallback(() => {
+    if (!mapsLoaded) return;
+    setRouteLoading(true);
+    setRouteError("");
+    const directionsService = new window.google.maps.DirectionsService();
+    const waypoints = stops.slice(0, 2).map(s => ({
+      location: { lat: s.lat, lng: s.lng },
+      stopover: true,
+    }));
+    directionsService.route(
+      {
+        origin: { lat: advisorOrigin.lat, lng: advisorOrigin.lng },
+        destination: { lat: stops[2].lat, lng: stops[2].lng },
+        waypoints,
+        optimizeWaypoints: true,
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        setRouteLoading(false);
+        if (status === "OK") {
+          setDirectionsResult(result);
+        } else {
+          setRouteError(`Could not get directions: ${status}`);
+        }
+      }
+    );
+  }, [mapsLoaded]);
+
+  const handleStopClick = (stop) => {
+    setSelectedStop(stop);
+    handleShowRoute();
+  };
 
   // Mock data for partners
   const [partners, setPartners] = useState([
@@ -89,8 +182,17 @@ export default function ClientRepo() {
                 className={`tab-item ${activeTab === "photo" ? "active" : ""}`}
                 onClick={() => setActiveTab("photo")}
               >
-                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.75 2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h.94a.76.76 0 0 1 .03-.028 10.098 10.098 0 0 1 5.28-1.472 10.098 10.098 0 0 1 5.28 1.472.748.748 0 0 1 .03.028h.94a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25H1.75Zm12.5 11c-.538-.724-1.282-1.341-2.204-1.785a8.598 8.598 0 0 0-4.046-.965 8.598 8.598 0 0 0-4.046.965c-.922.444-1.666 1.061-2.204 1.785H1.75A1.75 1.75 0 0 1 0 13.25V2.75C0 1.784.784 1 1.75 1h12.5C15.216 1 16 1.784 16 2.75v10.5A1.75 1.75 0 0 1 14.25 15h-.002a2.228 2.228 0 0 0-.05-.043 11.59 11.59 0 0 0-6.198-1.707A11.59 11.59 0 0 0 1.802 14.96a2.25 2.25 0 0 0-.05.042H1.75v-1.5h12.5v1.5ZM5.75 7.5a1.75 1.75 0 1 1 0-3.5 1.75 1.75 0 0 1 0 3.5ZM7 5.75a1.25 1.25 0 1 0-2.5 0 1.25 1.25 0 0 0 2.5 0Z"></path></svg>
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M1.75 2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h.94a.76.76 0 0 1 .03-.028 10.098 10.098 0 0 1 5.28-1.472 10.098 10.098 0 0 1 5.28 1.472.748.748 0 0 1 .03.028h.94a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25H1.75Zm12.5 11c-.538-.724-1.282-1.341-2.204-1.785a8.598 8.598 0 0 0-4.046-.965 8.598 8.598 0 0 0-4.046.965c-.922.444-1.666 1.061-2.204 1.785H1.75A1.75 1.75 0 0 1 0 13.25V2.75C0 1.784.784 1 1.75 1h12.5C15.216 1 16 1.784 16 2.75v10.5A1.75 1.75 0 0 1 13.25 15h-.002a2.228 2.228 0 0 0-.05-.043 11.59 11.59 0 0 0-6.198-1.707A11.59 11.59 0 0 0 1.802 14.96a2.25 2.25 0 0 0-.05.042H1.75v-1.5h12.5v1.5ZM5.75 7.5a1.75 1.75 0 1 1 0-3.5 1.75 1.75 0 0 1 0 3.5ZM7 5.75a1.25 1.25 0 1 0-2.5 0 1.25 1.25 0 0 0 2.5 0Z"></path></svg>
                 Photo
+              </button>
+            </li>
+            <li>
+              <button 
+                className={`tab-item ${activeTab === "location" ? "active" : ""}`}
+                onClick={() => setActiveTab("location")}
+              >
+                <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" fill="currentColor"><path d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.16 4.69 9.38 5.06 9.87a.55.55 0 0 0 .88 0C8.81 14.88 13.5 8.66 13.5 5.5A5.53 5.53 0 0 0 8 0Zm0 8a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"></path></svg>
+                Location
               </button>
             </li>
           </ul>
@@ -198,6 +300,145 @@ export default function ClientRepo() {
                   No photos uploaded yet.
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 4: LOCATION */}
+          {activeTab === "location" && (
+            <div className="tab-pane location-tab">
+              <div className="location-header">
+                <div>
+                  <h2 className="location-title">Client Visit Locations</h2>
+                  <p className="location-subtitle">Click a stop to see the best driving route from your office (KLCC) through all stops.</p>
+                </div>
+              </div>
+
+              {/* Origin card */}
+              <div className="origin-card">
+                <div className="origin-icon">🏢</div>
+                <div className="origin-info">
+                  <span className="origin-label">Starting Point — Advisor Office</span>
+                  <span className="origin-address">{advisorOrigin.address}</span>
+                </div>
+              </div>
+
+              {/* Stop cards */}
+              <div className="stops-grid">
+                {stops.map((stop) => (
+                  <button
+                    key={stop.id}
+                    id={`stop-btn-${stop.id}`}
+                    className={`stop-card ${selectedStop?.id === stop.id ? "stop-card--active" : ""}`}
+                    onClick={() => handleStopClick(stop)}
+                    style={{ "--stop-color": stop.color }}
+                  >
+                    <div className="stop-badge" style={{ background: stop.color }}>
+                      {stop.label}
+                    </div>
+                    <div className="stop-body">
+                      <div className="stop-name">{stop.name}</div>
+                      <div className="stop-address">{stop.address}</div>
+                    </div>
+                    <div className="stop-cta">
+                      <svg height="14" viewBox="0 0 16 16" width="14" fill="currentColor"><path d="M8 0a5.53 5.53 0 0 0-5.5 5.5c0 3.16 4.69 9.38 5.06 9.87a.55.55 0 0 0 .88 0C8.81 14.88 13.5 8.66 13.5 5.5A5.53 5.53 0 0 0 8 0Zm0 8a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5Z"></path></svg>
+                      View Route
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Map section */}
+              <div className="map-wrapper">
+                {!mapsLoaded && (
+                  <div className="map-placeholder">
+                    <div className="map-spinner"></div>
+                    <p>Loading Google Maps…</p>
+                  </div>
+                )}
+                {mapsLoaded && !directionsResult && !routeLoading && (
+                  <div className="map-placeholder map-idle">
+                    <svg height="48" viewBox="0 0 24 24" width="48" fill="#d0d7de"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z"/></svg>
+                    <p>Click any stop above to display the route on the map</p>
+                  </div>
+                )}
+                {mapsLoaded && routeLoading && (
+                  <div className="map-placeholder">
+                    <div className="map-spinner"></div>
+                    <p>Calculating best route…</p>
+                  </div>
+                )}
+                {routeError && (
+                  <div className="map-placeholder map-error">
+                    <p>⚠️ {routeError}</p>
+                  </div>
+                )}
+                {mapsLoaded && directionsResult && (
+                  <GoogleMap
+                    mapContainerStyle={{ width: "100%", height: "480px", borderRadius: "0 0 6px 6px" }}
+                    center={mapCenter}
+                    zoom={11}
+                    onLoad={onMapLoad}
+                    options={{
+                      streetViewControl: false,
+                      mapTypeControl: false,
+                      fullscreenControl: true,
+                      styles: [
+                        { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+                      ],
+                    }}
+                  >
+                    {/* Origin marker */}
+                    <Marker
+                      position={{ lat: advisorOrigin.lat, lng: advisorOrigin.lng }}
+                      label={{ text: "🏢", fontSize: "20px" }}
+                      title={advisorOrigin.name}
+                    />
+                    {/* Stop markers */}
+                    {stops.map((stop) => (
+                      <Marker
+                        key={stop.id}
+                        position={{ lat: stop.lat, lng: stop.lng }}
+                        label={{ text: stop.label, color: "#fff", fontWeight: "bold", fontSize: "11px" }}
+                        title={stop.name}
+                        icon={{
+                          path: window.google.maps.SymbolPath.CIRCLE,
+                          scale: 18,
+                          fillColor: stop.color,
+                          fillOpacity: 1,
+                          strokeColor: "#fff",
+                          strokeWeight: 2,
+                        }}
+                      />
+                    ))}
+                    <DirectionsRenderer
+                      directions={directionsResult}
+                      options={{
+                        suppressMarkers: true,
+                        polylineOptions: { strokeColor: "#0969da", strokeWeight: 5, strokeOpacity: 0.85 },
+                      }}
+                    />
+                  </GoogleMap>
+                )}
+              </div>
+
+              {/* Route summary */}
+              {directionsResult && (
+                <div className="route-summary">
+                  <h4 className="summary-title">📍 Route Summary</h4>
+                  <div className="summary-legs">
+                    {directionsResult.routes[0].legs.map((leg, i) => (
+                      <div key={i} className="summary-leg">
+                        <div className="leg-index">{i + 1}</div>
+                        <div className="leg-info">
+                          <div className="leg-from">{leg.start_address}</div>
+                          <div className="leg-arrow">↓ {leg.distance.text} · {leg.duration.text}</div>
+                          <div className="leg-to">{leg.end_address}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -527,6 +768,204 @@ export default function ClientRepo() {
         }
         .file-upload-btn {
           display: inline-block;
+        }
+
+        /* ── LOCATION TAB ── */
+        .location-tab {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .location-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+        .location-title {
+          font-size: 18px;
+          font-weight: 700;
+          margin: 0 0 4px;
+          color: #1f2328;
+        }
+        .location-subtitle {
+          font-size: 13px;
+          color: #656d76;
+          margin: 0;
+        }
+
+        /* Origin card */
+        .origin-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #f0f6ff;
+          border: 1px solid #b6d4fe;
+          border-radius: 8px;
+          padding: 14px 18px;
+        }
+        .origin-icon {
+          font-size: 28px;
+          flex-shrink: 0;
+        }
+        .origin-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .origin-label {
+          font-size: 13px;
+          font-weight: 700;
+          color: #0550ae;
+        }
+        .origin-address {
+          font-size: 13px;
+          color: #444;
+        }
+
+        /* Stop cards grid */
+        .stops-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 14px;
+        }
+        .stop-card {
+          text-align: left;
+          background: #fff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          padding: 0;
+          cursor: pointer;
+          transition: box-shadow 0.18s, border-color 0.18s, transform 0.15s;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          border-left: 4px solid var(--stop-color, #0969da);
+        }
+        .stop-card:hover {
+          box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+          transform: translateY(-2px);
+          border-color: var(--stop-color, #0969da);
+        }
+        .stop-card--active {
+          box-shadow: 0 0 0 3px var(--stop-color, #0969da)40;
+          border-color: var(--stop-color, #0969da);
+        }
+        .stop-badge {
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 4px 12px;
+          display: inline-block;
+          width: fit-content;
+          border-radius: 0 0 8px 0;
+        }
+        .stop-body {
+          padding: 12px 14px 8px;
+          flex: 1;
+        }
+        .stop-name {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1f2328;
+          margin-bottom: 4px;
+        }
+        .stop-address {
+          font-size: 12px;
+          color: #656d76;
+          line-height: 1.5;
+        }
+        .stop-cta {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--stop-color, #0969da);
+          padding: 8px 14px 12px;
+        }
+
+        /* Map */
+        .map-wrapper {
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          overflow: hidden;
+          min-height: 220px;
+          background: #f6f8fa;
+        }
+        .map-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 220px;
+          gap: 16px;
+          color: #656d76;
+          font-size: 14px;
+        }
+        .map-placeholder p { margin: 0; }
+        .map-idle svg { opacity: 0.5; }
+        .map-error p { color: #d1242f; }
+        .map-spinner {
+          width: 36px;
+          height: 36px;
+          border: 3px solid #d0d7de;
+          border-top-color: #0969da;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Route summary */
+        .route-summary {
+          background: #f6f8fa;
+          border: 1px solid #d0d7de;
+          border-radius: 6px;
+          padding: 16px;
+        }
+        .summary-title {
+          font-size: 14px;
+          font-weight: 700;
+          margin: 0 0 14px;
+          color: #1f2328;
+        }
+        .summary-legs {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .summary-leg {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .leg-index {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #0969da;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        .leg-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          font-size: 13px;
+        }
+        .leg-from, .leg-to {
+          color: #1f2328;
+          font-weight: 500;
+        }
+        .leg-arrow {
+          color: #0969da;
+          font-size: 12px;
+          font-weight: 600;
         }
       `}</style>
     </div>
