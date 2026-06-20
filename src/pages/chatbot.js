@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { CLIENTS } from "@/lib/mockData";
 
 // Dynamically import PDF viewer (avoids SSR issues with pdfjs-dist)
 const PdfAnalysisViewer = dynamic(
@@ -152,13 +154,18 @@ function AnalysisCards({ analysis }) {
 }
 
 const SUGGESTIONS = [
-  { icon: "✍️", label: "Write", prompt: "Help me write a professional email about " },
-  { icon: "📚", label: "Learn", prompt: "Explain to me in simple terms: " },
-  { icon: "💻", label: "Code", prompt: "Write a function in JavaScript that " },
-  { icon: "🌟", label: "Ideas", prompt: "Give me creative ideas for " },
+  { icon: "👵", label: "Retirement", prompt: "What are this client's retirement concerns and goals?" },
+  { icon: "📈", label: "Passive Income", prompt: "Summarize passive income options for this client" },
+  { icon: "🎓", label: "Education Fund", prompt: "How should we plan for the children's education costs?" },
+  { icon: "🛡️", label: "Risk Tolerance", prompt: "Explain this client's behavioral patterns and risk tolerance" },
 ];
 
 export default function Chatbot() {
+  const router = useRouter();
+  const { clientId } = router.query;
+
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -172,6 +179,13 @@ export default function Chatbot() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Sync URL query clientId
+  useEffect(() => {
+    if (router.isReady && clientId) {
+      setSelectedClientId(clientId);
+    }
+  }, [router.isReady, clientId]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -199,6 +213,11 @@ export default function Chatbot() {
   const handleFileUpload = async (file) => {
     if (!file) return;
 
+    if (!selectedClientId) {
+      setError("Please select a specific client context from the top dropdown before uploading a proposal document.");
+      return;
+    }
+
     const allowedTypes = [
       "application/pdf",
       "text/plain",
@@ -220,7 +239,13 @@ export default function Chatbot() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target.result.split(",")[1];
-      setUploadedFile({ name: file.name, mimeType: file.type, base64, size: file.size });
+      setUploadedFile({
+        name: file.name,
+        mimeType: file.type,
+        base64,
+        size: file.size,
+        rawFile: file
+      });
       setFilePreview({
         name: file.name,
         type: file.type,
@@ -242,63 +267,96 @@ export default function Chatbot() {
   const sendMessage = async (messageText = input) => {
     if ((!messageText.trim() && !uploadedFile) || isLoading) return;
 
-    // Capture PDF data before clearing state
-    const capturedPdfBase64 =
-      uploadedFile?.mimeType === "application/pdf" ? uploadedFile.base64 : null;
-
-    const userMessage = {
-      id: Date.now(),
-      role: "user",
-      content: messageText.trim(),
-      file: filePreview,
-    };
-
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput("");
-    setUploadedFile(null);
-    setFilePreview(null);
     setIsLoading(true);
     setError(null);
 
-    try {
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+    const currentInput = messageText.trim();
+    const currentFile = uploadedFile;
+    const currentFilePreview = filePreview;
 
-      const response = await fetch("/api/chat", {
+    // Reset inputs immediately
+    setInput("");
+    setUploadedFile(null);
+    setFilePreview(null);
+
+    let systemNoticeText = null;
+
+    try {
+      // 1. Process document upload first if there is a PDF/TXT
+      if (currentFile && (currentFile.mimeType === "application/pdf" || currentFile.mimeType === "text/plain")) {
+        if (!selectedClientId) {
+          throw new Error("A client must be selected to upload and index proposal documents.");
+        }
+
+        const selectedClient = CLIENTS.find(c => c.id === selectedClientId);
+        const clientName = selectedClient ? selectedClient.name : "Lim Wei Ming";
+
+        const formData = new FormData();
+        formData.append("file", currentFile.rawFile);
+        formData.append("clientId", selectedClientId);
+        formData.append("clientName", clientName);
+        formData.append("store", "true");
+        formData.append("sourceRef", currentFile.name);
+
+        const uploadRes = await fetch("/api/upload/document", {
+          method: "POST",
+          body: formData,
+        });
+
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) {
+          throw new Error(uploadData.error || "Failed to process and index document.");
+        }
+
+        systemNoticeText = `Successfully processed and indexed "${currentFile.name}" into ${clientName}'s repository. Created ${uploadData.chunkCount} memory blocks using vector embeddings.`;
+      }
+
+      // 2. Setup user message
+      const userMessage = {
+        id: Date.now(),
+        role: "user",
+        content: currentInput,
+        file: currentFilePreview,
+        systemNotice: systemNoticeText,
+      };
+
+      const newMessages = [...messages, userMessage];
+      setMessages(newMessages);
+
+      // 3. Make RAG pipeline chat request
+      const response = await fetch("/api/chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: messageText.trim(),
-          history,
-          fileData: uploadedFile
-            ? { base64: uploadedFile.base64, mimeType: uploadedFile.mimeType }
-            : null,
+          message: currentInput || (systemNoticeText ? `Summarize the uploaded file ${currentFile.name}` : ""),
+          sessionId: sessionId || undefined,
+          clientId: selectedClientId || undefined,
+          topK: 5,
+          threshold: 0.25,
         }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to get response");
+        throw new Error(data.error || "Failed to retrieve RAG response.");
       }
 
-      if (data.model) setActiveModel(data.model);
+      if (data.sessionId) setSessionId(data.sessionId);
+
+      // Add assistant response
       setMessages([
         ...newMessages,
         {
           id: Date.now() + 1,
           role: "assistant",
           content: data.reply,
-          isAnalysis: data.isAnalysis ?? false,
-          pdfBase64: data.isAnalysis ? capturedPdfBase64 : null,
+          sources: data.sources,
+          relevantClients: data.relevantClients,
+          usage: data.usage,
         },
       ]);
     } catch (err) {
       setError(err.message);
-      setMessages(newMessages); // revert to without assistant message
     } finally {
       setIsLoading(false);
     }
@@ -316,6 +374,7 @@ export default function Chatbot() {
     setError(null);
     setUploadedFile(null);
     setFilePreview(null);
+    setSessionId(null);
   };
 
   const hasMessages = messages.length > 0;
@@ -367,9 +426,31 @@ export default function Chatbot() {
         <main className="chat-main">
           {/* Top bar */}
           <header className="chat-header">
-            <div className="header-model-selector">
-              <span className="model-name">{activeModel}</span>
-              <span className="model-chevron">▾</span>
+            <div className="header-left">
+              <div className="header-model-selector">
+                <span className="model-name">{activeModel}</span>
+                <span className="model-chevron">▾</span>
+              </div>
+              
+              <div className="header-client-selector">
+                <span className="client-selector-label">Context:</span>
+                <select
+                  id="client-context-select"
+                  className="client-select"
+                  value={selectedClientId}
+                  onChange={(e) => {
+                    setSelectedClientId(e.target.value);
+                    clearChat();
+                  }}
+                >
+                  <option value="">🌐 Global (All Clients)</option>
+                  {CLIENTS.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      👤 {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             {hasMessages && (
               <button id="clear-chat-btn" className="clear-btn" onClick={clearChat} title="Clear conversation">
@@ -431,35 +512,91 @@ export default function Chatbot() {
                           )}
                         </div>
                       )}
+                      
                       {msg.content && (
                         msg.role === "assistant" ? (
-                          (() => {
-                            if (msg.isAnalysis) {
-                              const analysis = parseAnalysis(msg.content);
-                              if (analysis) {
-                                // PDF analysis — render the PDF viewer
-                                if (msg.pdfBase64) {
-                                  return (
-                                    <PdfAnalysisViewer
-                                      pdfBase64={msg.pdfBase64}
-                                      analysis={analysis}
-                                    />
-                                  );
+                          <>
+                            {msg.isAnalysis ? (
+                              (() => {
+                                const analysis = parseAnalysis(msg.content);
+                                if (analysis) {
+                                  if (msg.pdfBase64) {
+                                    return (
+                                      <PdfAnalysisViewer
+                                        pdfBase64={msg.pdfBase64}
+                                        analysis={analysis}
+                                      />
+                                    );
+                                  }
+                                  return <AnalysisCards analysis={analysis} />;
                                 }
-                                // No PDF (e.g. image/text) — fall back to cards
-                                return <AnalysisCards analysis={analysis} />;
-                              }
-                            }
-                            // Regular chat — render markdown
-                            return (
+                                return null;
+                              })()
+                            ) : (
                               <div
                                 className="markdown-content"
                                 dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                               />
-                            );
-                          })()
+                            )}
+
+                            {/* Retrieved memories (sources) list */}
+                            {msg.sources && msg.sources.length > 0 && (
+                              <div className="sources-wrapper">
+                                <details className="sources-details">
+                                  <summary className="sources-summary">
+                                    🔍 Retrieved {msg.sources.length} matching memories
+                                  </summary>
+                                  <div className="sources-list">
+                                    {msg.sources.map((src, sIdx) => (
+                                      <div key={sIdx} className="source-item">
+                                        <div className="source-item-header">
+                                          <div className="source-item-meta">
+                                            <span className="source-badge-client">{src.clientName}</span>
+                                            <span className="source-badge-type">{src.sourceType?.replace("_", " ")}</span>
+                                            {src.metadata?.date && <span className="source-item-date">{src.metadata.date}</span>}
+                                          </div>
+                                          <span className="source-badge-score">
+                                            {(src.score * 100).toFixed(1)}% match
+                                          </span>
+                                        </div>
+                                        <blockquote className="source-item-content">
+                                          &ldquo;{src.content}&rdquo;
+                                        </blockquote>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+                              </div>
+                            )}
+
+                            {/* Relevant clients found (ranking) */}
+                            {msg.relevantClients && msg.relevantClients.length > 0 && (
+                              <div className="relevant-clients-wrapper">
+                                <span className="relevant-title">👥 Top Relevant Clients</span>
+                                <div className="relevant-list">
+                                  {msg.relevantClients.map((rc, rIdx) => (
+                                    <div key={rIdx} className="relevant-item">
+                                      <span className="relevant-name">{rc.clientName}</span>
+                                      <div className="relevant-bar-container">
+                                        <div className="relevant-bar-fill" style={{ width: `${rc.maxScore * 100}%` }} />
+                                      </div>
+                                      <span className="relevant-score">{(rc.maxScore * 100).toFixed(0)}%</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         ) : (
-                          <p className="user-text">{msg.content}</p>
+                          <>
+                            {msg.systemNotice && (
+                              <div className="system-notice">
+                                <span className="system-notice-icon">💾</span>
+                                <span className="system-notice-text">{msg.systemNotice}</span>
+                              </div>
+                            )}
+                            <p className="user-text">{msg.content}</p>
+                          </>
                         )
                       )}
                     </div>
@@ -544,8 +681,8 @@ export default function Chatbot() {
                   id="upload-file-btn"
                   className="action-btn upload-btn"
                   onClick={() => fileInputRef.current?.click()}
-                  title="Upload PDF or image"
-                  disabled={isLoading}
+                  title={selectedClientId ? "Upload PDF or image" : "Select client context first"}
+                  disabled={isLoading || !selectedClientId}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -578,10 +715,71 @@ export default function Chatbot() {
             </div>
 
             <p className="input-hint">
-              Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line · Supports PDF, images
+              Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line · {selectedClientId ? "Supports PDF, images" : "Select client context to upload files"}
             </p>
           </div>
         </main>
+
+        {/* Client Profile Details Panel */}
+        {selectedClientId && (() => {
+          const selectedClient = CLIENTS.find((c) => c.id === selectedClientId);
+          if (!selectedClient) return null;
+          return (
+            <aside className="client-profile-panel">
+              <div className="panel-header">
+                <h3>Client Profile Context</h3>
+              </div>
+              <div className="panel-body">
+                <div className="profile-hero">
+                  <div className="profile-avatar-large">
+                    {selectedClient.name.split(" ").map(n => n[0]).join("")}
+                  </div>
+                  <h4>{selectedClient.name}</h4>
+                  <span className="profile-meta">{selectedClient.age} years old · {selectedClient.gender}</span>
+                </div>
+
+                <div className="profile-section">
+                  <span className="section-title">Risk Profile</span>
+                  <span className={`risk-badge risk-${selectedClient.riskProfile.toLowerCase().replace(" ", "-")}`}>
+                    {selectedClient.riskProfile}
+                  </span>
+                </div>
+
+                <div className="profile-section">
+                  <span className="section-title">Executive Summary</span>
+                  <p className="section-desc">{selectedClient.summary}</p>
+                </div>
+
+                <div className="profile-section">
+                  <span className="section-title">Goals</span>
+                  <div className="tag-cloud">
+                    {selectedClient.goals.map((g, idx) => (
+                      <span key={idx} className="tag-pill goal-pill">{g}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="profile-section">
+                  <span className="section-title">Services Needed</span>
+                  <div className="tag-cloud">
+                    {selectedClient.servicesNeeded.map((s, idx) => (
+                      <span key={idx} className="tag-pill service-pill">{s}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="profile-section">
+                  <span className="section-title">Behavior Patterns</span>
+                  <div className="tag-cloud">
+                    {selectedClient.behaviourTags.map((t, idx) => (
+                      <span key={idx} className="tag-pill behavior-pill">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </aside>
+          );
+        })()}
       </div>
 
       <style jsx>{`
@@ -1501,6 +1699,388 @@ export default function Chatbot() {
         .resource-icon {
           font-size: 11px;
           opacity: 0.7;
+        }
+
+        /* ==============================
+           RAG & CONTEXT STYLES
+        ============================== */
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .header-client-selector {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border-left: 1px solid #ebebed;
+          padding-left: 16px;
+        }
+
+        .client-selector-label {
+          font-size: 12px;
+          font-weight: 500;
+          color: #888888;
+        }
+
+        .client-select {
+          background: #f7f7f8;
+          border: 1px solid #e5e5e8;
+          border-radius: 8px;
+          padding: 6px 12px;
+          font-size: 13px;
+          font-family: inherit;
+          color: #444444;
+          cursor: pointer;
+          outline: none;
+          transition: all 0.15s;
+        }
+
+        .client-select:hover {
+          background: #eeeeef;
+          border-color: #c8c8cc;
+        }
+
+        .client-select:focus {
+          border-color: #c97c3a;
+          box-shadow: 0 0 0 2px rgba(201, 124, 58, 0.15);
+        }
+
+        .system-notice {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-radius: 8px;
+          font-size: 12.5px;
+          color: #15803d;
+          margin-bottom: 10px;
+        }
+
+        .system-notice-icon {
+          font-size: 16px;
+        }
+
+        .system-notice-text {
+          font-weight: 500;
+        }
+
+        /* Retrieved Memories / Sources */
+        .sources-wrapper {
+          margin-top: 12px;
+          border-top: 1px dashed #e5e5e8;
+          padding-top: 12px;
+        }
+
+        .sources-details {
+          width: 100%;
+        }
+
+        .sources-summary {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #c97c3a;
+          cursor: pointer;
+          user-select: none;
+          outline: none;
+          padding: 2px 0;
+          transition: color 0.15s;
+        }
+
+        .sources-summary:hover {
+          color: #d98a47;
+        }
+
+        .sources-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 10px;
+          animation: fadeIn 0.2s ease;
+        }
+
+        .source-item {
+          background: #ffffff;
+          border: 1px solid #e5e5e8;
+          border-radius: 8px;
+          padding: 10px 12px;
+        }
+
+        .source-item-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 6px;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .source-item-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+
+        .source-badge-client {
+          background: #eff6ff;
+          color: #1d4ed8;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 1px 6px;
+          border-radius: 4px;
+        }
+
+        .source-badge-type {
+          background: #f3f4f6;
+          color: #4b5563;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 1px 6px;
+          border-radius: 4px;
+          text-transform: capitalize;
+        }
+
+        .source-item-date {
+          font-size: 11px;
+          color: #888888;
+        }
+
+        .source-badge-score {
+          font-size: 11px;
+          font-weight: 700;
+          color: #16a34a;
+          background: #f0fdf4;
+          padding: 1px 6px;
+          border-radius: 4px;
+        }
+
+        .source-item-content {
+          margin: 0;
+          font-size: 12.5px;
+          line-height: 1.5;
+          color: #555555;
+          font-style: italic;
+          word-break: break-word;
+        }
+
+        /* Relevant Clients Ranking */
+        .relevant-clients-wrapper {
+          margin-top: 12px;
+          border-top: 1px dashed #e5e5e8;
+          padding-top: 12px;
+        }
+
+        .relevant-title {
+          display: block;
+          font-size: 12px;
+          font-weight: 600;
+          color: #666666;
+          margin-bottom: 8px;
+        }
+
+        .relevant-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .relevant-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .relevant-name {
+          font-size: 12.5px;
+          font-weight: 500;
+          color: #333333;
+          width: 120px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .relevant-bar-container {
+          flex: 1;
+          height: 6px;
+          background: #e5e5e8;
+          border-radius: 3px;
+          overflow: hidden;
+        }
+
+        .relevant-bar-fill {
+          height: 100%;
+          background: #c97c3a;
+          border-radius: 3px;
+          transition: width 0.3s ease;
+        }
+
+        .relevant-score {
+          font-size: 11.5px;
+          font-weight: 600;
+          color: #c97c3a;
+          width: 36px;
+          text-align: right;
+        }
+
+        /* Client Profile Side Panel */
+        .client-profile-panel {
+          width: 320px;
+          min-width: 320px;
+          background: #f7f7f8;
+          border-left: 1px solid #e5e5e8;
+          display: flex;
+          flex-direction: column;
+          overflow-y: auto;
+          animation: slideLeft 0.3s ease;
+        }
+
+        @keyframes slideLeft {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        .panel-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid #e5e5e8;
+        }
+
+        .panel-header h3 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #111;
+        }
+
+        .panel-body {
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .profile-hero {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #e5e5e8;
+        }
+
+        .profile-avatar-large {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #c97c3a, #e8a55a);
+          color: white;
+          font-size: 18px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
+        .profile-hero h4 {
+          margin: 0 0 4px;
+          font-size: 15px;
+          font-weight: 600;
+          color: #111;
+        }
+
+        .profile-meta {
+          font-size: 11.5px;
+          color: #888;
+        }
+
+        .profile-section {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .section-title {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #999;
+        }
+
+        .section-desc {
+          margin: 0;
+          font-size: 12.5px;
+          color: #444;
+          line-height: 1.5;
+        }
+
+        .risk-badge {
+          display: inline-block;
+          align-self: flex-start;
+          padding: 3px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .risk-moderate {
+          background: #eff6ff;
+          color: #2563eb;
+          border: 1px solid #bfdbfe;
+        }
+
+        .risk-aggressive {
+          background: #fdf2f8;
+          color: #db2777;
+          border: 1px solid #fbcfe8;
+        }
+
+        .risk-conservative {
+          background: #f0fdf4;
+          color: #16a34a;
+          border: 1px solid #bbf7d0;
+        }
+
+        .risk-moderate-aggressive {
+          background: #faf5ff;
+          color: #7c3aed;
+          border: 1px solid #e9d5ff;
+        }
+
+        .tag-cloud {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .tag-pill {
+          font-size: 11px;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-weight: 500;
+        }
+
+        .goal-pill {
+          background: #fff7ed;
+          color: #c97c3a;
+          border: 1px solid #ffedd5;
+        }
+
+        .service-pill {
+          background: #f0fdfa;
+          color: #0d9488;
+          border: 1px solid #ccfbf1;
+        }
+
+        .behavior-pill {
+          background: #f8fafc;
+          color: #475569;
+          border: 1px solid #e2e8f0;
         }
       `}</style>
     </>
