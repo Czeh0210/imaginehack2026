@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import TopNav from "@/components/TopNav";
@@ -214,12 +214,15 @@ function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsC
 function ActivityCard({ item }) {
   const urlSafeName = item.actor.replace("/", "_");
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm text-sm">
+    <Link
+      href={`/client/${urlSafeName}`}
+      className="block bg-white border border-gray-200 rounded-lg p-4 shadow-sm text-sm no-underline hover:border-blue-300 hover:shadow-md transition-all duration-150 cursor-pointer"
+    >
       <div className="flex items-center gap-3 mb-3">
         <span className="w-5 h-5 rounded-full bg-gray-300 border border-gray-400 flex-shrink-0"></span>
-        <Link href={`/client/${urlSafeName}`} className="font-semibold text-gray-900 hover:text-blue-600">
+        <span className="font-semibold text-gray-900 group-hover:text-blue-600">
           {item.actor}
-        </Link>
+        </span>
       </div>
       <h3 className="text-base font-semibold text-gray-900 mb-1">{item.title}</h3>
       <p className="text-gray-600 mb-3">{item.description}</p>
@@ -233,7 +236,7 @@ function ActivityCard({ item }) {
         </div>
         <span className="text-gray-500 text-xs">{item.time}</span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -254,13 +257,15 @@ function Feed({ activity }) {
   const [messages, setMessages]         = useState([]);
   const [sessionId, setSessionId]       = useState(null);
   const [isLoading, setIsLoading]       = useState(false);
-  const messagesEndRef = useRef(null);
-  const inputRef       = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const inputRef             = useRef(null);
 
   const scopeLabel = SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? "All clients";
 
+  // Scroll only the messages container — never the whole page
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, isLoading]);
 
   const sendMessage = async (text = query) => {
@@ -313,7 +318,10 @@ function Feed({ activity }) {
 
         {/* Messages area — only shown when conversation has started */}
         {messages.length > 0 && (
-          <div className="max-h-[340px] overflow-y-auto p-4 border-b border-gray-100 flex flex-col gap-3">
+          <div
+            ref={messagesContainerRef}
+            className="max-h-[340px] overflow-y-auto p-4 border-b border-gray-100 flex flex-col gap-3"
+          >
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
@@ -322,14 +330,22 @@ function Feed({ activity }) {
                     : "bg-gray-100 text-gray-800 rounded-bl-sm border border-gray-200"
                 }`}>
                   {msg.content}
-                  {/* Source pills */}
+                  {/* Source pills — link to the relevant client repo */}
                   {msg.sources?.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {msg.sources.slice(0, 3).map((s, si) => (
-                        <span key={si} className="inline-block bg-white/20 text-xs px-1.5 py-0.5 rounded-full border border-white/30">
-                          {s.clientName} · {(s.score * 100).toFixed(0)}%
-                        </span>
-                      ))}
+                      {msg.sources.slice(0, 3).map((s, si) => {
+                        const slug = (s.clientId || "").replace("/", "_");
+                        const href = slug ? `/client/${slug}` : "#";
+                        return (
+                          <Link
+                            key={si}
+                            href={href}
+                            className="inline-block bg-white/20 text-xs px-1.5 py-0.5 rounded-full border border-white/30 hover:bg-white/30 transition-colors cursor-pointer no-underline"
+                          >
+                            {s.clientName} · {(s.score * 100).toFixed(0)}%
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -345,7 +361,6 @@ function Feed({ activity }) {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
         )}
 
