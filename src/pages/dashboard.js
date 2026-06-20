@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import TopNav from "@/components/TopNav";
@@ -7,44 +7,106 @@ import {
   ChevronDown,
   Book,
   Star,
-  GitFork,
-  Circle,
   History,
-  Smile,
   MoreHorizontal,
   User,
+  Search,
+  FileText,
+  AlertTriangle,
+  Calendar,
+  Users,
 } from "lucide-react";
 
 
 const TOP_REPOSITORIES = [
-  { id: 1, name: "005511/LimWeiMing" },
-  { id: 2, name: "005512/SarahTan" },
-  { id: 3, name: "005513/AhmadRazif" },
-  { id: 4, name: "005514/JenniferKoh" },
-  { id: 5, name: "005515/DavidNg" },
-  { id: 6, name: "005516/RosnahYusof" },
+  { id: 1,  name: "005511/LimWeiMing" },
+  { id: 2,  name: "005512/SarahTan" },
+  { id: 3,  name: "005513/AhmadRazif" },
+  { id: 4,  name: "005514/JenniferKoh" },
+  { id: 5,  name: "005515/DavidNg" },
+  { id: 6,  name: "005516/RosnahYusof" },
+  { id: 7,  name: "005517/NurulAin" },
+  { id: 8,  name: "005518/TanCheeKong" },
+  { id: 9,  name: "005519/PriyaKrishnan" },
+  { id: 10, name: "005520/MohdFaizal" },
+  { id: 11, name: "005521/ChanSiewLing" },
+  { id: 12, name: "005522/RajendraMuthu" },
+  { id: 13, name: "005523/NorhaizumMahmud" },
+  { id: 14, name: "005524/YapKokWai" },
+  { id: 15, name: "005525/SitiNorhaliza" },
+  { id: 16, name: "005526/LeeChongWei" },
+  { id: 17, name: "005527/FatimaZahraOmar" },
+  { id: 18, name: "005528/VijayaratnamPillai" },
+  { id: 19, name: "005529/NgBoonHuat" },
+  { id: 20, name: "005530/ZulaikhaBakar" },
 ];
+
+const INITIAL_VISIBLE = 6;
 
 const ADVISOR_ACTIVITY = [
   {
     id: 1,
     actor: "005511/LimWeiMing",
-    actorAvatar: "https://i.pravatar.cc/150?u=LimWeiMing",
-    title: "Updated Living Trust Document",
-    description:
-      "Added new clauses regarding digital assets and cryptocurrency holdings.",
+    title: "Living Trust Document Updated",
+    description: "Added new clauses on digital assets and cryptocurrency holdings. Pending legal sign-off.",
     tags: ["Draft", "Legal"],
     time: "2 hours ago",
   },
   {
     id: 2,
     actor: "005515/DavidNg",
-    actorAvatar: "https://i.pravatar.cc/150?u=DavidNg",
     title: "Board Meeting Notes Uploaded",
-    description:
-      "Summary of succession planning decisions from Q3 board meeting.",
+    description: "Summary of succession planning decisions from Q3 board meeting. Next review: Dec 2026.",
     tags: ["Corporate"],
+    time: "5 hours ago",
+  },
+  {
+    id: 3,
+    actor: "005512/SarahTan",
+    title: "Portfolio Risk Profile Revised",
+    description: "Equity allocation increased from 60% to 75% following RM 2.4M liquidity event from tech exit.",
+    tags: ["Portfolio", "Risk"],
     time: "Yesterday",
+  },
+  {
+    id: 4,
+    actor: "005514/JenniferKoh",
+    title: "Children's Trust Fund Executed",
+    description: "Trust deed signed for two beneficiaries (ages 8 and 11). Initial contribution of RM 500,000.",
+    tags: ["Legal", "Estate"],
+    time: "2 days ago",
+  },
+  {
+    id: 5,
+    actor: "005513/AhmadRazif",
+    title: "Education Fund Shortfall Identified",
+    description: "Revised university projections for 2027 and 2029 intakes. Funding gap of RM 80,000 flagged for top-up.",
+    tags: ["Education", "Planning"],
+    time: "3 days ago",
+  },
+  {
+    id: 6,
+    actor: "005516/RosnahYusof",
+    title: "Retirement Income Strategy Drafted",
+    description: "EPF drawdown schedule combined with dividend income targeting RM 8,000/month post-retirement.",
+    tags: ["Retirement", "Draft"],
+    time: "4 days ago",
+  },
+  {
+    id: 7,
+    actor: "005511/LimWeiMing",
+    title: "Annual Policy Review Completed",
+    description: "Term life and critical illness coverage reviewed. Recommended increasing CI sum assured to RM 1M.",
+    tags: ["Insurance"],
+    time: "5 days ago",
+  },
+  {
+    id: 8,
+    actor: "005515/DavidNg",
+    title: "FIRE Strategy Projection Updated",
+    description: "Monte Carlo simulation run at 4% withdrawal rate. 92% success probability over 30-year horizon.",
+    tags: ["FIRE", "Portfolio"],
+    time: "6 days ago",
   },
 ];
 
@@ -70,6 +132,13 @@ const SCHEDULE = [
 ];
 
 function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsCreatingNew, newRepoName, setNewRepoName, onCreateRepo }) {
+  const [showAll, setShowAll] = useState(false);
+
+  // When searching, always show all matches; otherwise respect the toggle
+  const isSearching = searchQuery.trim().length > 0;
+  const visibleRepos = isSearching || showAll ? repos : repos.slice(0, INITIAL_VISIBLE);
+  const hasMore = !isSearching && repos.length > INITIAL_VISIBLE;
+
   return (
     <aside className="hidden md:block w-[280px] shrink-0 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-8 pr-4 text-sm bg-gray-50/50 p-4 rounded-lg border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -115,7 +184,7 @@ function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsC
       )}
 
       <ul className="flex flex-col gap-1">
-        {repos.map((repo) => {
+        {visibleRepos.map((repo) => {
           const urlSafeName = repo.name.replace("/", "_");
           return (
             <li key={repo.id} className="flex items-center gap-2 group cursor-pointer px-2 py-1.5 hover:bg-gray-100 rounded-md transition-colors">
@@ -128,11 +197,16 @@ function LeftSidebar({ repos, searchQuery, setSearchQuery, isCreatingNew, setIsC
         })}
       </ul>
 
-      <div className="mt-2 px-2">
-        <a href="#" className="text-gray-500 hover:text-blue-600 text-xs transition-colors font-medium">
-          Show more
-        </a>
-      </div>
+      {hasMore && (
+        <div className="mt-2 px-2">
+          <button
+            onClick={() => setShowAll(true)}
+            className="text-gray-500 hover:text-blue-600 text-xs transition-colors font-medium"
+          >
+            Show more
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
@@ -163,59 +237,220 @@ function ActivityCard({ item }) {
   );
 }
 
+const SCOPE_OPTIONS = [
+  { value: "all",    label: "All clients" },
+  { value: "005511", label: "005511 / LimWeiMing" },
+  { value: "005512", label: "005512 / SarahTan" },
+  { value: "005513", label: "005513 / AhmadRazif" },
+  { value: "005514", label: "005514 / JenniferKoh" },
+  { value: "005515", label: "005515 / DavidNg" },
+  { value: "005516", label: "005516 / RosnahYusof" },
+];
+
 function Feed({ activity }) {
+  const [query, setQuery]               = useState("");
+  const [scope, setScope]               = useState("all");
+  const [showScopeMenu, setShowScopeMenu] = useState(false);
+  const [messages, setMessages]         = useState([]);
+  const [sessionId, setSessionId]       = useState(null);
+  const [isLoading, setIsLoading]       = useState(false);
+  const messagesEndRef = useRef(null);
+  const inputRef       = useRef(null);
+
+  const scopeLabel = SCOPE_OPTIONS.find((o) => o.value === scope)?.label ?? "All clients";
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  const sendMessage = async (text = query) => {
+    const q = text.trim();
+    if (!q || isLoading) return;
+    setQuery("");
+    const userMsg = { role: "user", content: q };
+    const next = [...messages, userMsg];
+    setMessages(next);
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/chat/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: q,
+          sessionId: sessionId || undefined,
+          clientId: scope !== "all" ? scope : undefined,
+          topK: 5,
+          threshold: 0.25,
+        }),
+      });
+      const data = await res.json();
+      if (data.sessionId) setSessionId(data.sessionId);
+      setMessages([...next, {
+        role: "assistant",
+        content: data.reply || "No response received.",
+        sources: data.sources,
+      }]);
+    } catch {
+      setMessages([...next, { role: "assistant", content: "Something went wrong. Please try again." }]);
+    } finally {
+      setIsLoading(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const clearChat = () => { setMessages([]); setSessionId(null); };
+
   return (
     <main className="flex-1 w-full max-w-[800px]">
       <h1 className="text-2xl font-semibold text-gray-900 mb-4">Home</h1>
 
-      {/* Ask Box */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
-        <input
-          type="text"
-          placeholder="Ask anything or type @ to add context"
-          className="w-full bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 text-lg mb-4"
-        />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
-              <Smile size={16} /> Ask <ChevronDown size={14} />
-            </button>
-            <button className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
-              <Book size={16} /> All repositories <ChevronDown size={14} />
-            </button>
-            <button className="text-gray-500 hover:text-gray-700 p-1.5 border border-transparent hover:border-gray-300 rounded-md transition-colors">
-              <Plus size={18} />
-            </button>
+      {/* ── Inline Chatbot Box ── */}
+      <div className="bg-white border border-gray-200 rounded-lg mb-6 shadow-sm overflow-hidden">
+
+        {/* Messages area — only shown when conversation has started */}
+        {messages.length > 0 && (
+          <div className="max-h-[340px] overflow-y-auto p-4 border-b border-gray-100 flex flex-col gap-3">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
+                  msg.role === "user"
+                    ? "bg-blue-600 text-white rounded-br-sm"
+                    : "bg-gray-100 text-gray-800 rounded-bl-sm border border-gray-200"
+                }`}>
+                  {msg.content}
+                  {/* Source pills */}
+                  {msg.sources?.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {msg.sources.slice(0, 3).map((s, si) => (
+                        <span key={si} className="inline-block bg-white/20 text-xs px-1.5 py-0.5 rounded-full border border-white/30">
+                          {s.clientName} · {(s.score * 100).toFixed(0)}%
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 border border-gray-200 rounded-xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
+                  {[0, 1, 2].map((d) => (
+                    <span key={d} style={{ animationDelay: `${d * 0.18}s` }}
+                      className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+                  ))}
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-          <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
-              Auto <ChevronDown size={14} />
-            </button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-md p-1.5 transition-colors">
+        )}
+
+        {/* Input area */}
+        <div className="p-4">
+          {/* Text input */}
+          <div className="flex items-start gap-2 mb-3">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={messages.length === 0
+                ? "Ask anything about your clients or type @ to add context"
+                : "Follow up…"}
+              className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 resize-none text-base leading-snug"
+              style={{ minHeight: "28px", maxHeight: "96px" }}
+            />
+            {messages.length > 0 && (
+              <button onClick={clearChat} className="text-gray-400 hover:text-red-500 text-xs font-medium transition-colors shrink-0 mt-0.5">
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Toolbar row */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Scope dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowScopeMenu((v) => !v)}
+                  className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                >
+                  <Users size={14} /> {scopeLabel} <ChevronDown size={13} />
+                </button>
+                {showScopeMenu && (
+                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[200px]">
+                    {SCOPE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setScope(opt.value); setShowScopeMenu(false); }}
+                        className={`w-full text-left px-3 py-1.5 text-sm transition-colors ${
+                          scope === opt.value ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button className="text-gray-400 hover:text-gray-600 p-1.5 border border-transparent hover:border-gray-300 rounded-md transition-colors">
+                <Plus size={16} />
+              </button>
+            </div>
+
+            {/* Send button */}
+            <button
+              onClick={() => sendMessage()}
+              disabled={!query.trim() || isLoading}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-md p-1.5 transition-colors"
+            >
               <ChevronDown size={18} className="-rotate-90" />
             </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2 mt-4 flex-wrap">
-          <button className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200 rounded-md px-2 py-1 text-sm font-medium transition-colors">
-            <Smile size={14} /> Agent
-          </button>
-          <button className="flex items-center gap-1 text-gray-600 hover:bg-gray-100 border border-transparent hover:border-gray-300 rounded-md px-2 py-1 text-sm font-medium transition-colors">
-            <Circle size={14} /> Create issue
-          </button>
-          <button className="flex items-center gap-1 text-yellow-600 hover:bg-yellow-50 border border-transparent hover:border-yellow-200 rounded-md px-2 py-1 text-sm font-medium transition-colors">
-            <Star size={14} /> Spark
-          </button>
-          <button className="flex items-center gap-1 text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200 rounded-md px-2 py-1 text-sm font-medium transition-colors">
-            <GitFork size={14} /> Git <ChevronDown size={12} />
-          </button>
-          <button className="flex items-center gap-1 text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200 rounded-md px-2 py-1 text-sm font-medium transition-colors">
-            <GitFork size={14} className="rotate-90" /> Pull requests <ChevronDown size={12} />
-          </button>
+
+          {/* Quick action pills */}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <button
+              onClick={() => sendMessage("Summarise the latest activity across all clients")}
+              className="flex items-center gap-1 text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
+            >
+              <Search size={13} /> Client summary
+            </button>
+            <button
+              onClick={() => sendMessage("Which clients have pending document reviews or expiring policies?")}
+              className="flex items-center gap-1 text-gray-600 hover:bg-gray-100 border border-transparent hover:border-gray-300 rounded-md px-2 py-1 text-sm font-medium transition-colors"
+            >
+              <FileText size={13} /> Pending reviews
+            </button>
+            <button
+              onClick={() => sendMessage("Which clients have high financial risk exposure or flagged concerns?")}
+              className="flex items-center gap-1 text-yellow-600 hover:bg-yellow-50 border border-transparent hover:border-yellow-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
+            >
+              <AlertTriangle size={13} /> Risk flags
+            </button>
+            <button
+              onClick={() => sendMessage("List clients with upcoming estate or retirement milestones")}
+              className="flex items-center gap-1 text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
+            >
+              <Calendar size={13} /> Milestones
+            </button>
+            <button
+              onClick={() => sendMessage("Which clients should I prioritise contacting this week?")}
+              className="flex items-center gap-1 text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200 rounded-md px-2 py-1 text-sm font-medium transition-colors"
+            >
+              <Users size={13} /> Prioritise <ChevronDown size={11} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Feed Section */}
+      {/* ── Feed Section ── */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Feed</h2>
         <button className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1 transition-colors shadow-sm">
@@ -227,7 +462,7 @@ function Feed({ activity }) {
         <History size={16} className="text-red-500" /> Recent client activity
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pb-8">
         {activity.map((item) => (
           <ActivityCard key={item.id} item={item} />
         ))}
